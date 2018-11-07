@@ -35,7 +35,7 @@ jobs:
           name: "Build & Push Docker Image"
           command: |
             docker build -t ankr-hub-hello-go .
-            docker tag hello-go:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:ankr-hub-hello-go
+            docker tag ankr-hub-hello-go:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:ankr-hub-hello-go
             docker push 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:ankr-hub-hello-go
       # http://815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr
 
