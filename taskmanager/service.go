@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc"
 	pb "dccn-hub/protocol"
 	"google.golang.org/grpc/reflection"
+	util "dccn-hub/util"
 )
 
 const (
@@ -20,7 +21,14 @@ type server struct{}
 
 func (s *server) SendClientStartRequest(ctx context.Context, in *pb.ClientStartRequest) (*pb.ServerStartResponse, error) {
         fmt.Printf("received %s\n", in.Name)
+				token := in.Usertoken
+				user := mongodb.GetUser(token)
+
+				task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
+				id := mongodb.AddTask(task)
+
 	return &pb.ServerStartResponse{Status:"Success", Taskid:1}, nil
+
 }
 
 
