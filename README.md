@@ -39,3 +39,24 @@ Ankr Hub connect with cli/k8s  by gRPC (k8s may use ZeroMQ as messaging)
 * Datacenter(s) deploy workloads and allow connectivity as specified by the tenant.
 * If a datacenter fails to maintain contract, collateral is transferred to tenant, and a new order is created for the desired resources.
 * A tenant can close any active deployment at any time
+
+## Install
+* set $GoPath
+* install grcp package  
+go get -u google.golang.org/grpc
+* git clone code  
+cd $GOPATH/src  
+git clone git@github.com:Ankr-network/dccn-hub.git  -b feature/78-ankr-hub dccn-hub
+* run server :   
+go run taskmanager/service.go
+* run client:   
+go run test/cli/add_task.go
+
+* install MongoDB  
+https://treehouse.github.io/installation-guides/mac/mongo-mac.html
+
+* proto compiler tools
+
+ go get github.com/golang/protobuf/protoc-gen-go
+
+ protoc --go_out=./ *.proto
