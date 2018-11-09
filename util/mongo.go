@@ -122,10 +122,6 @@ func GetUser(token string) User{
   user := User{}
   db := GetDBInstance()
   c := db.C("user")
-  err := c.Find(bson.M{"token": token}).One(&user)
-  if err != nil {
-          log.Fatal(err)
-  }
-
+  c.Find(bson.M{"token": token}).One(&user)
   return user;
 }
