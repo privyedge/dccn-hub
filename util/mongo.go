@@ -66,7 +66,7 @@ func AddTask(task Task) int64 {
         // p._id = 19
         // fmt.Printf("Id of person: %d\n", p._id)
         id := GetID("taskid", db)
-        err := c.Insert(bson.M{"_id": id, "id": id,  "name":task.Name, "userid": task.Userid, "region": task.Region, "zone": task.Zone, "Status": "new"})
+        err := c.Insert(bson.M{"_id": id, "id": id,  "name":task.Name, "userid": task.Userid, "region": task.Region, "zone": task.Zone, "status": "new"})
         if err != nil {
                 log.Fatal(err)
         }
