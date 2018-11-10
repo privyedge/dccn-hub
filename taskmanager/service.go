@@ -19,19 +19,20 @@ const (
 type server struct{}
 
 
-func (s *server) SendClientStartRequest(ctx context.Context, in *pb.ClientStartRequest) (*pb.ServerStartResponse, error) {
+func (s *server) AddTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskResponse, error) {
         fmt.Printf("received add task request\n")
 				token := in.Usertoken
 				user := util.GetUser(token)
 
         if user.ID == 0 {
 					fmt.Printf("add new task fail for user token error\n")
-					return &pb.ServerStartResponse{Status:"Failure", Taskid: -1}, nil
+					return &pb.TaskResponse{Status:"Failure", Taskid: -1}, nil
 				}else{
 					task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
 					id := util.AddTask(task)
 					fmt.Printf("add new task ID : %d\n", id)
-           return &pb.ServerStartResponse{Status:"Success", Taskid: id}, nil
+
+           return &pb.TaskResponse{Status:"Success", Taskid: id}, nil
 				}
 
 
@@ -40,24 +41,32 @@ func (s *server) SendClientStartRequest(ctx context.Context, in *pb.ClientStartR
 }
 
 
-func (s *server) SendClientListRequest(ctx context.Context, in *pb.ClientListRequest) (*pb.ServerListResponse, error) {
+func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.TaskListResponse, error) {
 	token := in.Usertoken
 	user := util.GetUser(token)
 
 	if user.ID == 0 {
 		fmt.Printf("task list reqeust fail for user token error\n")
-		return &pb.ServerListResponse{}, nil
+		return &pb.TaskListResponse{}, nil
 	}else{
 		tasks := util.TaskList(int(user.ID))
 
+    var taskList []*pb.TaskInfo
 		for i := range tasks {
 				task := tasks[i]
-				fmt.Printf("task id : %d \n", task.ID)
+				taskInfo := &pb.TaskInfo{}
+				taskInfo.Taskid = task.ID
+				taskInfo.Taskname = task.Name
+				taskInfo.Status = task.Status
+				taskList = append(taskList, taskInfo)
+				fmt.Printf("task id : %d %s status %s \n", task.ID,task.Name, task.Status)
      }
 
+ 		return &pb.TaskListResponse{Tasksinfo: taskList}, nil
 	}
-	// todo when have new list proto
-	return &pb.ServerListResponse{Taskname: "this is a list"}, nil
+
+
+
 }
 
 
@@ -69,7 +78,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterSimpappServer(s, &server{})
+	pb.RegisterDccncliServer(s, &server{})
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {

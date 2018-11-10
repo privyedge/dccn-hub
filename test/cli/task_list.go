@@ -22,18 +22,24 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewSimpappClient(conn)
+	c := pb.NewDccncliClient(conn)
 
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second )
 	defer cancel()
-	r, err := c.SendClientListRequest(ctx, &pb.ClientListRequest{Usertoken:"ed1605e17374bde6c68864d072c9f5c9" })
+	r, err := c.TaskList(ctx, &pb.TaskListRequest{Usertoken:"ed1605e17374bde6c68864d072c9f5c9" })
 	if err != nil {
 		log.Fatalf("Client: could not send: %v", err)
 	}
 
+  fmt.Printf("received task list : \n", )
+  tasks := r.Tasksinfo
+	for i := range tasks {
+     task := tasks[i]
+		fmt.Printf("task id : %d     name : %s    status : %s \n", int(task.Taskid), task.Taskname, task.Status)
+	}
  // todo when have new proto
-	fmt.Printf("received Status : %s \n", r.Taskname)
+
 
 
 

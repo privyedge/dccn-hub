@@ -15,20 +15,20 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "io.grpc.examples.simpapp";
-option java_outer_classname = "SimpappProto";
+option java_package = "io.grpc.examples.dccncli";
+option java_outer_classname = "DccnCliProto";
 
-package simpapp;
+package dccncli;
 
-// The simpapp service definition.
-service simpapp {
-  // Sends a greeting
-  rpc SendClientStartRequest (ClientStartRequest) returns (ServerStartResponse) {}
-  rpc SendClientListRequest (ClientListRequest) returns (ServerListResponse) {}
+// The dccncli service definition.
+service dccncli {
+  // Sends request to start a task and list task
+  rpc AddTask (TaskRequest) returns (TaskResponse) {}
+  rpc TaskList (TaskListRequest) returns (TaskListResponse) {}
 }
 
 // The dccn client request message containing the user's token
-message ClientStartRequest {
+message TaskRequest {
   string name = 1; // name of the task/image to run
   string region = 2; // region e.g US
   string zone = 3; // zone EST, PST etc
@@ -36,19 +36,24 @@ message ClientStartRequest {
 }
 
 // The Ankr Hub response message containing the success or failure
-message ServerStartResponse {
+message TaskResponse {
   string status = 1; // Success or Failure
   int64 taskid = 2; //  id of task if success, in case of failure return -1
 }
 
 // The Client List request message
-message ClientListRequest {
+message TaskListRequest {
   string usertoken = 1; // List task for the account
 }
 
-message ServerListResponse {
-  string taskname = 1; // List task for the account
-  uint32 uptime = 2; // uptime of the task
-  uint64 creationdate = 3; //task creation date
-  string status = 4; // Active or inactive, Right now all tasks active
+message TaskInfo {
+  int64  taskid = 1;
+  string taskname = 2; // List task for the account
+  uint32 uptime = 3; // uptime of the task
+  uint64 creationdate = 4; //task creation date
+  string status = 5; // Active or inactive, Right now all tasks active
+}
+
+message TaskListResponse {
+  repeated TaskInfo tasksinfo = 1; // repeated groups of taskinfo list
 }

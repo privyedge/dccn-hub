@@ -22,7 +22,7 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewSimpappClient(conn)
+	c := pb.NewDccncliClient(conn)
 
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second )
