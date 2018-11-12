@@ -11,7 +11,7 @@ import (
 
 
 const (
-	address  = "10.0.0.61:50051"
+	address  = "localhost:50051"
 )
 
 
@@ -27,12 +27,12 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second )
 	defer cancel()
-	r, err := c.K8ReportStatus(ctx, &pb.ReportRequest{Name:"datacenter_2",Report:"job 1 job2 job3 host 100", Host:"127.0.0.1", Port:5005 })
+	r, err := c.K8QueryTask(ctx, &pb.QueryTaskRequest{Name:"datacenter_2"})
 	if err != nil {
 		log.Fatalf("Client: could not send: %v", err)
 	}
 
-	fmt.Printf("received Status : %s \n", r.Status)
+	fmt.Printf("received new task  : %d %s %s \n", r.Taskid, r.Name, r.Extra)
 
 
 
