@@ -2,6 +2,7 @@ package util
 
 import (
         "sync"
+        "time"
         "fmt"
 	      "log"
         "gopkg.in/mgo.v2"  // package name mgo
@@ -14,7 +15,7 @@ type Task struct {
         Name string
         Region string
         Zone string
-        Status string   // 1 new 2 running 3. done 4 cancel
+        Status string   // 1 new 2 running 3. done 4 cancelling 5.canceled
 
 }
 
@@ -31,6 +32,51 @@ type Counter struct {
         ID string
         Sequence_value int64
 }
+
+
+type DataCenter struct {
+        ID int64
+        Name string
+        Report string
+        Host string
+        Port int64
+        LastReportTime int64
+        Status string  //1. running  2. stopped  3. dropped
+
+}
+
+func GetDataCenter(name string) DataCenter{
+  datacenter := DataCenter{}
+  db := GetDBInstance()
+  c := db.C("datacenter")
+  c.Find(bson.M{"name": name}).One(&datacenter)
+  return datacenter;
+}
+
+func AddDataCenter(d DataCenter) int64 {
+        db := GetDBInstance()
+        c := db.C("datacenter")
+        //p := Person{"xxxx", "123455"}
+        // p._id = 19
+        // fmt.Printf("Id of person: %d\n", p._id)
+        id := GetID("datacenterid", db)
+        msec := time.Now().UnixNano() / 1000000
+        err := c.Insert(bson.M{"_id": id, "id": id,  "name":d.Name, "report":d.Report, "host": d.Host, "port": d.Port, "lastReporTtime": msec, "status": "Running"})
+        if err != nil {
+                log.Fatal(err)
+        }
+        return id
+}
+
+
+func UpdateDataCenter(d DataCenter, id int) {
+  db := GetDBInstance()
+  c := db.C("datacenter")
+  fmt.Printf("UpdateDataCenter report %s \n", d.Report)
+
+  c.Update(bson.M{"_id": id},  bson.M{"$set": bson.M{"name": d.Name,"report":d.Report, "host":d.Host, "port":d.Port}})
+}
+
 
 
 
@@ -101,6 +147,14 @@ func TaskList(userid int) []Task{
    return tasks
 }
 
+func GetTask(taskid int) Task{
+  task := Task{}
+  db := GetDBInstance()
+  c := db.C("task")
+  c.Find(bson.M{"_id": taskid}).One(&task)
+  return task;
+}
+
 func CancelTask(taskid int){
        db := GetDBInstance()
        c := db.C("task")
@@ -117,6 +171,8 @@ func AddUser(user User) {
         c.Insert(bson.M{"_id": id, "id": id,  "name": user.Name, "token": user.Token, "money":user.Money })
 
 }
+
+
 
 func GetUser(token string) User{
   user := User{}
