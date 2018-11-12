@@ -19,24 +19,21 @@ const (
 type server struct{}
 
 
-func (s *server) AddTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskResponse, error) {
+func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTaskResponse, error) {
         fmt.Printf("received add task request\n")
 				token := in.Usertoken
 				user := util.GetUser(token)
 
         if user.ID == 0 {
 					fmt.Printf("add new task fail for user token error\n")
-					return &pb.TaskResponse{Status:"Failure", Taskid: -1}, nil
+					return &pb.AddTaskResponse{Status:"Failure", Taskid: -1}, nil
 				}else{
 					task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
 					id := util.AddTask(task)
 					fmt.Printf("add new task ID : %d\n", id)
 
-           return &pb.TaskResponse{Status:"Success", Taskid: id}, nil
+           return &pb.AddTaskResponse{Status:"Success", Taskid: id}, nil
 				}
-
-
-
 
 }
 
@@ -65,11 +62,72 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
  		return &pb.TaskListResponse{Tasksinfo: taskList}, nil
 	}
 
+}
+
+func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.CancelTaskResponse, error) {
+        fmt.Printf("received add task request\n")
+				token := in.Usertoken
+				user := util.GetUser(token)
+
+				task := util.GetTask(int(in.Taskid))
+
+         if task.ID == 0 {
+					 fmt.Printf("can not find task\n")
+					 return &pb.CancelTaskResponse{Status:"Failure"}, nil
+				 }
+
+        if user.ID == 0 {
+					fmt.Printf("add new task fail for user token error\n")
+					return &pb.CancelTaskResponse{Status:"Failure"}, nil
+				}
+
+				if task.Userid != user.ID {
+					fmt.Printf("task uid != user id \n")
+					return &pb.CancelTaskResponse{Status:"Failure"}, nil
+				}
+
+
+				return &pb.CancelTaskResponse{Status:"Success"}, nil
 
 
 }
 
 
+
+func (s *server) K8ReportStatus(ctx context.Context, in *pb.ReportRequest) (*pb.ReportResponse, error) {
+         fmt.Printf("received K8ReportStatus request %s\n", in.Report)
+				 datacenter := util.GetDataCenter(in.Name)
+				 if datacenter.ID == 0{
+					 	datacenter := util.DataCenter{Name: in.Name, Report:in.Report, Host: in.Host, Port: in.Port}
+						id := util.AddDataCenter(datacenter)
+						fmt.Printf("insert new  DataCenter id %d \n", id)
+				 }else{
+					    datacenter2 := util.DataCenter{Name: in.Name, Report:in.Report, Host: in.Host, Port: in.Port}
+              util.UpdateDataCenter(datacenter2, int(datacenter.ID))
+							fmt.Printf("update  DataCenter id %d \n", datacenter.ID)
+
+				 }
+
+         return &pb.ReportResponse{Status:"Success"}, nil
+
+
+}
+
+
+func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.QueryTaskResponse, error) {
+         fmt.Printf("received add task request\n")
+				 datacenter := util.GetDataCenter(in.Name)
+				 if datacenter.ID == 0 {
+					 fmt.Printf("datacenter not found\n")
+				 }else{
+              //util.UpdateDataCenter(datacenter, int(datacenter.ID)
+
+				 }
+
+         return &pb.QueryTaskResponse{}, nil
+
+
+}
 
 
 func main() {

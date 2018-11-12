@@ -27,7 +27,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second )
 	defer cancel()
-	r, err := c.AddTask(ctx, &pb.AddTaskRequest{Name:"docker_image_name", Region:"us_west", Zone:"ca", Usertoken:"ed1605e17374bde6c68864d072c9f5c9" })
+	r, err := c.K8ReportStatus(ctx, &pb.ReportRequest{Name:"datacenter_2",Report:"job 1 job2 job3 host 100", Host:"127.0.0.1", Port:5005 })
 	if err != nil {
 		log.Fatalf("Client: could not send: %v", err)
 	}

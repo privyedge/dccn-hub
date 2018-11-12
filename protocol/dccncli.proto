@@ -23,12 +23,15 @@ package dccncli;
 // The dccncli service definition.
 service dccncli {
   // Sends request to start a task and list task
-  rpc AddTask (TaskRequest) returns (TaskResponse) {}
+  rpc AddTask (AddTaskRequest) returns (AddTaskResponse) {}
   rpc TaskList (TaskListRequest) returns (TaskListResponse) {}
+  rpc CancelTask (CancelTaskRequest) returns (CancelTaskResponse) {}
+  rpc K8ReportStatus(ReportRequest) returns (ReportResponse) {}  // k8s send this message
+  rpc K8QueryTask(QueryTaskRequest)returns (QueryTaskResponse) {} // k8s end this message
 }
 
 // The dccn client request message containing the user's token
-message TaskRequest {
+message AddTaskRequest {
   string name = 1; // name of the task/image to run
   string region = 2; // region e.g US
   string zone = 3; // zone EST, PST etc
@@ -36,7 +39,7 @@ message TaskRequest {
 }
 
 // The Ankr Hub response message containing the success or failure
-message TaskResponse {
+message AddTaskResponse {
   string status = 1; // Success or Failure
   int64 taskid = 2; //  id of task if success, in case of failure return -1
 }
@@ -56,4 +59,34 @@ message TaskInfo {
 
 message TaskListResponse {
   repeated TaskInfo tasksinfo = 1; // repeated groups of taskinfo list
+}
+
+message CancelTaskRequest{
+     string usertoken = 1;
+     int64  taskid = 2;
+}
+
+message CancelTaskResponse{
+     string status = 1; // Success or Failure
+}
+
+message ReportRequest{
+    string name = 1;  // datacenter name
+    string report = 2;
+    string host = 3;
+    int64 port = 4;
+}
+
+message ReportResponse{
+   string status = 1; // Success or Failure
+}
+
+message QueryTaskRequest{
+    string name = 1;  // datacenter name
+}
+
+message QueryTaskResponse{
+    int64 taskid = 1; //  id of task
+    string name = 2; // name of the task/image to run after hub selects the right datacenter
+    string extra = 3; //extra for other arguments
 }
