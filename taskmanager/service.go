@@ -115,7 +115,7 @@ func (s *server) K8ReportStatus(ctx context.Context, in *pb.ReportRequest) (*pb.
 
 
 func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.QueryTaskResponse, error) {
-         fmt.Printf("received add task request\n")
+         fmt.Printf("received K8QueryTask request\n")
 				 datacenter := util.GetDataCenter(in.Name)
 				 if datacenter.ID == 0 {
 					 fmt.Printf("datacenter not found\n")
@@ -124,7 +124,8 @@ func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.
 
 				 }
 
-         return &pb.QueryTaskResponse{}, nil
+				 // todo
+         return &pb.QueryTaskResponse{Taskid:123, Name:"docker_image_2", Extra:"instance 2 port 8888"}, nil
 
 
 }
