@@ -57,6 +57,6 @@ https://treehouse.github.io/installation-guides/mac/mongo-mac.html
 
 * proto compiler tools
 
- go get github.com/golang/protobuf/protoc-gen-go
+ go get github.com/golang/protobuf/protoc-gen-go   
 
- protoc --go_out=./ *.proto
+protoc --go_out=plugins=grpc:. *.proto
