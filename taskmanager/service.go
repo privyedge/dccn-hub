@@ -119,15 +119,21 @@ func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.
 				 datacenter := util.GetDataCenter(in.Name)
 				 if datacenter.ID == 0 {
 					 fmt.Printf("datacenter not found\n")
+					 return &pb.QueryTaskResponse{}, nil
 				 }else{
               //util.UpdateDataCenter(datacenter, int(datacenter.ID)
 
 				 }
 
-				 // todo
-         return &pb.QueryTaskResponse{Taskid:123, Name:"docker_image_2", Extra:"instance 2 port 8888"}, nil
-
-
+				 task := util.GetNewTask()
+				 if task.ID == 0 {
+					 fmt.Printf("No new task\n")
+					 return &pb.QueryTaskResponse{}, nil
+				 }else{
+					  fmt.Printf("GetNewTask %d\n", task.ID)
+					  util.UpdateTask(int(task.ID), "running", int(datacenter.ID))
+            return &pb.QueryTaskResponse{Taskid:task.ID, Name:task.Name, Extra:""}, nil
+				 }
 }
 
 

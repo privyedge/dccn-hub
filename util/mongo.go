@@ -42,6 +42,7 @@ type DataCenter struct {
         Port int64
         LastReportTime int64
         Status string  //1. running  2. stopped  3. dropped
+        DatacenterId int
 
 }
 
@@ -152,6 +153,22 @@ func GetTask(taskid int) Task{
   db := GetDBInstance()
   c := db.C("task")
   c.Find(bson.M{"_id": taskid}).One(&task)
+  return task;
+}
+
+func GetNewTask() Task{
+  task := Task{}
+  db := GetDBInstance()
+  c := db.C("task")
+  c.Find(bson.M{"status": "new"}).One(&task)
+  return task;
+}
+
+func UpdateTask(taskid int, status string, datacentrid int) Task{
+  task := Task{}
+  db := GetDBInstance()
+  c := db.C("task")
+  c.Update(bson.M{"_id": taskid},  bson.M{"$set": bson.M{"status": "running", "datacenterid":datacentrid}})
   return task;
 }
 
