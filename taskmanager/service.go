@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"io"
 	"net"
   "fmt"
+	"sync"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	pb "dccn-hub/protocol"
@@ -16,7 +18,10 @@ const (
 )
 
 // server is used to implement helloworld.GreeterServer.
-type server struct{}
+type server struct{
+	 mu  sync.Mutex // protects data
+	 dcstream  pb.Dccncli_K8TaskServer  //datacenter stream
+}
 
 
 func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTaskResponse, error) {
@@ -31,6 +36,15 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 					task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
 					id := util.AddTask(task)
 					fmt.Printf("add new task ID : %d\n", id)
+
+					if s.dcstream != nil {
+						var message = pb.Task{Taskid: 255, Name:"docker_image", Extra:"extraxxx"}
+						if err := s.dcstream.Send(&message); err != nil {
+							  fmt.Printf("send message to data center failed \n")
+						}else{
+							  fmt.Printf("send message to data center successfully \n")
+						}
+					}
 
            return &pb.AddTaskResponse{Status:"Success", Taskid: id}, nil
 				}
@@ -134,6 +148,38 @@ func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.
 					  util.UpdateTask(int(task.ID), "running", int(datacenter.ID))
             return &pb.QueryTaskResponse{Taskid:task.ID, Name:task.Name, Extra:""}, nil
 				 }
+}
+
+
+// RouteChat receives a stream of message/location pairs, and responds with a stream of all
+// previous messages at each of those locations.
+func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
+	s.dcstream = stream
+	for {
+		in, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		taskid := in.Taskid
+
+		s.mu.Lock()
+		if taskid == -1 {
+				fmt.Printf("received error task status  : %d %s \n", in.Taskid, in.Status)
+		}else{
+        fmt.Printf("received task status  : %d %s \n", in.Taskid, in.Status)
+		}
+
+		s.mu.Unlock()
+
+     var message = pb.Task{Taskid: 13, Name:"docker_image", Extra:"extraxxx"}
+			if err := stream.Send(&message); err != nil {
+				return err
+			}
+
+	}
 }
 
 
