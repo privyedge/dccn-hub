@@ -27,7 +27,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second )
 	defer cancel()
-	r, err := c.CancelTask(ctx, &pb.CancelTaskRequest{Taskid:62, Usertoken:"ed1605e17374bde6c68864d072c9f5c9" })
+	r, err := c.CancelTask(ctx, &pb.CancelTaskRequest{Taskid:84, Usertoken:"ed1605e17374bde6c68864d072c9f5c9" })
 	if err != nil {
 		log.Fatalf("Client: could not send: %v", err)
 	}
