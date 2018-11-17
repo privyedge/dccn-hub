@@ -38,7 +38,7 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 					fmt.Printf("add new task ID : %d\n", id)
 
 					if s.dcstream != nil {
-						var message = pb.Task{Taskid: 255, Name:"docker_image", Extra:"extraxxx"}
+						var message = pb.Task{Type:"NewTask", Taskid: id, Name:task.Name, Extra:"nothing"}
 						if err := s.dcstream.Send(&message); err != nil {
 							  fmt.Printf("send message to data center failed \n")
 						}else{
@@ -49,6 +49,17 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
            return &pb.AddTaskResponse{Status:"Success", Taskid: id}, nil
 				}
 
+}
+
+func sendMessageToK8(s *server, taskType string, taskid int64, name string, extra string) {
+	if s.dcstream != nil {
+		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Extra: extra}
+		if err := s.dcstream.Send(&message); err != nil {
+				fmt.Printf("send message to data center failed \n")
+		}else{
+				fmt.Printf("send message to data center successfully \n")
+		}
+	}
 }
 
 
@@ -70,7 +81,7 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 				taskInfo.Taskname = task.Name
 				taskInfo.Status = task.Status
 				taskList = append(taskList, taskInfo)
-				fmt.Printf("task id : %d %s status %s \n", task.ID,task.Name, task.Status)
+				//fmt.Printf("task id : %d %s status %s \n", task.ID,task.Name, task.Status)
      }
 
  		return &pb.TaskListResponse{Tasksinfo: taskList}, nil
@@ -79,7 +90,7 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 }
 
 func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.CancelTaskResponse, error) {
-        fmt.Printf("received add task request\n")
+        fmt.Printf("received cancel task request\n")
 				token := in.Usertoken
 				user := util.GetUser(token)
 
@@ -91,7 +102,7 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 				 }
 
         if user.ID == 0 {
-					fmt.Printf("add new task fail for user token error\n")
+					fmt.Printf("cancel task fail for user token error\n")
 					return &pb.CancelTaskResponse{Status:"Failure"}, nil
 				}
 
@@ -100,7 +111,8 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 					return &pb.CancelTaskResponse{Status:"Failure"}, nil
 				}
 
-
+//sendMessageToK8(taskType string, taskid int64, name string, extra string)
+        sendMessageToK8(s, "CancelTask", in.Taskid, "", "")
 				return &pb.CancelTaskResponse{Status:"Success"}, nil
 
 
@@ -127,28 +139,28 @@ func (s *server) K8ReportStatus(ctx context.Context, in *pb.ReportRequest) (*pb.
 
 }
 
-
-func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.QueryTaskResponse, error) {
-         fmt.Printf("received K8QueryTask request\n")
-				 datacenter := util.GetDataCenter(in.Name)
-				 if datacenter.ID == 0 {
-					 fmt.Printf("datacenter not found\n")
-					 return &pb.QueryTaskResponse{}, nil
-				 }else{
-              //util.UpdateDataCenter(datacenter, int(datacenter.ID)
-
-				 }
-
-				 task := util.GetNewTask()
-				 if task.ID == 0 {
-					 fmt.Printf("No new task\n")
-					 return &pb.QueryTaskResponse{}, nil
-				 }else{
-					  fmt.Printf("GetNewTask %d\n", task.ID)
-					  util.UpdateTask(int(task.ID), "running", int(datacenter.ID))
-            return &pb.QueryTaskResponse{Taskid:task.ID, Name:task.Name, Extra:""}, nil
-				 }
-}
+//
+// func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.QueryTaskResponse, error) {
+//          fmt.Printf("received K8QueryTask request\n")
+// 				 datacenter := util.GetDataCenter(in.Name)
+// 				 if datacenter.ID == 0 {
+// 					 fmt.Printf("datacenter not found\n")
+// 					 return &pb.QueryTaskResponse{}, nil
+// 				 }else{
+//               //util.UpdateDataCenter(datacenter, int(datacenter.ID)
+//
+// 				 }
+//
+// 				 task := util.GetNewTask()
+// 				 if task.ID == 0 {
+// 					 fmt.Printf("No new task\n")
+// 					 return &pb.QueryTaskResponse{}, nil
+// 				 }else{
+// 					  fmt.Printf("GetNewTask %d\n", task.ID)
+// 					  util.UpdateTask(int(task.ID), "running", int(datacenter.ID))
+//             return &pb.QueryTaskResponse{Taskid:task.ID, Name:task.Name, Extra:""}, nil
+// 				 }
+// }
 
 
 // RouteChat receives a stream of message/location pairs, and responds with a stream of all
@@ -163,23 +175,51 @@ func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
 		if err != nil {
 			return err
 		}
-		taskid := in.Taskid
 
 		s.mu.Lock()
-		if taskid == -1 {
-				fmt.Printf("received error task status  : %d %s \n", in.Taskid, in.Status)
+		if in.Type == "HeartBeat" {
+				fmt.Printf("received  HeartBeat  : datacenter name:  %s report :  %s \n", in.Datacenter, in.Report)
 		}else{
-        fmt.Printf("received task status  : %d %s \n", in.Taskid, in.Status)
+        fmt.Printf("received task  id : %d  status: %s  datacenter : %s \n", in.Taskid, in.Status, in.Datacenter)
+
+				processTaskStatus(in.Taskid, in.Status, in.Datacenter)
 		}
 
 		s.mu.Unlock()
 
-     var message = pb.Task{Taskid: 13, Name:"docker_image", Extra:"extraxxx"}
-			if err := stream.Send(&message); err != nil {
-				return err
-			}
+     // var message = pb.Task{Type:"Task", Taskid: 13, Name:"docker_image", Extra:"extraxxx"}
+			// if err := stream.Send(&message); err != nil {
+			// 	return err
+			// }
 
 	}
+}
+
+func processTaskStatus(taskid int64, status string, dcName string){
+  	datacenter := util.GetDataCenter(dcName)
+		if datacenter.ID == 0 {
+			fmt.Printf("datacenter not found\n")
+		}else{
+
+			    fmt.Printf("processTaskStatus %d %s\n", taskid, status)
+				 //util.UpdateDataCenter(datacenter, int(datacenter.ID)
+				 if status == "StartSuccess" {
+					  util.UpdateTask(int(taskid), "running", int(datacenter.ID))
+				 }
+
+				 if status == "StartFailure" {
+						util.UpdateTask(int(taskid), "startFailed", int(datacenter.ID))
+				 }
+
+				 if status == "Cancelled" {
+						util.UpdateTask(int(taskid), "cancelled", int(datacenter.ID))
+				 }
+
+				 if status == "Done" {
+						util.UpdateTask(int(taskid), "done", int(datacenter.ID))
+				 }
+
+		}
 }
 
 

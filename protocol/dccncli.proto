@@ -26,9 +26,10 @@ service dccncli {
   rpc AddTask (AddTaskRequest) returns (AddTaskResponse) {}
   rpc TaskList (TaskListRequest) returns (TaskListResponse) {}
   rpc CancelTask (CancelTaskRequest) returns (CancelTaskResponse) {}
+  //this is old logic 
   rpc K8ReportStatus(ReportRequest) returns (ReportResponse) {}  // k8s send this message
-  rpc K8QueryTask(QueryTaskRequest)returns (QueryTaskResponse) {} // k8s end this message
-  rpc K8Task(stream TaskStatus)returns (stream Task) {} // k8s task stream
+  //rpc K8QueryTask(QueryTaskRequest)returns (QueryTaskResponse) {} // k8s end this message
+  rpc K8Task(stream K8SMessage)returns (stream Task) {} // k8s task stream
 }
 
 // The dccn client request message containing the user's token
@@ -71,6 +72,7 @@ message CancelTaskResponse{
      string status = 1; // Success or Failure
 }
 
+// this is old logic
 message ReportRequest{
     string name = 1;  // datacenter name
     string report = 2;
@@ -82,24 +84,18 @@ message ReportResponse{
    string status = 1; // Success or Failure
 }
 
-message QueryTaskRequest{
-    string name = 1;  // datacenter name
-}
-
-message QueryTaskResponse{
-    int64 taskid = 1; //  id of task
-    string name = 2; // name of the task/image to run after hub selects the right datacenter
-    string extra = 3; //extra for other arguments
-}
-
 
 message Task{
-    int64 taskid = 1; //  id of task
-    string name = 2; // name of the task/image to run after hub selects the right datacenter
-    string extra = 3; //extra for other arguments
+    string Type = 1;  //"NewTask"  "CancelTask"  (maybe) "TaskStatus"
+    int64 taskid = 2; //id of task
+    string name = 3; // name of the task/image to run after hub selects the right datacenter
+    string extra = 4; //extra for other arguments
 }
 
-message TaskStatus{
-    int64 taskid = 1;
-    string status = 2; // Success or Failure
+message K8SMessage{
+    string Type = 1;  //"HeartBeat"  "Task"
+    int64 taskid = 2;
+    string status = 3; // StartSuccess or StartFailure  JobDone Cancelled  Running  Other
+    string datacenter = 4; // name of datacenter
+    string report = 5;
 }
