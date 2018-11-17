@@ -168,7 +168,12 @@ func UpdateTask(taskid int, status string, datacentrid int) Task{
   task := Task{}
   db := GetDBInstance()
   c := db.C("task")
-  c.Update(bson.M{"_id": taskid},  bson.M{"$set": bson.M{"status": status, "datacenterid":datacentrid}})
+  if datacentrid == 0 {
+      c.Update(bson.M{"_id": taskid},  bson.M{"$set": bson.M{"status": status}})
+  }else{
+      c.Update(bson.M{"_id": taskid},  bson.M{"$set": bson.M{"status": status, "datacenterid":datacentrid}})
+  }
+
   return task;
 }
 

@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
   "fmt"
+	"time"
 	"sync"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -66,6 +67,7 @@ func sendMessageToK8(s *server, taskType string, taskid int64, name string, extr
 func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.TaskListResponse, error) {
 	token := in.Usertoken
 	user := util.GetUser(token)
+  fmt.Printf("task list reqeust \n")
 
 	if user.ID == 0 {
 		fmt.Printf("task list reqeust fail for user token error\n")
@@ -111,7 +113,11 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 					return &pb.CancelTaskResponse{Status:"Failure"}, nil
 				}
 
+
+
+
 //sendMessageToK8(taskType string, taskid int64, name string, extra string)
+        util.UpdateTask(int(in.Taskid), "cancelling", 0)
         sendMessageToK8(s, "CancelTask", in.Taskid, "", "")
 				return &pb.CancelTaskResponse{Status:"Success"}, nil
 
@@ -175,6 +181,17 @@ func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
 		if err != nil {
 			return err
 		}
+
+		go func(s *server) {
+			 for {
+
+
+				   sendMessageToK8(s, "HeartBeat", -1, "", "")
+					 fmt.Printf("send HeartBeat  \n")
+
+					 time.Sleep(time.Second * 30)
+			 }
+		}(s)
 
 		s.mu.Lock()
 		if in.Type == "HeartBeat" {
