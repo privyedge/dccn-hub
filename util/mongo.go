@@ -5,6 +5,7 @@ import (
         "time"
         "fmt"
 	      "log"
+        "math/rand"
         "gopkg.in/mgo.v2"  // package name mgo
         "gopkg.in/mgo.v2/bson"
 )
@@ -194,6 +195,13 @@ func AddUser(user User) {
 
 }
 
+
+func SelectFreeDatacenter() int{
+   dcIds := []int{1, 2}
+   index := rand.Intn(len(dcIds))
+   return dcIds[index]
+
+}
 
 
 func GetUser(token string) User{

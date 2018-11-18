@@ -13,7 +13,7 @@ import (
 
 const (
 	address  = "localhost:50051"
-	datacenter = "datacenter_2"
+	datacenter = "datacenter_3"
 )
 
 // runRouteChat receives a sequence of route notes, while sending notes for various locations.
@@ -72,6 +72,8 @@ func sendTaskStatus(client pb.DccncliClient) {
 				if err := stream.Send(&message); err != nil {
 					log.Fatalf("Failed to send HeartBeat: %v", err)
 				}
+
+
 				 fmt.Printf("send HeartBeat  \n")
 
 				 time.Sleep(time.Second * 30)
