@@ -55,6 +55,21 @@ go run test/cli/add_task.go
 * install MongoDB  
 https://treehouse.github.io/installation-guides/mac/mongo-mac.html
 
+* New Way Run MongoDB  (by docker)   
+cd dccn-hub/docker/   
+docker run   -p 27017:27017  --name ankr_mongo -d mongo  
+docker logs ankr_mongo  // check logs 
+
+* Two way to install default data:
+1. go run db/install.go  
+2. mongorestore -d test db/backup   
+
+
+* To test mongo is running
+mongo   
+use test    
+db.user.find()
+
 * proto compiler tools
 
  go get github.com/golang/protobuf/protoc-gen-go   

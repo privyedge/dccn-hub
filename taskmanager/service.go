@@ -32,7 +32,7 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 				user := util.GetUser(token)
 
         if user.ID == 0 {
-					fmt.Printf("add new task fail for user token error\n")
+					fmt.Printf("add new task fail for user token error \n")
 					return &pb.AddTaskResponse{Status:"Failure", Taskid: -1}, nil
 				}else{
 					task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
@@ -80,16 +80,22 @@ func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer{
 
 
 
-func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, extra string) {
+func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, extra string)  bool {
 	if stream != nil {
 		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Extra: extra}
 		if err := stream.Send(&message); err != nil {
 				fmt.Printf("send message to data center failed \n")
+				return false
 		}else{
 				fmt.Printf("send message to data center successfully \n")
+				return true
 		}
 	}
+
+	return false
 }
+
+
 
 
 func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.TaskListResponse, error) {
@@ -141,19 +147,26 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 					return &pb.CancelTaskResponse{Status:"Failure"}, nil
 				}
 
+				fmt.Printf("task %d in DataCenter %d \n", task.ID , int(task.Datacenterid))
+
 
 
 
 //sendMessageToK8(taskType string, taskid int64, name string, extra string)
-        datacenter :=  s.dcstreams[int(task.ID)]
+       // todo test this function
+        datacenter :=  s.dcstreams[int(task.Datacenterid)]
 				if datacenter == nil {
-					util.UpdateTask(int(in.Taskid), "cancellfailed", 0)
+				  fmt.Printf("can not find datacenter \n")
+					util.UpdateTask(int(in.Taskid), "cancelfailed", 0)
 					return &pb.CancelTaskResponse{Status:"Failure"}, nil
 
 
 				}else{
+					fmt.Printf("send cancel message to datacenter id  %d \n", int(task.Datacenterid))
 					util.UpdateTask(int(in.Taskid), "cancelling", 0)
-					sendMessageToK8(datacenter, "CancelTask", in.Taskid, "", "")
+					if sendMessageToK8(datacenter, "CancelTask", in.Taskid, "", "") == false {
+						 delete(s.dcstreams, int(task.Datacenterid))
+					}
 					return &pb.CancelTaskResponse{Status:"Success"}, nil
 				}
 
@@ -298,11 +311,13 @@ func main() {
  	go func(s *server) {
  		 for {
  			   fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams) )
- 				 for _, stream := range s.dcstreams {
-             sendMessageToK8(stream, "HeartBeat", -1, "", "")
+ 				 for key, stream := range s.dcstreams {
+             if sendMessageToK8(stream, "HeartBeat", -1, "", "") == false {
+							  delete(s.dcstreams, key)
+						 }
           }
 
- 				 time.Sleep(time.Second * 5)
+ 				 time.Sleep(time.Second * 30)
  		 }
  	}(&ss)
 

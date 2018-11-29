@@ -12,13 +12,13 @@ import (
 
 
 const (
-	address  = "localhost:50051"
+	address  = "127.0.0.1:50051"
 	datacenter = "datacenter_3"
 )
 
 // runRouteChat receives a sequence of route notes, while sending notes for various locations.
 func sendTaskStatus(client pb.DccncliClient) {
-	 ctx, cancel := context.WithTimeout(context.Background(), 10000*time.Second)
+	 ctx, cancel := context.WithTimeout(context.Background(), 5000*time.Second)
 	 defer cancel()
 	stream, err := client.K8Task(ctx)
 	if err != nil {
@@ -34,6 +34,9 @@ func sendTaskStatus(client pb.DccncliClient) {
 				return
 			}
 			if err != nil {
+
+
+        print(ctx.Err() )
 				log.Fatalf("Failed to receive a note : %v", err)
 			}
 			fmt.Printf("Got message type: %s  taskid:  %d  name: %s extra: %s \n", in.Type, in.Taskid , in.Name, in.Extra)

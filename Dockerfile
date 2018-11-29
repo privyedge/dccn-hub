@@ -1,12 +1,8 @@
-# UPGRADE: Go Docker image
-FROM golang:1.11.1-stretch
+FROM golang:alpine as builder
+RUN apk update && apk add git && apk add --update bash && apk add openssh
 
-WORKDIR /go/src/hello-world
-COPY . .
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+COPY test.go test.go
 
-EXPOSE 8080
 
-CMD ["hello-world"]
+CMD go run test.go
