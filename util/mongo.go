@@ -17,13 +17,13 @@ import (
 var MongoDBHost = "127.0.0.1"
 
 type Task struct {
-	ID           int64
-	Userid       int64
-	Name         string
-	Region       string
-	Zone         string
-	Datacenterid int64  // mongodb name is low field
-	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled
+        ID int64
+        Userid int64
+        Name string
+        Region string
+        Zone string
+        Datacenterid int64
+        Status string   // 1 new 2 running 3. done 4 cancelling 5.canceled
 
 }
 

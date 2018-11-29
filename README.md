@@ -70,6 +70,21 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
   * use test    
   * db.user.find()
 
+* New Way Run MongoDB  (by docker)   
+cd dccn-hub/docker/   
+docker run   -p 27017:27017  --name ankr_mongo -d mongo  
+docker logs ankr_mongo  // check logs 
+
+* Two way to install default data:
+1. go run db/install.go  
+2. mongorestore -d test db/backup   
+
+
+* To test mongo is running
+mongo   
+use test    
+db.user.find()
+
 * proto compiler tools
   * go get github.com/golang/protobuf/protoc-gen-go   
   * protoc --go_out=plugins=grpc:. *.proto
