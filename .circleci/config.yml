@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  build:
+    docker:
+      # Build in Python container to install AWS CLI
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/Ankr-network/dccn-hub
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: copy ssh key
+          command: |
+            cp ${HOME}/.ssh/id_rsa id_rsa
+    - run:
+          name: "Build & Push Docker Image"
+          command: |
+            docker build -t dccn-hub .
