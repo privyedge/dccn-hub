@@ -32,46 +32,48 @@ Ankr Hub connect with cli/k8s  by gRPC (k8s may use ZeroMQ as messaging)
 
 * Users define desired infrastructure and workloads to run on the remote infrastructure, and how workloads can connect to one another.
   * Desired lifetime of resources is expressed via collateral requirements.
-* Orders are generated from the deployment requirement.
-* Datacenters bid on an open orderbook.
-* The bid with lowest price (more heuristics later) gets matched with order to create a contract.
-* Once a contract is reached, workloads and topology are delivered to the datacenter(s).
-* Datacenter(s) deploy workloads and allow connectivity as specified by the tenant.
-* If a datacenter fails to maintain contract, collateral is transferred to tenant, and a new order is created for the desired resources.
-* A tenant can close any active deployment at any time
+  * Orders are generated from the deployment requirement.
+  * Datacenters bid on an open orderbook.
+  * The bid with lowest price (more heuristics later) gets matched with order to create a contract.
+  * Once a contract is reached, workloads and topology are delivered to the datacenter(s).
+  * Datacenter(s) deploy workloads and allow connectivity as specified by the tenant.
+  * If a datacenter fails to maintain contract, collateral is transferred to tenant, and a new order is created for the desired resources.
+  * A tenant can close any active deployment at any time
 
 ## Install
 * set $GoPath
+
 * install grcp package  
-go get -u google.golang.org/grpc
+  * go get -u google.golang.org/grpc
+
 * git clone code  
-cd $GOPATH/src  
-git clone git@github.com:Ankr-network/dccn-hub.git  -b feature/78-ankr-hub dccn-hub
+  * cd $GOPATH/src  
+  * git clone git@github.com:Ankr-network/dccn-hub.git  -b feature/78-ankr-hub dccn-hub
+
 * run server :   
-go run taskmanager/service.go
+  * go run taskmanager/service.go
+
 * run client:   
-go run test/cli/add_task.go
+  * go run test/cli/add_task.go
 
 * install MongoDB  
-https://treehouse.github.io/installation-guides/mac/mongo-mac.html
+  * https://treehouse.github.io/installation-guides/mac/mongo-mac.html
 
 * New Way Run MongoDB  (by docker)   
-cd dccn-hub/docker/   
-docker run   -p 27017:27017  --name ankr_mongo -d mongo  
-docker logs ankr_mongo  // check logs 
+  * cd dccn-hub/docker/   
+  * docker run   -p 27017:27017  --name ankr_mongo -d mongo  
+  * docker logs ankr_mongo  // check logs 
 
 * Two way to install default data:
-1. go run db/install.go  
-2. mongorestore -d test db/backup   
+  1. go run db/install.go  
+  2. mongorestore -d test db/backup   
 
 
 * To test mongo is running
-mongo   
-use test    
-db.user.find()
+  * mongo   
+  * use test    
+  * db.user.find()
 
 * proto compiler tools
-
- go get github.com/golang/protobuf/protoc-gen-go   
-
-protoc --go_out=plugins=grpc:. *.proto
+  * go get github.com/golang/protobuf/protoc-gen-go   
+  * protoc --go_out=plugins=grpc:. *.proto

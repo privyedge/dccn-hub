@@ -1,25 +1,24 @@
 package main
 
 import (
-	"log"
-	"io"
-	"time"
 	"fmt"
+	pb "github.com/Ankr-network/dccn-hub/protocol"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	pb "dccn-hub/protocol"
+	"io"
+	"log"
+	"time"
 )
 
-
 const (
-	address  = "127.0.0.1:50051"
+	address    = "127.0.0.1:50051"
 	datacenter = "datacenter_3"
 )
 
 // runRouteChat receives a sequence of route notes, while sending notes for various locations.
 func sendTaskStatus(client pb.DccncliClient) {
-	 ctx, cancel := context.WithTimeout(context.Background(), 5000*time.Second)
-	 defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 5000*time.Second)
+	defer cancel()
 	stream, err := client.K8Task(ctx)
 	if err != nil {
 		log.Fatalf("%v.RouteChat(_) = _, %v", client, err)
@@ -35,66 +34,57 @@ func sendTaskStatus(client pb.DccncliClient) {
 			}
 			if err != nil {
 
-
-        print(ctx.Err() )
+				print(ctx.Err())
 				log.Fatalf("Failed to receive a note : %v", err)
 			}
-			fmt.Printf("Got message type: %s  taskid:  %d  name: %s extra: %s \n", in.Type, in.Taskid , in.Name, in.Extra)
+			fmt.Printf("Got message type: %s  taskid:  %d  name: %s extra: %s \n", in.Type, in.Taskid, in.Name, in.Extra)
 
-      if in.Type == "NewTask" {
+			if in.Type == "NewTask" {
 				// start new task
 
-          sendTaskStatusMessage(stream, in.Taskid, "StartSuccess")
-					//or   sendTaskStatusMessage(in.Taskid, "StartFailure")
+				sendTaskStatusMessage(stream, in.Taskid, "StartSuccess")
+				//or   sendTaskStatusMessage(in.Taskid, "StartFailure")
 			}
 
-			if in.Type  == "HeartBeat" {
+			if in.Type == "HeartBeat" {
 				// do nothing
 			}
 
-			if in.Type  == "CancelTask" {
+			if in.Type == "CancelTask" {
 				// start Cancel task
-				  sendTaskStatusMessage(stream, in.Taskid, "Cancelled")
+				sendTaskStatusMessage(stream, in.Taskid, "Cancelled")
 			}
 
-
-      // when job done send back done message  (this is hacking way )
-				//	sendTaskStatusMessage(stream, in.Taskid, "Done")
-
-
-
+			// when job done send back done message  (this is hacking way )
+			//	sendTaskStatusMessage(stream, in.Taskid, "Done")
 
 		}
 	}()
 
-
 	go func(stream pb.Dccncli_K8TaskClient) {
-		 for {
+		for {
 
-			 var message = pb.K8SMessage{Type: "HeartBeat",  Datacenter: datacenter, Report:"xxxxreport"}
-				if err := stream.Send(&message); err != nil {
-					log.Fatalf("Failed to send HeartBeat: %v", err)
-				}
+			var message = pb.K8SMessage{Type: "HeartBeat", Datacenter: datacenter, Report: "xxxxreport"}
+			if err := stream.Send(&message); err != nil {
+				log.Fatalf("Failed to send HeartBeat: %v", err)
+			}
 
+			fmt.Printf("send HeartBeat  \n")
 
-				 fmt.Printf("send HeartBeat  \n")
-
-				 time.Sleep(time.Second * 30)
-		 }
-  }(stream)
-
-
+			time.Sleep(time.Second * 30)
+		}
+	}(stream)
 
 	//stream.CloseSend()
 	<-waitc
 }
 
 func sendTaskStatusMessage(stream pb.Dccncli_K8TaskClient, taskid int64, status string) {
-	var message = pb.K8SMessage{Taskid: taskid, Status:status, Datacenter: datacenter}
-	 if err := stream.Send(&message); err != nil {
-		 log.Fatalf("Failed to send a note: %v", err)
-	 }
-	 fmt.Printf("send TaskStatus  message %d %s \n", message.Taskid , message.Status)
+	var message = pb.K8SMessage{Taskid: taskid, Status: status, Datacenter: datacenter}
+	if err := stream.Send(&message); err != nil {
+		log.Fatalf("Failed to send a note: %v", err)
+	}
+	fmt.Printf("send TaskStatus  message %d %s \n", message.Taskid, message.Status)
 }
 
 func main() {
@@ -105,12 +95,9 @@ func main() {
 	defer conn.Close()
 	c := pb.NewDccncliClient(conn)
 
-
 	//_, cancel := context.WithTimeout(context.Background(), 30 * time.Second )
 	//defer cancel()
 
-  sendTaskStatus(c)
-
-
+	sendTaskStatus(c)
 
 }
