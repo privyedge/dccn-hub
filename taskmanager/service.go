@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	pb "github.com/Ankr-network/dccn-rpc/protocol"
+	"strconv"
+	pb "github.com/Ankr-network/dccn-hub/protocol"
 	util "github.com/Ankr-network/dccn-hub/util"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -40,7 +41,9 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 
 		stream := SelectFreeDatacenter(s)
 		if stream != nil {
-			var message = pb.Task{Type: "NewTask", Taskid: id, Name: task.Name, Extra: "nothing"}
+			tastName := task.Name + "_" + strconv.Itoa(int(id))
+			var message = pb.Task{Type: "NewTask", Taskid: id, Name: tastName, Image: task.Name, Extra: "nothing"}
+			fmt.Printf("new messsage for add task %s \n", message.Name)
 			if err := stream.Send(&message); err != nil {
 				fmt.Printf("send add task message to data center failed \n")
 			} else {
