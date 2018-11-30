@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	pb "github.com/Ankr-network/dccn-hub/protocol"
+	pb "github.com/Ankr-network/dccn-rpc/protocol"
 	util "github.com/Ankr-network/dccn-hub/util"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
