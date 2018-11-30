@@ -26,7 +26,7 @@ service dccncli {
   rpc AddTask (AddTaskRequest) returns (AddTaskResponse) {}
   rpc TaskList (TaskListRequest) returns (TaskListResponse) {}
   rpc CancelTask (CancelTaskRequest) returns (CancelTaskResponse) {}
-  //this is old logic 
+  //this is old logic
   rpc K8ReportStatus(ReportRequest) returns (ReportResponse) {}  // k8s send this message
   //rpc K8QueryTask(QueryTaskRequest)returns (QueryTaskResponse) {} // k8s end this message
   rpc K8Task(stream K8SMessage)returns (stream Task) {} // k8s task stream
@@ -34,7 +34,7 @@ service dccncli {
 
 // The dccn client request message containing the user's token
 message AddTaskRequest {
-  string name = 1; // name of the task/image to run
+  string name = 1; // name of the image to run
   string region = 2; // region e.g US
   string zone = 3; // zone EST, PST etc
   string usertoken = 4; //user account, alphanumeric chars, may not be used now for authentication
@@ -88,8 +88,9 @@ message ReportResponse{
 message Task{
     string Type = 1;  //"NewTask"  "CancelTask"  (maybe) "TaskStatus"
     int64 taskid = 2; //id of task
-    string name = 3; // name of the task/image to run after hub selects the right datacenter
-    string extra = 4; //extra for other arguments
+    string name = 3; // name of the task(unique) to run after hub selects the right datacenter
+    string image = 4; // name of docker image 
+    string extra = 5; //extra for other arguments
 }
 
 message K8SMessage{

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	pb "github.com/Ankr-network/dccn-rpc/protocol"
+	pb "github.com/Ankr-network/dccn-hub/protocol"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"io"
@@ -37,7 +37,7 @@ func sendTaskStatus(client pb.DccncliClient) {
 				print(ctx.Err())
 				log.Fatalf("Failed to receive a note : %v", err)
 			}
-			fmt.Printf("Got message type: %s  taskid:  %d  name: %s extra: %s \n", in.Type, in.Taskid, in.Name, in.Extra)
+			fmt.Printf("Got message type: %s  taskid:  %d  name: %s image %s extra: %s \n", in.Type, in.Taskid, in.Name, in.Image,  in.Extra)
 
 			if in.Type == "NewTask" {
 				// start new task
