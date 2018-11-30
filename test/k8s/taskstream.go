@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	pb "github.com/Ankr-network/dccn-hub/protocol"
+	pb "github.com/Ankr-network/dccn-rpc/protocol"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"io"
@@ -17,8 +17,8 @@ const (
 
 // runRouteChat receives a sequence of route notes, while sending notes for various locations.
 func sendTaskStatus(client pb.DccncliClient) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5000*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithCancel(context.Background())
+  defer cancel()
 	stream, err := client.K8Task(ctx)
 	if err != nil {
 		log.Fatalf("%v.RouteChat(_) = _, %v", client, err)
