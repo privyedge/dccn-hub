@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"gopkg.in/mgo.v2" // package name mgo
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"math/rand"
@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 )
+
+var MongoDBHost = "127.0.0.1"
 
 type Task struct {
 	ID           int64
@@ -33,10 +35,9 @@ type User struct {
 }
 
 type Counter struct {
-	ID             string
+	ID            string
 	Sequencevalue int64
 }
-
 
 type DataCenter struct {
 	ID             int64
@@ -91,7 +92,8 @@ func GetDBInstance() *mgo.Database {
 }
 
 func mongodbconnect() *mgo.Database {
-	session, err := mgo.Dial("127.0.0.1")
+	fmt.Printf("where db name user : %s\n", MongoDBHost)
+	session, err := mgo.Dial(MongoDBHost)
 	if err != nil {
 		panic(err)
 	}
@@ -225,11 +227,7 @@ func GetTaskIDFromTaskNameForK8s(name string) int64 {
 			os.Exit(2)
 		}
 		return int64(value)
-	}else{
+	} else {
 		return 0
 	}
-
-
 }
-
-
