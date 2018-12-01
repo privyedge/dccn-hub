@@ -1,0 +1,7 @@
+FROM golang:alpine
+RUN apk update && apk add git && apk add --update bash && apk add openssh
+
+WORKDIR $GOPATH/src/github.com/Ankr-network/dccn-hub/
+COPY . $GOPATH/src/github.com/Ankr-network/dccn-hub/
+
+CMD go run cmd/main.go
