@@ -1,4 +1,4 @@
-package main
+package taskmgr
 
 import (
 	"fmt"
@@ -281,7 +281,7 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 	}
 }
 
-func main() {
+func Serve() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

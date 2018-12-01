@@ -6,6 +6,4 @@ WORKDIR src/dccn-hub
 
 COPY . .
 
-RUN go build taskmanager/service.go
-
-CMD ./service
+CMD go run cmd/main.go

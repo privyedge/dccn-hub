@@ -1,9 +1,9 @@
-package main
+package pricing
 
 import (
 	"fmt"
 )
 
-func main() {
+func console() {
 	fmt.Printf("pricing.\n")
 }
