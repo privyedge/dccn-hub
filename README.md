@@ -77,3 +77,13 @@ Ankr Hub connect with cli/k8s  by gRPC (k8s may use ZeroMQ as messaging)
 * proto compiler tools
   * go get github.com/golang/protobuf/protoc-gen-go   
   * protoc --go_out=plugins=grpc:. *.proto
+
+## Building with Docker and CircleCI
+Using the docker build using the "Dockerfile.dep" file if you download the source and build locally: 
+```
+dep ensure -update
+docker build -f Dockerfile.dep -t dccn_hub .
+docker run -p 50051:50051 dccn_hub
+```
+
+for the CircleCI setting, check the .circleci/config.yml for detail,  CircleCI pipeline will build and push the docker image to aws ecr repository "815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr" 

@@ -2,7 +2,7 @@ package taskmgr
 
 import (
 	"fmt"
-	util "github.com/Ankr-network/dccn-hub/util"
+	"github.com/Ankr-network/dccn-hub/util"
 	pb "github.com/Ankr-network/dccn-rpc/protocol"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

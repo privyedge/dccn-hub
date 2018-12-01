@@ -35,10 +35,9 @@ type User struct {
 }
 
 type Counter struct {
-	ID             string
+	ID            string
 	Sequencevalue int64
 }
-
 
 type DataCenter struct {
 	ID             int64
@@ -228,11 +227,7 @@ func GetTaskIDFromTaskNameForK8s(name string) int64 {
 			os.Exit(2)
 		}
 		return int64(value)
-	}else{
+	} else {
 		return 0
 	}
-
-
 }
-
-
