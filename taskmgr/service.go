@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"os"
 	"sync"
 	"time"
 )
@@ -282,6 +283,11 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 }
 
 func Serve() {
+	if len(os.Args) == 2 {
+		util.MongoDBHost = os.Args[1]
+
+	}
+
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
