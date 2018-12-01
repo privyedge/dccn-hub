@@ -1,6 +1,13 @@
 package main
 
 import (
+	"fmt"
+	pb "dccn-hub/protocol"
+	util "dccn-hub/util"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"io"
 	"log"
 	"io"
 	"net"
@@ -27,60 +34,56 @@ type server struct{
 
 
 func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTaskResponse, error) {
-        fmt.Printf("received add task request\n")
-				token := in.Usertoken
-				user := util.GetUser(token)
+	fmt.Printf("received add task request\n")
+	token := in.Usertoken
+	user := util.GetUser(token)
 
-        if user.ID == 0 {
-					fmt.Printf("add new task fail for user token error \n")
-					return &pb.AddTaskResponse{Status:"Failure", Taskid: -1}, nil
-				}else{
-					task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
-					id := util.AddTask(task)
-					fmt.Printf("add new task ID : %d\n", id)
-
-
-
-          stream := SelectFreeDatacenter(s)
-					if stream != nil {
-						var message = pb.Task{Type:"NewTask", Taskid: id, Name:task.Name, Extra:"nothing"}
-						if err := stream.Send(&message); err != nil {
-							  fmt.Printf("send add task message to data center failed \n")
-						}else{
-							  fmt.Printf("send add task message to data center success \n")
-						}
-					}else{
-						   fmt.Printf("no DataCenter available now\n")
-					}
-
-           return &pb.AddTaskResponse{Status:"Success", Taskid: id}, nil
-				}
-
-}
+	if user.ID == 0 {
+		fmt.Printf("add new task fail for user token error \n")
+		return &pb.AddTaskResponse{Status: "Failure", Taskid: -1}, nil
+	} else {
+		task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
+		id := util.AddTask(task)
+		task.ID = id
 
 
-func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer{
-	 keys := []int{}
-    for key, _ := range s.dcstreams {
-        keys = append(keys, key)
-    }
+		stream := SelectFreeDatacenter(s)
+		if stream != nil {
+			fmt.Printf("GetTaskNameAsTaskIDForK8s  id  %d name %s \n", task.ID, task.Name)
+			tastName := util.GetTaskNameAsTaskIDForK8s(task)
+			var message = pb.Task{Type: "NewTask", Taskid: id, Name: tastName, Image: task.Name, Extra: "nothing"}
+			//fmt.Printf("new messsage for add task %s \n", message.Name)
+			if err := stream.Send(&message); err != nil {
+				fmt.Printf(">>>send add task message %s to data center failed \n", message.Name)
+			} else {
+				fmt.Printf(">>>send add task message %s to data center success \n", message.Name)
+			}
+		} else {
+			fmt.Printf("no DataCenter available now\n")
+		}
 
-
-	 if(len(keys) == 0){
-		 return nil
-	 }
-
-   index := rand.Intn(len(keys))
-	 key := keys[index]
-   return s.dcstreams[key]
+		return &pb.AddTaskResponse{Status: "Success", Taskid: id}, nil
+	}
 
 }
 
+func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer {
+	keys := []int{}
+	for key, _ := range s.dcstreams {
+		keys = append(keys, key)
+	}
 
+	if len(keys) == 0 {
+		return nil
+	}
 
+	index := rand.Intn(len(keys))
+	key := keys[index]
+	return s.dcstreams[key]
 
+}
 
-func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, extra string)  bool {
+func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, extra string) bool {
 	if stream != nil {
 		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Extra: extra}
 		if err := stream.Send(&message); err != nil {
@@ -126,52 +129,46 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 }
 
 func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.CancelTaskResponse, error) {
-        fmt.Printf("received cancel task request\n")
-				token := in.Usertoken
-				user := util.GetUser(token)
+	fmt.Printf("received cancel task request\n")
+	token := in.Usertoken
+	user := util.GetUser(token)
 
-				task := util.GetTask(int(in.Taskid))
+	task := util.GetTask(int(in.Taskid))
 
-         if task.ID == 0 {
-					 fmt.Printf("can not find task\n")
-					 return &pb.CancelTaskResponse{Status:"Failure"}, nil
-				 }
+	if task.ID == 0 {
+		fmt.Printf("can not find task\n")
+		return &pb.CancelTaskResponse{Status: "Failure"}, nil
+	}
 
-        if user.ID == 0 {
-					fmt.Printf("cancel task fail for user token error\n")
-					return &pb.CancelTaskResponse{Status:"Failure"}, nil
-				}
+	if user.ID == 0 {
+		fmt.Printf("cancel task fail for user token error\n")
+		return &pb.CancelTaskResponse{Status: "Failure"}, nil
+	}
 
-				if task.Userid != user.ID {
-					fmt.Printf("task uid != user id \n")
-					return &pb.CancelTaskResponse{Status:"Failure"}, nil
-				}
+	if task.Userid != user.ID {
+		fmt.Printf("task uid != user id \n")
+		return &pb.CancelTaskResponse{Status: "Failure"}, nil
+	}
 
-				fmt.Printf("task %d in DataCenter %d \n", task.ID , int(task.Datacenterid))
+	fmt.Printf("task %d in DataCenter %d \n", task.ID, int(task.Datacenterid))
 
+	//sendMessageToK8(taskType string, taskid int64, name string, extra string)
+	// todo test this function
+	datacenter := s.dcstreams[int(task.Datacenterid)]
+	if datacenter == nil {
+		fmt.Printf("can not find datacenter \n")
+		util.UpdateTask(int(in.Taskid), "cancelfailed", 0)
+		return &pb.CancelTaskResponse{Status: "Failure"}, nil
 
-
-
-//sendMessageToK8(taskType string, taskid int64, name string, extra string)
-       // todo test this function
-        datacenter :=  s.dcstreams[int(task.Datacenterid)]
-				if datacenter == nil {
-				  fmt.Printf("can not find datacenter \n")
-					util.UpdateTask(int(in.Taskid), "cancelfailed", 0)
-					return &pb.CancelTaskResponse{Status:"Failure"}, nil
-
-
-				}else{
-					fmt.Printf("send cancel message to datacenter id  %d \n", int(task.Datacenterid))
-					util.UpdateTask(int(in.Taskid), "cancelling", 0)
-					if sendMessageToK8(datacenter, "CancelTask", in.Taskid, "", "") == false {
-						 delete(s.dcstreams, int(task.Datacenterid))
-					}
-					return &pb.CancelTaskResponse{Status:"Success"}, nil
-				}
-
-
-
+	} else {
+		fmt.Printf("send cancel message to datacenter id  %d \n", int(task.Datacenterid))
+		util.UpdateTask(int(in.Taskid), "cancelling", 0)
+		tastName := util.GetTaskNameAsTaskIDForK8s(task)
+		if sendMessageToK8(datacenter, "CancelTask", in.Taskid, tastName, "") == false {
+			delete(s.dcstreams, int(task.Datacenterid))
+		}
+		return &pb.CancelTaskResponse{Status: "Success"}, nil
+	}
 
 }
 
@@ -235,12 +232,13 @@ func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
 
 		s.mu.Lock()
 		if in.Type == "HeartBeat" {
-			  updateDataCenter(s, in, stream)
-				fmt.Printf("received  HeartBeat  : datacenter name:  %s report :  %s \n", in.Datacenter, in.Report)
-		}else{
-        fmt.Printf("received task  id : %d  status: %s  datacenter : %s \n", in.Taskid, in.Status, in.Datacenter)
+			updateDataCenter(s, in, stream)
+			fmt.Printf("received  HeartBeat  : datacenter name:  %s report :  %s \n", in.Datacenter, in.Report)
+		} else {
+			taskId := util.GetTaskIDFromTaskNameForK8s(in.Taskname)
+			fmt.Printf("<<<received task  id : %d  status: %s  datacenter : %s \n", taskId, in.Status, in.Datacenter)
 
-				processTaskStatus(in.Taskid, in.Status, in.Datacenter)
+			processTaskStatus(taskId, in.Status, in.Datacenter)
 		}
 
 		s.mu.Unlock()

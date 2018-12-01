@@ -8,10 +8,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: copy ssh key
-          command: |
-            cp ${HOME}/.ssh/id_rsa id_rsa
     - run:
           name: "Build & Push Docker Image"
           command: |
