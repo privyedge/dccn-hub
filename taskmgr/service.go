@@ -2,8 +2,8 @@ package taskmgr
 
 import (
 	"fmt"
-	pb "github.com/Ankr-network/dccn-rpc/protocol"
 	util "github.com/Ankr-network/dccn-hub/util"
+	pb "github.com/Ankr-network/dccn-rpc/protocol"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -38,7 +38,6 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 		task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
 		id := util.AddTask(task)
 		task.ID = id
-
 
 		stream := SelectFreeDatacenter(s)
 		if stream != nil {
@@ -216,7 +215,7 @@ func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
 			return err
 		}
 
-  fmt.Printf("<<<received  k8s  task : id %d  name:  %s   \n", in.Taskid , in.Taskname )
+		fmt.Printf("<<<received  k8s  task : id %d  name:  %s   \n", in.Taskid, in.Taskname)
 		s.mu.Lock()
 		if in.Type == "HeartBeat" {
 			updateDataCenter(s, in, stream)
