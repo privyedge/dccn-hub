@@ -1,8 +1,7 @@
-package main
+package taskmgr
 
 import (
 	"fmt"
-	"strconv"
 	pb "github.com/Ankr-network/dccn-hub/protocol"
 	util "github.com/Ankr-network/dccn-hub/util"
 	"golang.org/x/net/context"
@@ -12,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -278,7 +278,7 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 	}
 }
 
-func main() {
+func Serve() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

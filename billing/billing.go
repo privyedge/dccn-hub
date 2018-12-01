@@ -1,9 +1,9 @@
-package main
+package billing
 
 import (
 	"fmt"
 )
 
-func main() {
+func console() {
 	fmt.Printf("billing.\n")
 }
