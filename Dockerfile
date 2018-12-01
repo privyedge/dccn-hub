@@ -14,6 +14,4 @@ COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure -vendor-only
 COPY . $GOPATH/src/github.com/Ankr-network/dccn-hub/
 
-RUN go build taskmanager/service.go
-
-CMD ./service
+CMD go run cmd/main.go mongo
