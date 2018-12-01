@@ -135,7 +135,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Ankr-network/dccn-rpc/protocol",
-    "github.com/golang/protobuf/proto",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
     "google.golang.org/grpc/reflection",
