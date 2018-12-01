@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	pb "github.com/Ankr-network/dccn-hub/protocol"
+	pb "dccn-hub/protocol"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"io"
@@ -42,7 +42,7 @@ func sendTaskStatus(client pb.DccncliClient) {
 			if in.Type == "NewTask" {
 				// start new task
 
-				sendTaskStatusMessage(stream, in.Taskid, "StartSuccess")
+				sendTaskStatusMessage(stream, in.Taskid, in.Name, "StartSuccess")
 				//or   sendTaskStatusMessage(in.Taskid, "StartFailure")
 			}
 
@@ -52,7 +52,7 @@ func sendTaskStatus(client pb.DccncliClient) {
 
 			if in.Type == "CancelTask" {
 				// start Cancel task
-				sendTaskStatusMessage(stream, in.Taskid, "Cancelled")
+				sendTaskStatusMessage(stream, in.Taskid, in.Name, "Cancelled")
 			}
 
 			// when job done send back done message  (this is hacking way )
@@ -79,12 +79,12 @@ func sendTaskStatus(client pb.DccncliClient) {
 	<-waitc
 }
 
-func sendTaskStatusMessage(stream pb.Dccncli_K8TaskClient, taskid int64, status string) {
-	var message = pb.K8SMessage{Taskid: taskid, Status: status, Datacenter: datacenter}
+func sendTaskStatusMessage(stream pb.Dccncli_K8TaskClient, taskid int64, taskName string, status string) {
+	var message = pb.K8SMessage{Taskid: taskid, Taskname: taskName, Status: status, Datacenter: datacenter}
 	if err := stream.Send(&message); err != nil {
 		log.Fatalf("Failed to send a note: %v", err)
 	}
-	fmt.Printf("send TaskStatus  message %d %s \n", message.Taskid, message.Status)
+	fmt.Printf("send TaskStatus message task:  %s  status:  %s \n", message.Taskname, message.Status)
 }
 
 func main() {

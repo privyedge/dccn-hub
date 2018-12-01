@@ -2,8 +2,8 @@ package taskmgr
 
 import (
 	"fmt"
-	pb "github.com/Ankr-network/dccn-hub/protocol"
-	util "github.com/Ankr-network/dccn-hub/util"
+	pb "dccn-hub/protocol"
+	util "dccn-hub/util"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -37,17 +37,19 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 	} else {
 		task := util.Task{Name: in.Name, Region: in.Region, Zone: in.Zone, Userid: user.ID}
 		id := util.AddTask(task)
-		fmt.Printf("add new task ID : %d\n", id)
+		task.ID = id
+
 
 		stream := SelectFreeDatacenter(s)
 		if stream != nil {
-			tastName := task.Name + "_" + strconv.Itoa(int(id))
+			fmt.Printf("GetTaskNameAsTaskIDForK8s  id  %d name %s \n", task.ID, task.Name)
+			tastName := util.GetTaskNameAsTaskIDForK8s(task)
 			var message = pb.Task{Type: "NewTask", Taskid: id, Name: tastName, Image: task.Name, Extra: "nothing"}
-			fmt.Printf("new messsage for add task %s \n", message.Name)
+			//fmt.Printf("new messsage for add task %s \n", message.Name)
 			if err := stream.Send(&message); err != nil {
-				fmt.Printf("send add task message to data center failed \n")
+				fmt.Printf(">>>send add task message %s to data center failed \n", message.Name)
 			} else {
-				fmt.Printf("send add task message to data center success \n")
+				fmt.Printf(">>>send add task message %s to data center success \n", message.Name)
 			}
 		} else {
 			fmt.Printf("no DataCenter available now\n")
@@ -151,7 +153,8 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 	} else {
 		fmt.Printf("send cancel message to datacenter id  %d \n", int(task.Datacenterid))
 		util.UpdateTask(int(in.Taskid), "cancelling", 0)
-		if sendMessageToK8(datacenter, "CancelTask", in.Taskid, "", "") == false {
+		tastName := util.GetTaskNameAsTaskIDForK8s(task)
+		if sendMessageToK8(datacenter, "CancelTask", in.Taskid, tastName, "") == false {
 			delete(s.dcstreams, int(task.Datacenterid))
 		}
 		return &pb.CancelTaskResponse{Status: "Success"}, nil
@@ -218,9 +221,10 @@ func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
 			updateDataCenter(s, in, stream)
 			fmt.Printf("received  HeartBeat  : datacenter name:  %s report :  %s \n", in.Datacenter, in.Report)
 		} else {
-			fmt.Printf("received task  id : %d  status: %s  datacenter : %s \n", in.Taskid, in.Status, in.Datacenter)
+			taskId := util.GetTaskIDFromTaskNameForK8s(in.Taskname)
+			fmt.Printf("<<<received task  id : %d  status: %s  datacenter : %s \n", taskId, in.Status, in.Datacenter)
 
-			processTaskStatus(in.Taskid, in.Status, in.Datacenter)
+			processTaskStatus(taskId, in.Status, in.Datacenter)
 		}
 
 		s.mu.Unlock()

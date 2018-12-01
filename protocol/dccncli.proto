@@ -85,7 +85,7 @@ message ReportResponse{
 }
 
 
-message Task{
+message Task{   // send to k8s
     string Type = 1;  //"NewTask"  "CancelTask"  (maybe) "TaskStatus"
     int64 taskid = 2; //id of task
     string name = 3; // name of the task(unique) to run after hub selects the right datacenter
@@ -93,10 +93,11 @@ message Task{
     string extra = 5; //extra for other arguments
 }
 
-message K8SMessage{
+message K8SMessage{   //k8s end to ankr_hub
     string Type = 1;  //"HeartBeat"  "Task"
     int64 taskid = 2;
-    string status = 3; // StartSuccess or StartFailure  JobDone Cancelled  Running  Other
-    string datacenter = 4; // name of datacenter
-    string report = 5;
+    string taskname = 3;  //k8s task name like nginx-123
+    string status = 4; // StartSuccess or StartFailure  JobDone Cancelled  Running  Other
+    string datacenter = 5; // name of datacenter
+    string report = 6;
 }

@@ -6,6 +6,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"math/rand"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -16,7 +20,7 @@ type Task struct {
 	Name         string
 	Region       string
 	Zone         string
-	Datacenterid int64
+	Datacenterid int64  // mongodb name is low field
 	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled
 
 }
@@ -30,8 +34,9 @@ type User struct {
 
 type Counter struct {
 	ID             string
-	Sequence_value int64
+	Sequencevalue int64
 }
+
 
 type DataCenter struct {
 	ID             int64
@@ -120,12 +125,12 @@ func GetID(name string, db *mgo.Database) int64 {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	id := result.Sequence_value
+	fmt.Printf("%s id  %d \n", name, result.Sequencevalue)
+	id := result.Sequencevalue
 	id += 1
-	c.Update(bson.M{"_id": name}, bson.M{"$set": bson.M{"sequence_value": id}})
+	c.Update(bson.M{"_id": name}, bson.M{"$set": bson.M{"sequencevalue": id}})
 
-	return result.Sequence_value
+	return result.Sequencevalue
 }
 
 func TaskList(userid int) []Task {
@@ -199,3 +204,32 @@ func GetUser(token string) User {
 	c.Find(bson.M{"token": token}).One(&user)
 	return user
 }
+
+func GetTaskNameAsTaskIDForK8s(t Task) string {
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	name := reg.ReplaceAllString(t.Name, "")
+
+	return name + "-" + strconv.Itoa(int(t.ID))
+}
+
+func GetTaskIDFromTaskNameForK8s(name string) int64 {
+	s := strings.Split(name, "-")
+	if len(s) == 2 {
+		value, err := strconv.Atoi(s[1])
+		if err != nil {
+			// handle error
+			fmt.Println(err)
+			os.Exit(2)
+		}
+		return int64(value)
+	}else{
+		return 0
+	}
+
+
+}
+
+

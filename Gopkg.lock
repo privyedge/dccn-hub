@@ -3,19 +3,22 @@
 
 [[projects]]
   branch = "feature/78-ankr-hub"
-  digest = "1:cce11525595e82a65cf968add3ee167147820bf9eca39a0efd5082cf09508ac5"
+  digest = "1:1b5e0fe4a981b31d1f7fcb87b93f984f60b78f78f2005b0f1fba7b2ae984ce6e"
   name = "github.com/Ankr-network/dccn-hub"
-  packages = ["util"]
+  packages = [
+    "protocol",
+    "util",
+  ]
   pruneopts = "UT"
-  revision = "1ee95ef9bac2eb232f8a87611b5d40103c8242c1"
+  revision = "f502684b65fbb4cf89439b0af475162e0da082e7"
 
 [[projects]]
   branch = "feature/swdev-91-ankr_grpc"
-  digest = "1:5fd9611d554626ca152746d2480bfc54702bf530fcb53e0f0535fdb228913fec"
+  digest = "1:470c8ddf40cd8d761771f81ce65baaa7917d5dd5fbf25cda36845f87194d1cd2"
   name = "github.com/Ankr-network/dccn-rpc"
   packages = ["protocol"]
   pruneopts = "UT"
-  revision = "fd239bcd9d728c69f53c78f2ef51e712cbc4d78c"
+  revision = "99fa9169b23b9093af90ceae7f412f02e789d34b"
 
 [[projects]]
   digest = "1:5d1b5a25486fc7d4e133646d834f6fca7ba1cef9903d40e7aa786c41b89e9e91"
@@ -142,6 +145,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Ankr-network/dccn-hub/protocol",
     "github.com/Ankr-network/dccn-hub/util",
     "github.com/Ankr-network/dccn-rpc/protocol",
     "github.com/golang/protobuf/proto",
