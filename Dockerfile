@@ -14,4 +14,4 @@ COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure -vendor-only
 COPY . $GOPATH/src/github.com/Ankr-network/dccn-hub/
 
-CMD go run cmd/main.go
+CMD go run cmd/main.go mongo
