@@ -156,8 +156,6 @@
     "github.com/Ankr-network/dccn-hub/protocol",
     "github.com/Ankr-network/dccn-hub/util",
     "github.com/Ankr-network/dccn-rpc/protocol",
-    "github.com/Ankr-network/dccn-rpc/server_rpc",
-    "github.com/golang/protobuf/proto",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
     "google.golang.org/grpc/reflection",
