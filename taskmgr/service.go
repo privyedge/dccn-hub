@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/Ankr-network/dccn-hub/util"
 	pb "github.com/Ankr-network/dccn-rpc/protocol"
+	"github.com/Ankr-network/dccn-rpc/server_rpc"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"io"
 	"log"
 	"math/rand"
-	"net"
+	//"net"
 	"os"
 	"sync"
 	"time"
@@ -282,32 +282,32 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 	}
 }
 
+func heartbeat(s *server) {
+	for {
+		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams) )
+		for _, stream := range s.dcstreams {
+			sendMessageToK8(stream, "HeartBeat", -1, "", "")
+		}
+
+		time.Sleep(time.Second * 5)
+	}
+}
+
+
+
+
 func Serve() {
 	if len(os.Args) == 2 {
 		util.MongoDBHost = os.Args[1]
 
 	}
 
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	s := grpc.NewServer()
+
+	lis, s := server_rpc.Connect(port)
 	ss := server{}
 	ss.dcstreams = map[int]pb.Dccncli_K8TaskServer{}
 
-	go func(s *server) {
-		for {
-			fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams))
-			for key, stream := range s.dcstreams {
-				if sendMessageToK8(stream, "HeartBeat", -1, "", "") == false {
-					delete(s.dcstreams, key)
-				}
-			}
-
-			time.Sleep(time.Second * 30)
-		}
-	}(&ss)
+	heartbeat(&ss)
 
 	pb.RegisterDccncliServer(s, &ss)
 	// Register reflection service on gRPC server.

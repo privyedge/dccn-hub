@@ -3,9 +3,12 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:909ba8129223202071b1b8ffffbba32d0aff0f8f845d781b6df6a9979dab4e8d"
+  digest = "1:e3d3c42dff42c9779f95e432d720c57499489e5396dbf89a797c30e8c5e72be0"
   name = "github.com/Ankr-network/dccn-rpc"
-  packages = ["protocol"]
+  packages = [
+    "protocol",
+    "server_rpc",
+  ]
   pruneopts = "UT"
   revision = "1797720c18dda1c5a97babeff256dba66318a268"
 
@@ -73,11 +76,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:56b0bca90b7e5d1facf5fbdacba23e4e0ce069d25381b8e2f70ef1e7ebfb9c1a"
+  digest = "1:077c1c599507b3b3e9156d17d36e1e61928ee9b53a5b420f10f28ebd4a0b275c"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "31ac5d88444a9e7ad18077db9a165d793ad06a2e"
+  revision = "bd91e49a0898e27abb88c339b432fa53d7497ac0"
 
 [[projects]]
   digest = "1:e72ebff67b73d31785959af0660215213c58ab50d7b7d61aac0f1a6834c07e8c"
@@ -135,6 +138,8 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Ankr-network/dccn-rpc/protocol",
+    "github.com/Ankr-network/dccn-rpc/server_rpc",
+    "github.com/golang/protobuf/proto",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
     "google.golang.org/grpc/reflection",
