@@ -284,7 +284,7 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 
 func heartbeat(s *server) {
 	for {
-		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams) )
+		util.WriteLog(fmt.Sprintf("send HeartBeat to %d DataCenters ", len(s.dcstreams)))
 		for _, stream := range s.dcstreams {
 			sendMessageToK8(stream, "HeartBeat", -1, "", "")
 		}
@@ -302,6 +302,7 @@ func Serve() {
 
 	}
 
+	util.WriteLog("this is a test")
 
 	lis, s := server_rpc.Connect(port)
 	ss := server{}
