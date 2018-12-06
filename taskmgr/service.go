@@ -271,11 +271,9 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 // Deal with heartbeats between Ankr hub and Data centers.
 func heartbeat(s *server) {
 	for {
-		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams))
-		for key, stream := range s.dcstreams {
-			if sendMessageToK8(stream, "HeartBeat", -1, "", "") == false {
-				delete(s.dcstreams, key)
-			}
+		util.WriteLog(fmt.Sprintf("send HeartBeat to %d DataCenters ", len(s.dcstreams)))
+		for _, stream := range s.dcstreams {
+			sendMessageToK8(stream, "HeartBeat", -1, "", "")
 		}
 
 		time.Sleep(time.Second * 30)
@@ -289,10 +287,7 @@ func Serve() {
 
 	}
 
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+	util.WriteLog("this is a test")
 
 	lis, s := server_rpc.Connect(port)
 	ss := server{}
