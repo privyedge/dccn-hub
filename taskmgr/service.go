@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"github.com/Ankr-network/dccn-hub/util"
 	pb "github.com/Ankr-network/dccn-rpc/protocol"
-	"github.com/Ankr-network/dccn-rpc/server_rpc"
+	server_rpc "github.com/Ankr-network/dccn-rpc/server_rpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/reflection"
 	"io"
 	"log"
 	"math/rand"
-	//"net"
 	"os"
 	"sync"
 	"time"
@@ -20,7 +19,6 @@ const (
 	port = ":50051"
 )
 
-// server is used to implement helloworld.GreeterServer.
 type server struct {
 	mu        sync.Mutex                      // protects data
 	dcstreams map[int]pb.Dccncli_K8TaskServer //datacenterid => stream
@@ -73,21 +71,6 @@ func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer {
 	key := keys[index]
 	return s.dcstreams[key]
 
-}
-
-func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, extra string) bool {
-	if stream != nil {
-		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Extra: extra}
-		if err := stream.Send(&message); err != nil {
-			fmt.Printf("send message to data center failed \n")
-			return false
-		} else {
-			fmt.Printf("send message to data center successfully \n")
-			return true
-		}
-	}
-
-	return false
 }
 
 func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.TaskListResponse, error) {
@@ -152,8 +135,8 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 	} else {
 		fmt.Printf("send cancel message to datacenter id  %d \n", int(task.Datacenterid))
 		util.UpdateTask(int(in.Taskid), "cancelling", 0)
-		tastName := util.GetTaskNameAsTaskIDForK8s(task)
-		if sendMessageToK8(datacenter, "CancelTask", in.Taskid, tastName, "") == false {
+		taskName := util.GetTaskNameAsTaskIDForK8s(task)
+		if sendMessageToK8(datacenter, "CancelTask", in.Taskid, taskName, "") == false {
 			delete(s.dcstreams, int(task.Datacenterid))
 		}
 		return &pb.CancelTaskResponse{Status: "Success"}, nil
@@ -161,6 +144,23 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 
 }
 
+// send message to DataCenter by stream
+func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, extra string) bool {
+	if stream != nil {
+		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Extra: extra}
+		if err := stream.Send(&message); err != nil {
+			fmt.Printf("send message to data center failed \n")
+			return false
+		} else {
+			fmt.Printf("send message to data center successfully \n")
+			return true
+		}
+	}
+
+	return false
+}
+
+// received report from DataCenter this API will not be used
 func (s *server) K8ReportStatus(ctx context.Context, in *pb.ReportRequest) (*pb.ReportResponse, error) {
 	fmt.Printf("received K8ReportStatus request %s\n", in.Report)
 	datacenter := util.GetDataCenter(in.Name)
@@ -179,31 +179,7 @@ func (s *server) K8ReportStatus(ctx context.Context, in *pb.ReportRequest) (*pb.
 
 }
 
-//
-// func (s *server) K8QueryTask(ctx context.Context, in *pb.QueryTaskRequest) (*pb.QueryTaskResponse, error) {
-//          fmt.Printf("received K8QueryTask request\n")
-// 				 datacenter := util.GetDataCenter(in.Name)
-// 				 if datacenter.ID == 0 {
-// 					 fmt.Printf("datacenter not found\n")
-// 					 return &pb.QueryTaskResponse{}, nil
-// 				 }else{
-//               //util.UpdateDataCenter(datacenter, int(datacenter.ID)
-//
-// 				 }
-//
-// 				 task := util.GetNewTask()
-// 				 if task.ID == 0 {
-// 					 fmt.Printf("No new task\n")
-// 					 return &pb.QueryTaskResponse{}, nil
-// 				 }else{
-// 					  fmt.Printf("GetNewTask %d\n", task.ID)
-// 					  util.UpdateTask(int(task.ID), "running", int(datacenter.ID))
-//             return &pb.QueryTaskResponse{Taskid:task.ID, Name:task.Name, Extra:""}, nil
-// 				 }
-// }
-
-// RouteChat receives a stream of message/location pairs, and responds with a stream of all
-// previous messages at each of those locations.
+//receive message from DataCenter by stream, two type of messages: HeartBeat Task
 func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
 
 	for {
@@ -229,14 +205,10 @@ func (s *server) K8Task(stream pb.Dccncli_K8TaskServer) error {
 
 		s.mu.Unlock()
 
-		// var message = pb.Task{Type:"Task", Taskid: 13, Name:"docker_image", Extra:"extraxxx"}
-		// if err := stream.Send(&message); err != nil {
-		// 	return err
-		// }
-
 	}
 }
 
+//deal with HeartBeat message from DataCenter
 func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccncli_K8TaskServer) {
 	datacenter := util.GetDataCenter(in.Datacenter)
 	if datacenter.ID == 0 {
@@ -255,6 +227,7 @@ func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccncli_K8TaskServ
 
 }
 
+//deal with Task message from DataCenter
 func processTaskStatus(taskid int64, status string, dcName string) {
 	datacenter := util.GetDataCenter(dcName)
 	if datacenter.ID == 0 {
@@ -262,7 +235,6 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 	} else {
 
 		fmt.Printf("processTaskStatus %d %s\n", taskid, status)
-		//util.UpdateDataCenter(datacenter, int(datacenter.ID)
 		if status == "StartSuccess" {
 			util.UpdateTask(int(taskid), "running", int(datacenter.ID))
 		}
@@ -284,33 +256,29 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 
 func heartbeat(s *server) {
 	for {
-		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams) )
-		for _, stream := range s.dcstreams {
-			sendMessageToK8(stream, "HeartBeat", -1, "", "")
+		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams))
+		for key, stream := range s.dcstreams {
+			if sendMessageToK8(stream, "HeartBeat", -1, "", "") == false {
+				delete(s.dcstreams, key)
+			}
 		}
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 30)
 	}
 }
-
-
-
 
 func Serve() {
 	if len(os.Args) == 2 {
 		util.MongoDBHost = os.Args[1]
-
 	}
-
 
 	lis, s := server_rpc.Connect(port)
 	ss := server{}
 	ss.dcstreams = map[int]pb.Dccncli_K8TaskServer{}
 
-	heartbeat(&ss)
+	go heartbeat(&ss)
 
 	pb.RegisterDccncliServer(s, &ss)
-	// Register reflection service on gRPC server.
 
 	reflection.Register(s)
 

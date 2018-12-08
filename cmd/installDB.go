@@ -11,13 +11,17 @@ type Person struct {
 }
 
 func main() {
-	session, err := mgo.Dial("127.0.0.1")
+	// input args as mongodb host name/IP
+	host := "127.0.0.1"
+	if len(os.Args) == 2 {
+		host = os.Args[1]
+	}
+	session, err := mgo.Dial(host)
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
 
-	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
 
 	c := session.DB("test").C("counters")

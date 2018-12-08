@@ -22,3 +22,4 @@ spec:
         ports:
         - containerPort: 50051
           name: hub-port
+          

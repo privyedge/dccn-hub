@@ -1,7 +1,11 @@
-FROM golang:alpine
+FROM golang:alpine3.8
 RUN apk update && apk add git && apk add --update bash && apk add openssh
 
 RUN go get github.com/golang/dep/cmd/dep
+
+
+# the RSA key is copied in the circleci building environment context,
+# as long as we authorize circleci with the github.com user key.
 
 COPY id_rsa /root/.ssh/
 RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
