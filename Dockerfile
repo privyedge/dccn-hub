@@ -3,10 +3,10 @@ RUN apk update && apk add git && apk add --update bash && apk add openssh
 
 RUN go get github.com/golang/dep/cmd/dep
 
-
-# the RSA key is copied in the circleci building environment context,
-# as long as we authorize circleci with the github.com user key.
-
+# Copy the RSA key from the CircleCI build environment into
+# this Docker build process in order
+# to retrieve the project dependencies from other private repos
+# The RSA key must be provisioned into CircleCI ahead of time
 COPY id_rsa /root/.ssh/
 RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
 RUN chmod go-w /root
