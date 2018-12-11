@@ -5,7 +5,7 @@
 
 # Required: DCCN RPC package is required to rpc connection among Ankr DCCN
 [[constraint]]
-  branch = "develop"
+  branch = "feature/swdev-110-ankr_rpc"
   name = "github.com/Ankr-network/dccn-rpc"
 
 # Required: Protobuf is required by gRPC

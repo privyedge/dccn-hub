@@ -22,9 +22,10 @@ type Task struct {
 	Name         string
 	Region       string
 	Zone         string
+	Replica      int
 	Datacenterid int64  // mongodb name is low field
-	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled
-
+	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled 6. updating 7. updateFailed
+	Uniquename   string
 }
 
 type User struct {
@@ -164,8 +165,7 @@ func GetNewTask() Task {
 	return task
 }
 
-func UpdateTask(taskid int, status string, datacentrid int) Task {
-	task := Task{}
+func UpdateTask(taskid int, status string, datacentrid int) {
 	db := GetDBInstance()
 	c := db.C("task")
 	if datacentrid == 0 {
@@ -173,8 +173,25 @@ func UpdateTask(taskid int, status string, datacentrid int) Task {
 	} else {
 		c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"status": status, "datacenterid": datacentrid}})
 	}
+}
 
-	return task
+
+func UpdateTaskReplica(taskid int, replica int) {
+	db := GetDBInstance()
+	c := db.C("task")
+    c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"replica": replica}})
+}
+
+func UpdateTaskUnqueName(taskid int, uniqueName string) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"uniquename": uniqueName}})
+}
+
+func UpdateTaskImage(taskid int, image string) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"name": image}})
 }
 
 func CancelTask(taskid int) {
