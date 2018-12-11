@@ -49,8 +49,7 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 		tastName := util.GetTaskNameAsTaskIDForK8s(task)
 		util.UpdateTaskUnqueName(int(id), tastName)
 
-
-		if(in.Replica <= 0 || in.Replica > 100){
+		if in.Replica <= 0 || in.Replica > 100 {
 			in.Replica = 1
 		}
 
@@ -75,7 +74,6 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 
 }
 
-
 func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer {
 	keys := []int{}
 	for key, _ := range s.dcstreams {
@@ -92,10 +90,10 @@ func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer {
 
 }
 
-func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, image string, replica int,  extra string) bool {
+func sendMessageToK8(stream pb.Dccncli_K8TaskServer, taskType string, taskid int64, name string, image string, replica int, extra string) bool {
 	fmt.Printf("send sendMessageToK8 id %d name %s image %s replica %d   \n", int(taskid), name, image, replica)
 	if stream != nil {
-		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Image: image, Replica: int64(replica),  Extra: extra}
+		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Image: image, Replica: int64(replica), Extra: extra}
 		if err := stream.Send(&message); err != nil {
 			fmt.Printf("send message to data center failed \n")
 			return false
@@ -180,8 +178,6 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 
 }
 
-
-
 func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.UpdateTaskResponse, error) {
 	fmt.Printf("received update task request\n")
 	token := in.Usertoken
@@ -204,13 +200,12 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
 	}
 
-	if (len(task.Uniquename) == 0){
+	if len(task.Uniquename) == 0 {
 		fmt.Printf("task does not have Uniquename in mongodb \n")
 		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
 	}
 
 	fmt.Printf("task %d in DataCenter %d \n", task.ID, int(task.Datacenterid))
-
 
 	datacenter := s.dcstreams[int(task.Datacenterid)]
 	if datacenter == nil {
@@ -219,27 +214,24 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
 	} else {
 
-			//check replica is valid
-		if(task.Replica == 0) {  // support previous
+		//check replica is valid
+		if task.Replica == 0 { // support previous
 			task.Replica = 1
 		}
 
-		if(in.Replica <= 0 || in.Replica > 100){
+		if in.Replica <= 0 || in.Replica > 100 {
 			in.Replica = int64(task.Replica)
 		}
 
-		if(len(in.Name) == 0){
+		if len(in.Name) == 0 {
 			in.Name = task.Name
 		}
 
 		fmt.Printf("send update message to datacenter id  %d  replica  %d  image : %s\n", int(task.Datacenterid), int(in.Replica), task.Name)
 
-
-
 		util.UpdateTaskReplica(int(in.Taskid), int(in.Replica))
-		util.UpdateTaskImage(int(in.Taskid), in.Name);
+		util.UpdateTaskImage(int(in.Taskid), in.Name)
 		util.UpdateTask(int(in.Taskid), "updating", 0)
-
 
 		if sendMessageToK8(datacenter, "UpdateTask", in.Taskid, task.Uniquename, in.Name, int(in.Replica), "") == false {
 			delete(s.dcstreams, int(task.Datacenterid))
@@ -338,6 +330,9 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 			util.UpdateTask(int(taskid), "running", int(datacenter.ID))
 		}
 
+		if status == "UpdateFailure" {
+			util.UpdateTask(int(taskid), "updateFailed", int(datacenter.ID))
+		}
 
 		if status == "UpdateFailure" {
 			util.UpdateTask(int(taskid), "updateFailed", int(datacenter.ID))
@@ -354,7 +349,6 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 	}
 }
 
-
 func heartbeat(s *server) {
 	for {
 		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams))
@@ -368,7 +362,6 @@ func heartbeat(s *server) {
 	}
 }
 
-// Serving gRPC request.
 func Serve() {
 	if len(os.Args) == 2 {
 		util.MongoDBHost = os.Args[1]
