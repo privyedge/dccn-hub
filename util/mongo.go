@@ -20,8 +20,8 @@ type Task struct {
 	ID           int64
 	Userid       int64
 	Name         string
-	Region       string
-	Zone         string
+	Datacenter   string
+	Type         string
 	Replica      int
 	Datacenterid int64  // mongodb name is low field
 	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled 6. updating 7. updateFailed
@@ -45,8 +45,6 @@ type DataCenter struct {
 	ID             int64
 	Name           string
 	Report         string
-	Host           string
-	Port           int64
 	LastReportTime int64
 	Status         string //1. running  2. stopped  3. dropped
 	DatacenterId   int
@@ -68,7 +66,7 @@ func AddDataCenter(d DataCenter) int64 {
 	// fmt.Printf("Id of person: %d\n", p._id)
 	id := GetID("datacenterid", db)
 	msec := time.Now().UnixNano() / 1000000
-	err := c.Insert(bson.M{"_id": id, "id": id, "name": d.Name, "report": d.Report, "host": d.Host, "port": d.Port, "lastReporTtime": msec, "status": "Running"})
+	err := c.Insert(bson.M{"_id": id, "id": id, "name": d.Name, "report": d.Report, "lastReporTtime": msec, "status": "Running"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,7 +78,7 @@ func UpdateDataCenter(d DataCenter, id int) {
 	c := db.C("datacenter")
 	fmt.Printf("UpdateDataCenter report %s \n", d.Report)
 
-	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"name": d.Name, "report": d.Report, "host": d.Host, "port": d.Port}})
+	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"name": d.Name, "report": d.Report}})
 }
 
 var instance *mgo.Database
@@ -111,11 +109,8 @@ func mongodbconnect() *mgo.Database {
 func AddTask(task Task) int64 {
 	db := GetDBInstance()
 	c := db.C("task")
-	//p := Person{"xxxx", "123455"}
-	// p._id = 19
-	// fmt.Printf("Id of person: %d\n", p._id)
 	id := GetID("taskid", db)
-	err := c.Insert(bson.M{"_id": id, "id": id, "name": task.Name, "userid": task.Userid, "region": task.Region, "zone": task.Zone, "status": "new"})
+	err := c.Insert(bson.M{"_id": id, "id": id, "name": task.Name, "userid": task.Userid, "type": task.Type, "datacenter": task.Datacenter, "status": "new"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -149,6 +144,18 @@ func TaskList(userid int) []Task {
 	return tasks
 }
 
+func DataCeterList() []DataCenter {
+	var dataCenters []DataCenter
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	result := DataCenter{}
+	iter := c.Find(nil).Limit(100).Iter()
+	for iter.Next(&result) {
+		dataCenters = append(dataCenters, result)
+	}
+	return dataCenters
+}
+
 func GetTask(taskid int) Task {
 	task := Task{}
 	db := GetDBInstance()
@@ -175,11 +182,10 @@ func UpdateTask(taskid int, status string, datacentrid int) {
 	}
 }
 
-
 func UpdateTaskReplica(taskid int, replica int) {
 	db := GetDBInstance()
 	c := db.C("task")
-    c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"replica": replica}})
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"replica": replica}})
 }
 
 func UpdateTaskUnqueName(taskid int, uniqueName string) {
@@ -192,6 +198,12 @@ func UpdateTaskImage(taskid int, image string) {
 	db := GetDBInstance()
 	c := db.C("task")
 	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"name": image}})
+}
+
+func UpdateTaskURL(taskid int, url string) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"url": url}})
 }
 
 func CancelTask(taskid int) {
