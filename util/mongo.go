@@ -26,6 +26,7 @@ type Task struct {
 	Datacenterid int64  // mongodb name is low field
 	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled 6. updating 7. updateFailed
 	Uniquename   string
+	URL          string
 }
 
 type User struct {
@@ -227,6 +228,23 @@ func SelectFreeDatacenter() int {
 	index := rand.Intn(len(dcIds))
 	return dcIds[index]
 
+}
+
+func GetDatacentersMap() map[int64]string {
+	var dcs map[int64]string = map[int64]string{}
+	dclist := DataCeterList()
+	for i := range dclist {
+		dc := dclist[i]
+		dcs[dc.ID] = dc.Name
+	}
+	return dcs
+}
+func GetDatacenter(name string) DataCenter {
+	dc := DataCenter{}
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	c.Find(bson.M{"name": name}).One(&dc)
+	return dc
 }
 
 func GetUser(token string) User {

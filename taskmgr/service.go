@@ -32,7 +32,17 @@ type server struct {
 }
 
 func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.TaskDetailResponse, error) {
-	return &pb.TaskDetailResponse{Body: ""}, nil
+	fmt.Printf("received task detail request\n")
+	token := in.Usertoken
+	user := util.GetUser(token)
+
+	if user.ID == 0 {
+		fmt.Printf("add new task fail for user token error \n")
+
+		return &pb.TaskDetailResponse{Body: ""}, nil
+	}
+	task := util.GetTask(int(in.Taskid))
+	return &pb.TaskDetailResponse{Body: task.URL}, nil
 
 }
 
@@ -45,6 +55,22 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 		fmt.Printf("add new task fail for user token error \n")
 		return &pb.AddTaskResponse{Status: "Failure", Taskid: -1}, nil
 	} else {
+
+		// check datacenter name valid
+		var stream pb.Dccncli_K8TaskServer = nil
+		if len(in.Datacenter) == 0 {
+			stream = SelectFreeDatacenter(s)
+		} else {
+			dc := util.GetDatacenter(in.Datacenter)
+
+			if dc.ID == 0 {
+				fmt.Printf("add new task fail for datacenter name does not exist \n")
+				return &pb.AddTaskResponse{Status: "Failure", Taskid: -1}, nil
+
+			}
+			stream = slelecDatacenterByID(s, int(dc.ID))
+		}
+		//end check datacenter name
 
 		task := util.Task{Name: in.Name, Datacenter: in.Datacenter, Userid: user.ID, Type: in.Type}
 		id := util.AddTask(task)
@@ -60,7 +86,6 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 
 		util.UpdateTaskReplica(int(id), int(in.Replica))
 
-		stream := SelectFreeDatacenter(s)
 		if stream != nil {
 			fmt.Printf("GetTaskNameAsTaskIDForK8s  id  %d name %s \n", task.ID, task.Name)
 			var message = pb.Task{Type: "NewTask", Taskid: id, Name: tastName, TaskType: task.Type, Image: task.Name, Extra: "nothing"}
@@ -76,6 +101,35 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 
 		return &pb.AddTaskResponse{Status: "Success", Taskid: id}, nil
 	}
+
+}
+
+func slelecDatacenterByName(s *server, dcName string) pb.Dccncli_K8TaskServer {
+	dc := util.GetDatacenter(dcName)
+
+	if dc.ID == 0 {
+		return nil
+	}
+
+	for key, stream := range s.dcstreams {
+		if key == int(dc.ID) {
+			return stream
+		}
+	}
+
+	return nil
+
+}
+
+func slelecDatacenterByID(s *server, dcID int) pb.Dccncli_K8TaskServer {
+
+	for key, stream := range s.dcstreams {
+		if key == dcID {
+			return stream
+		}
+	}
+
+	return nil
 
 }
 
@@ -122,6 +176,8 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 	} else {
 		tasks := util.TaskList(int(user.ID))
 
+		dcs := util.GetDatacentersMap()
+
 		var taskList []*pb.TaskInfo
 		for i := range tasks {
 			task := tasks[i]
@@ -130,6 +186,10 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 			taskInfo.Taskname = task.Name
 			taskInfo.Status = task.Status
 			taskInfo.Replica = int64(task.Replica)
+			taskInfo.Datacenter = dcs[task.Datacenterid]
+			if len(taskInfo.Datacenter) == 0 {
+				taskInfo.Datacenter = task.Datacenter // for user assign datacenter name but not startsuccess
+			}
 			taskList = append(taskList, taskInfo)
 			//fmt.Printf("task id : %d %s status %s \n", task.ID,task.Name, task.Status)
 		}
