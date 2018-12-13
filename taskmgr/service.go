@@ -37,6 +37,9 @@ func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.
 		return &pb.TaskDetailResponse{Body: ""}, nil
 	}
 	task := util.GetTask(int(in.Taskid))
+	if task.Userid != user.ID { // can not get other user task
+		return &pb.TaskDetailResponse{Body: ""}, nil
+	}
 	return &pb.TaskDetailResponse{Body: task.URL}, nil
 
 }
