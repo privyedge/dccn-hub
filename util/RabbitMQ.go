@@ -2,8 +2,8 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/streadway/amqp"
-	"log"
 )
 
 type Handler interface {
@@ -19,7 +19,8 @@ type Event struct {
 
 func failOnError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
+		logStr := fmt.Sprintf("%s: %s", msg, err)
+		WriteLog(logStr)
 	}
 }
 
@@ -65,7 +66,8 @@ func Send(qName string, e Event) {
 			ContentType: "text/plain",
 			Body:        []byte(body),
 		})
-	log.Printf(" [x] Sent %s ", body)
+	logstr := fmt.Sprintf(" [x] Sent %s ", body)
+	WriteLog(logstr)
 	failOnError(err, "Failed to publish a message")
 }
 
@@ -103,13 +105,14 @@ func Receive(qName string, handler Handler) {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
+			logStr := fmt.Sprintf("Received a message: %s", d.Body)
+			WriteLog(logStr)
 			res := Event{}
 			json.Unmarshal([]byte(d.Body), &res)
 			handler.Handle(res)
 		}
 	}()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	WriteLog(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }

@@ -3,13 +3,12 @@ package k8s_adapter
 import (
 	"fmt"
 	"github.com/Ankr-network/dccn-hub/util"
+	ankr_const "github.com/Ankr-network/dccn-rpc"
 	pb "github.com/Ankr-network/dccn-rpc/protocol_new/k8s"
 	"github.com/Ankr-network/dccn-rpc/server_rpc"
 	"google.golang.org/grpc/reflection"
 	"io"
-	"log"
 	"math/rand"
-	//"net"
 	"os"
 	"sync"
 	"time"
@@ -19,27 +18,9 @@ const (
 	port = ":50052"
 )
 
-// server is used to implement helloworld.GreeterServer.
 type server struct {
 	mu        sync.Mutex                      // protects data
 	dcstreams map[int]pb.Dccnk8S_K8TaskServer //datacenterid => stream
-}
-
-func slelecDatacenterByName(s *server, dcName string) pb.Dccnk8S_K8TaskServer {
-	dc := util.GetDatacenter(dcName)
-
-	if dc.ID == 0 {
-		return nil
-	}
-
-	for key, stream := range s.dcstreams {
-		if key == int(dc.ID) {
-			return stream
-		}
-	}
-
-	return nil
-
 }
 
 func slelecDatacenterByID(s *server, dcID int) pb.Dccnk8S_K8TaskServer {
@@ -71,14 +52,15 @@ func SelectFreeDatacenter(s *server) pb.Dccnk8S_K8TaskServer {
 }
 
 func sendMessageToK8(stream pb.Dccnk8S_K8TaskServer, taskType string, taskid int64, name string, image string, replica int, extra string) bool {
-	fmt.Printf("send sendMessageToK8 id %d name %s image %s replica %d   \n", int(taskid), name, image, replica)
+	logStr := fmt.Sprintf("send sendMessageToK8 id %d name %s image %s replica %d  ", int(taskid), name, image, replica)
+	util.WriteLog(logStr)
 	if stream != nil {
 		var message = pb.Task{Type: taskType, Taskid: taskid, Name: name, Image: image, Replica: int64(replica), Extra: extra}
 		if err := stream.Send(&message); err != nil {
-			fmt.Printf("send message to data center failed \n")
+			util.WriteLog("send message to data center failed")
 			return false
 		} else {
-			fmt.Printf("send message to data center successfully \n")
+			util.WriteLog("send message to data center successfully")
 			return true
 		}
 	}
@@ -86,8 +68,6 @@ func sendMessageToK8(stream pb.Dccnk8S_K8TaskServer, taskType string, taskid int
 	return false
 }
 
-// RouteChat receives a stream of message/location pairs, and responds with a stream of all
-// previous messages at each of those locations.
 func (s *server) K8Task(stream pb.Dccnk8S_K8TaskServer) error {
 
 	for {
@@ -98,25 +78,23 @@ func (s *server) K8Task(stream pb.Dccnk8S_K8TaskServer) error {
 		if err != nil {
 			return err
 		}
+		logStr := fmt.Sprintf("<<<received  k8s  task : id %d  name:  %s  status: %s", in.Taskid, in.Taskname, in.Status)
+		util.WriteLog(logStr)
 
-		fmt.Printf("<<<received  k8s  task : id %d  name:  %s  status: %s \n", in.Taskid, in.Taskname, in.Status)
 		s.mu.Lock()
 		if in.Type == "HeartBeat" {
 			updateDataCenter(s, in, stream)
-			fmt.Printf("received  HeartBeat  : datacenter name:  %s report :  %s \n", in.Datacenter, in.Report)
+			logStr := fmt.Sprintf("received  HeartBeat  : datacenter name:  %s report :  %s", in.Datacenter, in.Report)
+			util.WriteLog(logStr)
 		} else {
 			taskId := util.GetTaskIDFromTaskNameForK8s(in.Taskname)
-			fmt.Printf("<<<received task  id : %d  status: %s  datacenter : %s \n", taskId, in.Status, in.Datacenter)
+			logStr := fmt.Sprintf("<<<received task  id : %d  status: %s  datacenter : %s", taskId, in.Status, in.Datacenter)
+			util.WriteLog(logStr)
 
 			processTaskStatus(taskId, in.Status, in.Datacenter, in.Url)
 		}
 
 		s.mu.Unlock()
-
-		// var message = pb.Task{Type:"Task", Taskid: 13, Name:"docker_image", Extra:"extraxxx"}
-		// if err := stream.Send(&message); err != nil {
-		// 	return err
-		// }
 
 	}
 }
@@ -126,11 +104,13 @@ func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccnk8S_K8TaskServ
 	if datacenter.ID == 0 {
 		datacenter := util.DataCenter{Name: in.Datacenter, Report: in.Report}
 		id := util.AddDataCenter(datacenter)
-		fmt.Printf("insert new  DataCenter id %d \n", id)
+		logStr := fmt.Sprintf("insert new  DataCenter id %d", id)
+		util.WriteLog(logStr)
 	} else {
 		datacenter2 := util.DataCenter{Name: in.Datacenter, Report: in.Report}
 		util.UpdateDataCenter(datacenter2, int(datacenter.ID))
-		fmt.Printf("update  DataCenter id %d \n", datacenter.ID)
+		logStr := fmt.Sprintf("update  DataCenter id %d", datacenter.ID)
+		util.WriteLog(logStr)
 
 	}
 
@@ -142,40 +122,39 @@ func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccnk8S_K8TaskServ
 func processTaskStatus(taskid int64, status string, dcName string, url string) {
 	datacenter := util.GetDataCenter(dcName)
 	if datacenter.ID == 0 {
-		fmt.Printf("datacenter not found\n")
+		util.WriteLog("datacenter not found")
 	} else {
+		logStr := fmt.Sprintf("processTaskStatus %d %s", taskid, status)
+		util.WriteLog(logStr)
 
-		fmt.Printf("processTaskStatus %d %s\n", taskid, status)
-		//util.UpdateDataCenter(datacenter, int(datacenter.ID)
-		if status == "StartSuccess" {
+		if status == ankr_const.DataCenterTaskStartSuccess {
 			if len(url) > 0 {
 				util.UpdateTaskURL(int(taskid), url)
 			}
-			util.UpdateTask(int(taskid), "running", int(datacenter.ID))
+			util.UpdateTask(int(taskid), ankr_const.TaskStatusRunning, int(datacenter.ID))
 		}
 
-		if status == "StartFailure" {
-			util.UpdateTask(int(taskid), "startFailed", int(datacenter.ID))
+		if status == ankr_const.DataCenterTaskStartFailure {
+			if len(url) > 0 {
+				util.UpdateTaskURL(int(taskid), url)
+			}
+			util.UpdateTask(int(taskid), ankr_const.TaskStatusStartFailed, int(datacenter.ID))
 		}
 
-		if status == "UpdateSuccess" {
-			util.UpdateTask(int(taskid), "running", int(datacenter.ID))
+		if status == ankr_const.DataCenterTaskUpdateFailure {
+			util.UpdateTask(int(taskid), ankr_const.TaskStatusStartFailed, int(datacenter.ID))
 		}
 
-		if status == "UpdateFailure" {
-			util.UpdateTask(int(taskid), "updateFailed", int(datacenter.ID))
+		if status == ankr_const.DataCenterTaskUpdateSuccess {
+			util.UpdateTask(int(taskid), ankr_const.TaskStatusRunning, int(datacenter.ID))
 		}
 
-		if status == "UpdateFailure" {
-			util.UpdateTask(int(taskid), "updateFailed", int(datacenter.ID))
+		if status == ankr_const.DataCenterTaskCancelled {
+			util.UpdateTask(int(taskid), ankr_const.TaskStatusCancelled, int(datacenter.ID))
 		}
 
-		if status == "Cancelled" {
-			util.UpdateTask(int(taskid), "cancelled", int(datacenter.ID))
-		}
-
-		if status == "Done" {
-			util.UpdateTask(int(taskid), "done", int(datacenter.ID))
+		if status == ankr_const.DataCenterTaskDone {
+			util.UpdateTask(int(taskid), ankr_const.TaskStatusDone, int(datacenter.ID))
 		}
 
 	}
@@ -183,7 +162,8 @@ func processTaskStatus(taskid int64, status string, dcName string, url string) {
 
 func heartbeat(s *server) {
 	for {
-		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams))
+		logStr := fmt.Sprintf("send HeartBeat to %d DataCenters ", len(s.dcstreams))
+		util.WriteLog(logStr)
 		for key, stream := range s.dcstreams {
 			if sendMessageToK8(stream, "HeartBeat", -1, "", "", 0, "") == false {
 				delete(s.dcstreams, key)
@@ -195,19 +175,22 @@ func heartbeat(s *server) {
 }
 
 func (s server) Handle(e util.Event) {
-	fmt.Printf("this is handle event type %s taskid %d \n", e.Type, e.TaskID)
+	logStr := fmt.Sprintf("this is handle event type %s taskid %d ", e.Type, e.TaskID)
+	util.WriteLog(logStr)
 	task := util.GetTask(e.TaskID)
-	if e.Type == util.NewTaskEvent {
+	if e.Type == ankr_const.NewTaskEvent {
 		var stream pb.Dccnk8S_K8TaskServer = nil
 		if len(task.Datacenter) == 0 {
-			fmt.Printf("find new free datacenter %d  \n", len(s.dcstreams))
+			logStr := fmt.Sprintf("find new free datacenter %d ", len(s.dcstreams))
+			util.WriteLog(logStr)
 			stream = SelectFreeDatacenter(&s)
 		} else {
-			fmt.Printf("find   datacenter  %s \n", task.Datacenter)
+			logStr := fmt.Sprintf("find   datacenter  %s", task.Datacenter)
+			util.WriteLog(logStr)
 			dc := util.GetDatacenter(task.Datacenter)
 
 			if dc.ID == 0 {
-				fmt.Printf("add new task fail for datacenter name does not exist \n")
+				util.WriteLog("add new task fail for datacenter name does not exist")
 
 			} else {
 				stream = slelecDatacenterByID(&s, int(dc.ID))
@@ -216,27 +199,31 @@ func (s server) Handle(e util.Event) {
 		}
 
 		if stream != nil {
-			fmt.Printf("GetTaskNameAsTaskIDForK8s  id  %d name %s \n", task.ID, task.Name)
+			logStr := fmt.Sprintf("GetTaskNameAsTaskIDForK8s  id  %d name %s", task.ID, task.Name)
+			util.WriteLog(logStr)
 			var message = pb.Task{Type: "NewTask", Taskid: task.ID, Name: task.Uniquename, TaskType: task.Type, Image: task.Name, Extra: "nothing"}
-			//fmt.Printf("new messsage for add task %s \n", message.Name)
+			//util.WriteLog("new messsage for add task %s", message.Name)
 			if err := stream.Send(&message); err != nil {
-				fmt.Printf(">>>send add task message %s to data center failed \n", message.Name)
+				logStr := fmt.Sprintf(">>>send add task message %s to data center failed", message.Name)
+				util.WriteLog(logStr)
 			} else {
-				fmt.Printf(">>>send add task message %s to data center success \n", message.Name)
+				logStr := fmt.Sprintf(">>>send add task message %s to data center success", message.Name)
+				util.WriteLog(logStr)
 			}
 		} else {
-			fmt.Printf("no DataCenter available now\n")
+			util.WriteLog("no DataCenter available now")
 		}
 	}
 
-	if e.Type == util.CancelTaskEvent {
+	if e.Type == ankr_const.CancelTaskEvent {
 		datacenter := s.dcstreams[int(task.Datacenterid)]
 		if datacenter == nil {
-			fmt.Printf("can not find datacenter \n")
+			util.WriteLog("can not find datacenter")
 			util.UpdateTask(int(task.ID), "cancelfailed", 0)
 
 		} else {
-			fmt.Printf("send cancel message to datacenter id  %d \n", int(task.Datacenterid))
+			logStr := fmt.Sprintf("send cancel message to datacenter id  %d", int(task.Datacenterid))
+			util.WriteLog(logStr)
 			util.UpdateTask(int(task.ID), "cancelling", 0)
 
 			if sendMessageToK8(datacenter, "CancelTask", task.ID, task.Uniquename, task.Name, task.Replica, "") == false {
@@ -246,7 +233,7 @@ func (s server) Handle(e util.Event) {
 		}
 	}
 
-	if e.Type == util.UpdateTaskEvent {
+	if e.Type == ankr_const.UpdateTaskEvent {
 		datacenter := s.dcstreams[int(task.Datacenterid)]
 		if sendMessageToK8(datacenter, "UpdateTask", task.ID, task.Uniquename, e.Name, e.Replica, "") == false {
 			delete(s.dcstreams, int(task.Datacenterid))
@@ -266,18 +253,18 @@ func StartService() {
 
 	lis, s := server_rpc.Connect(port)
 	ss := server{}
-	go util.Receive(util.DataCenterName, &ss)
+	go util.Receive(ankr_const.DataCenterName, &ss)
 	ss.dcstreams = map[int]pb.Dccnk8S_K8TaskServer{}
 
 	go heartbeat(&ss)
 
 	pb.RegisterDccnk8SServer(s, &ss)
-	// Register reflection service on gRPC server.
 
 	reflection.Register(s)
 
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		logStr := fmt.Sprintf("failed to serve: %v", err)
+		util.WriteLog(logStr)
 	}
 
 }
