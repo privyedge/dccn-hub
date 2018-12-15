@@ -1,15 +1,14 @@
-package api_listner
+package api_listener
 
 import (
 	"fmt"
 	"github.com/Ankr-network/dccn-hub/util"
+	ankr_const "github.com/Ankr-network/dccn-rpc"
 	pb "github.com/Ankr-network/dccn-rpc/protocol_new/cli"
 	"github.com/Ankr-network/dccn-rpc/server_rpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/reflection"
 	"log"
-
-	//"net"
 	"os"
 )
 
@@ -17,18 +16,17 @@ const (
 	port = ":50051"
 )
 
-// server is used to implement helloworld.GreeterServer.
 type server struct {
 	name string
 }
 
 func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.TaskDetailResponse, error) {
-	fmt.Printf("received task detail request\n")
+	util.WriteLog("received task detail request")
 	token := in.Usertoken
 	user := util.GetUser(token)
 
 	if user.ID == 0 {
-		fmt.Printf("add new task fail for user token error \n")
+		util.WriteLog("add new task fail for user token error")
 
 		return &pb.TaskDetailResponse{Body: ""}, nil
 	}
@@ -41,13 +39,13 @@ func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.
 }
 
 func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTaskResponse, error) {
-	fmt.Printf("received add task request\n")
+	util.WriteLog("received add task request")
 	token := in.Usertoken
 	user := util.GetUser(token)
 
 	if user.ID == 0 {
-		fmt.Printf("add new task fail for user token error \n")
-		return &pb.AddTaskResponse{Status: "Failure", Taskid: -1}, nil
+		util.WriteLog("add new task fail for user token error")
+		return &pb.AddTaskResponse{Status: ankr_const.CliReplyStatusFailure, Taskid: -1}, nil
 	} else {
 
 		// check datacenter name valid
@@ -55,8 +53,8 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 			dc := util.GetDatacenter(in.Datacenter)
 
 			if dc.ID == 0 {
-				fmt.Printf("add new task fail for datacenter name does not exist \n")
-				return &pb.AddTaskResponse{Status: "Failure", Taskid: -1}, nil
+				util.WriteLog("add new task fail for datacenter name does not exist")
+				return &pb.AddTaskResponse{Status: ankr_const.CliReplyStatusFailure, Taskid: -1}, nil
 
 			}
 		}
@@ -70,18 +68,19 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 		util.UpdateTaskUnqueName(int(id), tastName)
 
 		if in.Replica <= 0 || in.Replica > 100 {
-			fmt.Printf("replica is eror %d use default 1  \n", in.Replica)
+			logStr := fmt.Sprintf("replica is eror %d use default 1 ", in.Replica)
+			util.WriteLog(logStr)
 			in.Replica = 1
 		}
 
 		util.UpdateTaskReplica(int(id), int(in.Replica))
 		e := util.Event{}
-		e.Type = util.NewTaskEvent
+		e.Type = ankr_const.NewTaskEvent
 		e.TaskID = int(task.ID)
 
-		util.Send(util.TaskManagerQueueName, e)
+		util.Send(ankr_const.TaskManagerQueueName, e)
 
-		return &pb.AddTaskResponse{Status: "Success", Taskid: id}, nil
+		return &pb.AddTaskResponse{Status: ankr_const.CliReplyStatusSuccess, Taskid: id}, nil
 	}
 
 }
@@ -89,10 +88,10 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.TaskListResponse, error) {
 	token := in.Usertoken
 	user := util.GetUser(token)
-	fmt.Printf("task list reqeust \n")
+	util.WriteLog("task list reqeust")
 
 	if user.ID == 0 {
-		fmt.Printf("task list reqeust fail for user token error\n")
+		util.WriteLog("task list reqeust fail for user token error")
 		return &pb.TaskListResponse{}, nil
 	} else {
 		tasks := util.TaskList(int(user.ID))
@@ -112,7 +111,7 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 				taskInfo.Datacenter = task.Datacenter // for user assign datacenter name but not startsuccess
 			}
 			taskList = append(taskList, taskInfo)
-			//fmt.Printf("task id : %d %s status %s \n", task.ID,task.Name, task.Status)
+			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}
 
 		return &pb.TaskListResponse{Tasksinfo: taskList}, nil
@@ -123,10 +122,10 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListRequest) (*pb.DataCenterListResponse, error) {
 	token := in.Usertoken
 	user := util.GetUser(token)
-	fmt.Printf("task list reqeust \n")
+	util.WriteLog("task list reqeust")
 
 	if user.ID == 0 {
-		fmt.Printf("task list reqeust fail for user token error\n")
+		util.WriteLog("task list reqeust fail for user token error")
 		return &pb.DataCenterListResponse{}, nil
 	} else {
 		dataCenters := util.DataCeterList()
@@ -138,7 +137,7 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 			dcInfo.Id = dataCenter.ID
 			dcInfo.Name = dataCenter.Name
 			dcList = append(dcList, dcInfo)
-			//fmt.Printf("task id : %d %s status %s \n", task.ID,task.Name, task.Status)
+			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}
 
 		return &pb.DataCenterListResponse{DcList: dcList}, nil
@@ -147,90 +146,71 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 }
 
 func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.CancelTaskResponse, error) {
-	fmt.Printf("received cancel task request\n")
+	util.WriteLog("received cancel task request")
 	token := in.Usertoken
 	user := util.GetUser(token)
 
 	task := util.GetTask(int(in.Taskid))
 
 	if task.ID == 0 {
-		fmt.Printf("can not find task\n")
+		util.WriteLog("can not find task")
 		return &pb.CancelTaskResponse{Status: "Failure"}, nil
 	}
 
 	if user.ID == 0 {
-		fmt.Printf("cancel task fail for user token error\n")
+		util.WriteLog("cancel task fail for user token error")
 		return &pb.CancelTaskResponse{Status: "Failure"}, nil
 	}
 
 	if task.Userid != user.ID {
-		fmt.Printf("task uid != user id \n")
+		util.WriteLog("task uid != user id")
 		return &pb.CancelTaskResponse{Status: "Failure"}, nil
 	}
 
-	fmt.Printf("task %d in DataCenter %d \n", task.ID, int(task.Datacenterid))
+	logStr := fmt.Sprintf("task %d in DataCenter %d", task.ID, int(task.Datacenterid))
+	util.WriteLog(logStr)
 
-	//sendMessageToK8(taskType string, taskid int64, name string, extra string)
-	// todo test this function
-	//datacenter := s.dcstreams[int(task.Datacenterid)]
-	//if datacenter == nil {
-	//	fmt.Printf("can not find datacenter \n")
-	//	util.UpdateTask(int(in.Taskid), "cancelfailed", 0)
-	//	return &pb.CancelTaskResponse{Status: "Failure"}, nil
-	//
-	//} else {
-	//	fmt.Printf("send cancel message to datacenter id  %d \n", int(task.Datacenterid))
-	//	util.UpdateTask(int(in.Taskid), "cancelling", 0)
+	if task.Status != ankr_const.TaskStatusCancelled {
+		e := util.Event{}
+		e.Type = ankr_const.CancelTaskEvent
+		e.TaskID = int(task.ID)
+		util.Send(ankr_const.TaskManagerQueueName, e)
 
-	//if sendMessageToK8(datacenter, "CancelTask", in.Taskid, task.Uniquename, task.Name, task.Replica, "") == false {
-	//	delete(s.dcstreams, int(task.Datacenterid))
-	//}
-	e := util.Event{}
-	e.Type = util.CancelTaskEvent
-	e.TaskID = int(task.ID)
-
-	util.Send(util.TaskManagerQueueName, e)
+	}
 
 	return &pb.CancelTaskResponse{Status: "Success"}, nil
-	//}
 
 }
 
 func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.UpdateTaskResponse, error) {
-	fmt.Printf("received update task request\n")
+	util.WriteLog("received update task request")
 	token := in.Usertoken
 	user := util.GetUser(token)
 
 	task := util.GetTask(int(in.Taskid))
 
 	if task.ID == 0 {
-		fmt.Printf("can not find task\n")
+		util.WriteLog("can not find task")
 		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
 	}
 
 	if user.ID == 0 {
-		fmt.Printf("cancel task fail for user token error\n")
+		util.WriteLog("cancel task fail for user token error")
 		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
 	}
 
 	if task.Userid != user.ID {
-		fmt.Printf("task uid != user id \n")
+		util.WriteLog("task uid != user id")
 		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
 	}
 
 	if len(task.Uniquename) == 0 {
-		fmt.Printf("task does not have Uniquename in mongodb \n")
-		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
+		util.WriteLog("task does not have Uniquename in mongodb")
+		return &pb.UpdateTaskResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
 	}
 
-	fmt.Printf("task %d in DataCenter %d \n", task.ID, int(task.Datacenterid))
-
-	//datacenter := s.dcstreams[int(task.Datacenterid)]
-	//if datacenter == nil {
-	//	fmt.Printf("can not find datacenter \n")
-	//	util.UpdateTask(int(in.Taskid), "updateFailed", 0)
-	//	return &pb.UpdateTaskResponse{Status: "Failure"}, nil
-	//} else {
+	logStr := fmt.Sprintf("task %d in DataCenter %d", task.ID, int(task.Datacenterid))
+	util.WriteLog(logStr)
 
 	//check replica is valid
 	if task.Replica == 0 { // support previous
@@ -238,7 +218,8 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 	}
 
 	if in.Replica <= 0 || in.Replica > 100 {
-		fmt.Printf("replica is eror %d \n", in.Replica)
+		logStr := fmt.Sprintf("replica is eror %d", in.Replica)
+		util.WriteLog(logStr)
 		in.Replica = int64(task.Replica)
 	}
 
@@ -246,9 +227,10 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 		in.Name = task.Name
 	}
 
-	fmt.Printf("send update message to datacenter id  %d  replica  %d  image : %s\n", int(task.Datacenterid), int(in.Replica), task.Name)
+	logStr2 := fmt.Sprintf("send update message to datacenter id  %d  replica  %d  image : %s", int(task.Datacenterid), int(in.Replica), task.Name)
+	util.WriteLog(logStr2)
 
-	util.UpdateTask(int(in.Taskid), "updating", 0)
+	util.UpdateTask(int(in.Taskid), ankr_const.TaskStatusRunning, 0)
 
 	// if they are same use 0 as default value
 	if int(in.Replica) == task.Replica {
@@ -260,18 +242,14 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 	}
 
 	e := util.Event{}
-	e.Type = util.UpdateTaskEvent
+	e.Type = ankr_const.UpdateTaskEvent
 	e.TaskID = int(task.ID)
 	e.Replica = int(in.Replica)
 	e.Name = in.Name
 
-	util.Send(util.TaskManagerQueueName, e)
+	util.Send(ankr_const.TaskManagerQueueName, e)
 
-	//if sendMessageToK8(datacenter, "UpdateTask", in.Taskid, task.Uniquename, in.Name, int(in.Replica), "") == false {
-	//	delete(s.dcstreams, int(task.Datacenterid))
-	//}
-	return &pb.UpdateTaskResponse{Status: "Success"}, nil
-	//}
+	return &pb.UpdateTaskResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
 
 }
 
@@ -281,7 +259,7 @@ func StartService() {
 
 	}
 
-	util.WriteLog("this is a test")
+	util.WriteLog("Start API Listner ")
 
 	lis, s := server_rpc.Connect(port)
 	ss := server{}
