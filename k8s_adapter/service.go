@@ -246,9 +246,13 @@ func (s server) Handle(e util.Event) {
 }
 
 func StartService() {
-	if len(os.Args) == 2 {
+	if len(os.Args) == 3 {
 		util.MongoDBHost = os.Args[1]
 
+	}
+
+	if len(os.Args) == 3 {
+		util.RabbitMQHost = os.Args[2]
 	}
 
 	lis, s := server_rpc.Connect(port)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Ankr-network/dccn-hub/util"
 	ankr_const "github.com/Ankr-network/dccn-rpc"
+	"os"
 )
 
 // server is used to implement helloworld.GreeterServer.
@@ -24,6 +25,14 @@ func (s server) Handle(e util.Event) {
 }
 
 func StartService() {
+	if len(os.Args) == 3 {
+		util.MongoDBHost = os.Args[1]
+
+	}
+
+	if len(os.Args) == 3 {
+		util.RabbitMQHost = os.Args[2]
+	}
 	ss := server{}
 	util.Receive(ankr_const.TaskManagerQueueName, ss)
 }

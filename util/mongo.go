@@ -92,7 +92,8 @@ func GetDBInstance() *mgo.Database {
 }
 
 func mongodbconnect() *mgo.Database {
-	fmt.Printf("where db name user : %s\n", MongoDBHost)
+	logStr := fmt.Sprintf("mongodb hostname : %s\n", MongoDBHost)
+	WriteLog(logStr)
 	session, err := mgo.Dial(MongoDBHost)
 	if err != nil {
 		panic(err)
