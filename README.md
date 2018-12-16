@@ -82,7 +82,7 @@ Ankr Hub connect with cli/k8s  by gRPC (k8s may use ZeroMQ as messaging)
 Using the docker build using the "Dockerfile.dep" file if you download the source and build locally: 
 ```
 dep ensure -update
-docker build -f Dockerfile.dep -t dccn_hub .
+docker build -f Dockerfile.dep -t api_listener .
 docker run -p 50051:50051 dccn_hub
 ```
 
