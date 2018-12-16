@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    name: k8s-adapter
+  name: k8s-adapter
+spec:
+  replicas: 1
+  selector:
+    name: k8s-adapter
+  template:
+    metadata:
+      labels:
+        name: k8s-adapter
+    spec:
+      imagePullSecrets:
+      - name: dccn-ecr
+      containers:
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_k8s_adapter
+        imagePullPolicy: "Always"
+        name: hub
+        ports:
+        - containerPort: 50051
+          name: hub-port

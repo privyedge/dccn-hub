@@ -2,23 +2,20 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
   labels:
-    name: ankr-hub
-  name: hub
+    name: task_manager
+  name: task_manager
 spec:
   replicas: 1
   selector:
-    name: hub
+    name: task_manager
   template:
     metadata:
       labels:
-        name: hub
+        name: task_manager
     spec:
       imagePullSecrets:
       - name: dccn-ecr
       containers:
-      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_task_manager
         imagePullPolicy: "Always"
-        name: hub
-        ports:
-        - containerPort: 50051
-          name: hub-port
+        name: task_manager

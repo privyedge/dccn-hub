@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    name: api-listener
+  name: api-listener
+spec:
+  replicas: 1
+  selector:
+    name: api-listener
+  template:
+    metadata:
+      labels:
+        name: api-listener
+    spec:
+      imagePullSecrets:
+      - name: dccn-ecr
+      containers:
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_api_listener
+        imagePullPolicy: "Always"
+        name: hub
+        ports:
+        - containerPort: 50051
+          name: hub-port
