@@ -6,6 +6,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
+var RabbitMQHost = "127.0.0.1"
+
 type Handler interface {
 	Handle(e Event)
 }
@@ -35,8 +37,16 @@ func createMessage(e Event) string {
 
 }
 
+func getRabbitMQHost() string {
+	host := "amqp://guest:guest@" + RabbitMQHost + ":5672/"
+	logStr := fmt.Sprintf("RabbitMQ hostname : %s", host)
+	WriteLog(logStr)
+	return host
+}
+
 func Send(qName string, e Event) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+
+	conn, err := amqp.Dial(getRabbitMQHost())
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -72,7 +82,7 @@ func Send(qName string, e Event) {
 }
 
 func Receive(qName string, handler Handler) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial(getRabbitMQHost())
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 

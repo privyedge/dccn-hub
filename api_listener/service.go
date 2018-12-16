@@ -254,9 +254,13 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 }
 
 func StartService() {
-	if len(os.Args) == 2 {
+	if len(os.Args) == 3 {
 		util.MongoDBHost = os.Args[1]
 
+	}
+
+	if len(os.Args) == 3 {
+		util.RabbitMQHost = os.Args[2]
 	}
 
 	util.WriteLog("Start API Listner ")
