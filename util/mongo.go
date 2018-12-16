@@ -62,9 +62,6 @@ func GetDataCenter(name string) DataCenter {
 func AddDataCenter(d DataCenter) int64 {
 	db := GetDBInstance()
 	c := db.C("datacenter")
-	//p := Person{"xxxx", "123455"}
-	// p._id = 19
-	// fmt.Printf("Id of person: %d\n", p._id)
 	id := GetID("datacenterid", db)
 	msec := time.Now().UnixNano() / 1000000
 	err := c.Insert(bson.M{"_id": id, "id": id, "name": d.Name, "report": d.Report, "lastReporTtime": msec, "status": "Running"})
@@ -77,8 +74,6 @@ func AddDataCenter(d DataCenter) int64 {
 func UpdateDataCenter(d DataCenter, id int) {
 	db := GetDBInstance()
 	c := db.C("datacenter")
-	fmt.Printf("UpdateDataCenter report %s \n", d.Report)
-
 	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"name": d.Name, "report": d.Report}})
 }
 
@@ -93,7 +88,7 @@ func GetDBInstance() *mgo.Database {
 }
 
 func mongodbconnect() *mgo.Database {
-	logStr := fmt.Sprintf("mongodb hostname : %s\n", MongoDBHost)
+	logStr := fmt.Sprintf("mongodb hostname : %s", MongoDBHost)
 	WriteLog(logStr)
 	session, err := mgo.Dial(MongoDBHost)
 	if err != nil {
@@ -126,7 +121,6 @@ func GetID(name string, db *mgo.Database) int64 {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s id  %d \n", name, result.Sequencevalue)
 	id := result.Sequencevalue
 	id += 1
 	c.Update(bson.M{"_id": name}, bson.M{"$set": bson.M{"sequencevalue": id}})
@@ -219,7 +213,8 @@ func AddUser(user User) {
 	db := GetDBInstance()
 	c := db.C("user")
 	id := GetID("userid", db)
-	fmt.Printf("Id of user: %d\n", id)
+	logStr := fmt.Sprintf("Id of user: %d", id)
+	WriteLog(logStr)
 	c.Insert(bson.M{"_id": id, "id": id, "name": user.Name, "token": user.Token, "money": user.Money})
 
 }
