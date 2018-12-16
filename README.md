@@ -93,7 +93,7 @@ db.user.find()
 Using the docker build using the "Dockerfile.dep" file if you download the source and build locally: 
 ```
 dep ensure -update
-docker build -f Dockerfile.dep -t dccn_hub .
+docker build -f Dockerfile.dep -t api_listener .
 docker run -p 50051:50051 dccn_hub
 ```
 
