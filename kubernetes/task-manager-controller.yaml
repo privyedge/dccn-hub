@@ -2,20 +2,20 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
   labels:
-    name: task_manager
-  name: task_manager
+    name: task-manager
+  name: task-manager
 spec:
   replicas: 1
   selector:
-    name: task_manager
+    name: task-manager
   template:
     metadata:
       labels:
-        name: task_manager
+        name: task-manager
     spec:
       imagePullSecrets:
       - name: dccn-ecr
       containers:
       - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub-task-manager
         imagePullPolicy: "Always"
-        name: task_manager
+        name: task-manager

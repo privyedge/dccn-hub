@@ -24,14 +24,14 @@ jobs:
       - run:
           name: "Build & Push Docker Image"
           command: |
-            docker build -f Dockerfile_API_Listener -t dccn-hub_api_listener .
-            docker tag dccn-hub_api_listener:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_api_listener
-            docker push 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_api_listener
+            docker build -f Dockerfile_API_Listener -t dccn-hub-api-listener .
+            docker tag dccn-hub_api_listener:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub-api-listener
+            docker push 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub-api-listener
 
-            docker build -f Dockerfile_TaskManager -t dccn-hub_task_manager .
-            docker tag dccn-hub_task_manager:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_task_manager
-            docker push 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_task_manager
+            docker build -f Dockerfile_TaskManager -t dccn-hub-task-manager .
+            docker tag dccn-hub_task_manager:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub-task-manager
+            docker push 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub-task-manager
 
-            docker build -f Dockerfile_K8s_Adapter -t dccn-hub_k8s_adapter .
-            docker tag dccn-hub_k8s_adapter:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_k8s_adapter
-            docker push 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub_k8s_adapter
+            docker build -f Dockerfile_K8s_Adapter -t dccn-hub-k8s_adapter .
+            docker tag dccn-hub_k8s_adapter:latest 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub-k8s-adapter
+            docker push 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr:dccn-hub-k8s-adapter
