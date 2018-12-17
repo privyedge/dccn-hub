@@ -1,7 +1,6 @@
 package main
 
-import "github.com/Ankr-network/dccn-hub/util"
-
 func main() {
-	util.Send()
+	// util.Send("", nil)
+	println("OK")
 }
