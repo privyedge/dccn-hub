@@ -18,4 +18,15 @@ spec:
         - name: rabbitmq
           containerPort: 5672
           hostPort: 5672
+        - name: rabbitmq-ma
+          containerPort: 15672
+          hostPort: 15672
+
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+      volumes:
+            - name: rabbitmq-data
+              persistentVolumeClaim:
+                claimName: rabbitmq-data
 
