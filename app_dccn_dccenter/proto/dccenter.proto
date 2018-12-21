@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package dccenter;
+
+import "google/api/annotations.proto";
+
+service Dccenter {
+    rpc DataCenterList (DataCenterListRequest) returns (DataCenterListResponse) {
+        option (google.api.http) = {
+			post: "/dccenter/list"
+			body: "*"
+		};
+    }
+}
+
+message Event {
+}
+
+// DataCenterList request message
+message DataCenterListRequest {
+    string usertoken = 1; // List task for the account
+}
+
+message DataCenterInfo {
+    int64  id = 1;  // datacenter id
+    string name = 2; // datacenter name
+}
+
+message DataCenterListResponse {
+    repeated DataCenterInfo dcList= 1; // repeated groups of DataCenterInfo list
+}
