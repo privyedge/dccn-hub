@@ -3,23 +3,27 @@
 # for detailed Gopkg.toml documentation.
 #
 
+# Required: DCCN RPC package is required to rpc connection among Ankr DCCN
 [[constraint]]
   branch = "develop"
   name = "github.com/Ankr-network/dccn-rpc"
 
-# UPGRADE: Protobuf
+# Required: Protobuf is required by gRPC
 [[constraint]]
   name = "github.com/golang/protobuf"
   version = "1.2.0"
 
+# Required: net.context is required by gRPC
 [[constraint]]
   branch = "master"
   name = "golang.org/x/net"
 
+# Required: gRPC underlying package
 [[constraint]]
   name = "google.golang.org/grpc"
   version = "1.16.0"
 
+# Required: MongoDb connector implementation of Golang
 [[constraint]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"

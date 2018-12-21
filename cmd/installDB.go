@@ -3,12 +3,8 @@ package main
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"os"
 )
-
-type Person struct {
-	Name  string
-	Phone string
-}
 
 func main() {
 	// input args as mongodb host name/IP

@@ -1,5 +1,8 @@
 FROM golang:1.11.2-alpine3.8
-RUN apk update && apk add git && apk add --update bash && apk add openssh
+RUN apk update && \
+    apk add --no-cache git && \
+    apk add --upgrade --no-cache bash && \
+    apk add --no-cache openssh
 
 RUN go get github.com/golang/dep/cmd/dep
 
