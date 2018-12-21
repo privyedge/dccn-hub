@@ -201,7 +201,7 @@ func (s server) Handle(e util.Event) {
 		if stream != nil {
 			logStr := fmt.Sprintf("GetTaskNameAsTaskIDForK8s  id  %d name %s", task.ID, task.Name)
 			util.WriteLog(logStr)
-			var message = pb.Task{Type: "NewTask", Taskid: task.ID, Name: task.Uniquename, TaskType: task.Type, Image: task.Name, Extra: "nothing"}
+			var message = pb.Task{Type: "NewTask", Taskid: task.ID, Name: task.Uniquename, TaskType: task.Type, Replica: int64(task.Replica), Image: task.Name, Extra: "nothing"}
 			//util.WriteLog("new messsage for add task %s", message.Name)
 			if err := stream.Send(&message); err != nil {
 				logStr := fmt.Sprintf(">>>send add task message %s to data center failed", message.Name)

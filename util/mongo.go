@@ -92,7 +92,8 @@ func mongodbconnect() *mgo.Database {
 	WriteLog(logStr)
 	session, err := mgo.Dial(MongoDBHost)
 	if err != nil {
-		panic(err)
+		WriteLog("dail return error , so return nil")
+		return nil
 	}
 	//defer session.Close()
 
@@ -152,11 +153,30 @@ func DataCeterList() []DataCenter {
 	return dataCenters
 }
 
+func ReConnectMongodb(count int) bool {
+	logStr := fmt.Sprintf("retry : %d ", count)
+	WriteLog(logStr)
+	instance = mongodbconnect()
+	if instance == nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func DoReConnectMongodb() {
+	go Retry(ReConnectMongodb)
+}
+
 func GetTask(taskid int) Task {
 	task := Task{}
 	db := GetDBInstance()
 	c := db.C("task")
-	c.Find(bson.M{"_id": taskid}).One(&task)
+	err := c.Find(bson.M{"_id": taskid}).One(&task)
+	if err != nil {
+		WriteLog("DoReConnectMongodb")
+		DoReConnectMongodb()
+	}
 	return task
 }
 
@@ -247,7 +267,11 @@ func GetUser(token string) User {
 	user := User{}
 	db := GetDBInstance()
 	c := db.C("user")
-	c.Find(bson.M{"token": token}).One(&user)
+	err := c.Find(bson.M{"token": token}).One(&user)
+	if err != nil {
+		WriteLog("DoReConnectMongodb")
+		DoReConnectMongodb()
+	}
 	return user
 }
 

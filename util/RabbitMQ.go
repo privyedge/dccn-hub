@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/streadway/amqp"
+	"time"
 )
 
 var RabbitMQHost = "127.0.0.1"
@@ -82,47 +83,72 @@ func Send(qName string, e Event) {
 }
 
 func Receive(qName string, handler Handler) {
-	conn, err := amqp.Dial(getRabbitMQHost())
-	failOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
+	var rabbitCloseError chan *amqp.Error
 
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
+	for {
+		var conn *amqp.Connection
+		var ch *amqp.Channel
+		var err error
 
-	q, err := ch.QueueDeclare(
-		qName, // name
-		true,  // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
-	failOnError(err, "Failed to declare a queue")
+		for conn == nil || ch == nil {
+			conn, err = amqp.Dial(getRabbitMQHost())
+			failOnError(err, "Failed to connect to RabbitMQ")
 
-	msgs, err := ch.Consume(
-		q.Name, // queue
-		"",     // consumer
-		true,   // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
-	)
-	failOnError(err, "Failed to register a consumer")
-
-	forever := make(chan bool)
-
-	go func() {
-		for d := range msgs {
-			logStr := fmt.Sprintf("Received a message: %s", d.Body)
-			WriteLog(logStr)
-			res := Event{}
-			json.Unmarshal([]byte(d.Body), &res)
-			handler.Handle(res)
+			if conn == nil {
+				WriteLog("sleep 30 seconds then retry connecting")
+				time.Sleep(30 * time.Second)
+				//conn.Close()
+			} else {
+				ch, err = conn.Channel()
+				failOnError(err, "Failed to open a channel")
+				if ch == nil {
+					WriteLog("sleep 30 seconds then retry connect channel")
+					time.Sleep(30 * time.Second)
+				}
+			}
 		}
-	}()
 
-	WriteLog(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
+		//defer ch.Close()
+
+		rabbitCloseError = make(chan *amqp.Error)
+		conn.NotifyClose(rabbitCloseError)
+
+		q, err := ch.QueueDeclare(
+			qName, // name
+			true,  // durable
+			false, // delete when unused
+			false, // exclusive
+			false, // no-wait
+			nil,   // arguments
+		)
+		failOnError(err, "Failed to declare a queue")
+
+		msgs, err := ch.Consume(
+			q.Name, // queue
+			"",     // consumer
+			true,   // auto-ack
+			false,  // exclusive
+			false,  // no-local
+			false,  // no-wait
+			nil,    // args
+		)
+		failOnError(err, "Failed to register a consumer")
+
+		go func() {
+			for d := range msgs {
+				logStr := fmt.Sprintf("Received a message: %s", d.Body)
+				WriteLog(logStr)
+				res := Event{}
+				json.Unmarshal([]byte(d.Body), &res)
+				handler.Handle(res)
+			}
+		}()
+
+		WriteLog(" [*] Waiting for messages. To exit press CTRL+C")
+		msg := <-rabbitCloseError
+		//conn.Close()
+		logStr := fmt.Sprintf("receive rabbitMQ close messages, error : %s ", msg.Reason)
+		WriteLog(logStr)
+	}
+
 }
