@@ -47,7 +47,9 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
   * git clone git@github.com:Ankr-network/dccn-hub.git  -b feature/78-ankr-hub dccn-hub
 
 * run server :   
-  * go run taskmanager/service.go
+  * go run cmd/api_listener.go  
+  * go run cmd/task_manager.go  
+  * go run cmd/k8s_adapter.go  
 
 * run client:   
   * go run test/cli/add_task.go
