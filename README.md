@@ -71,6 +71,21 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
   * mongo   
   * use test    
   * db.user.find()
+  
+  
+  * start RabbitMQ by docker-compose up   
+  docker-compose.yml    
+  version: "3"  
+services:  
+ rabbitmq:  
+    image: "rabbitmq:3-management"  
+    hostname: "rabbit"  
+    ports:  
+      - "5672:5672"  
+      - "15672:15672"  
+      - "5671:5671"  
+ 
+
 
 * New Way Run MongoDB  (by docker)   
 cd dccn-hub/docker/   
