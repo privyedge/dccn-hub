@@ -37,7 +37,7 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
 * A tenant can close any active deployment at any time
 
 ## Install
-* set $GOPATH
+* set $GOPATH  (for example ~/go)  
 
 * install grcp package  
   * go get -u google.golang.org/grpc
