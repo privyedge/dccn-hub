@@ -6,13 +6,15 @@ import (
 	"os"
 )
 
+var MongoDBHost string = "127.0.0.1"
+
 func main() {
-	// input args as mongodb host name/IP
-	host := "127.0.0.1"
+
 	if len(os.Args) == 2 {
-		host = os.Args[1]
+		MongoDBHost = os.Args[1]
+
 	}
-	session, err := mgo.Dial(host)
+	session, err := mgo.Dial(MongoDBHost)
 	if err != nil {
 		panic(err)
 	}

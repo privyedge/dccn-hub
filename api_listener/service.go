@@ -28,11 +28,11 @@ func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.
 	if user.ID == 0 {
 		util.WriteLog("add new task fail for user token error")
 
-		return &pb.TaskDetailResponse{Body: ""}, nil
+		return &pb.TaskDetailResponse{Body: "", Reason: ankr_const.CliErrorReasonUserNotExist}, nil
 	}
 	task := util.GetTask(int(in.Taskid))
 	if task.Userid != user.ID { // can not get other user task
-		return &pb.TaskDetailResponse{Body: ""}, nil
+		return &pb.TaskDetailResponse{Body: "", Reason: ankr_const.CliErrorReasonUserNotOwn}, nil
 	}
 	return &pb.TaskDetailResponse{Body: task.URL}, nil
 
@@ -43,24 +43,28 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 	token := in.Usertoken
 	user := util.GetUser(token)
 
+	dataCenterName := ""
+
 	if user.ID == 0 {
 		util.WriteLog("add new task fail for user token error")
-		return &pb.AddTaskResponse{Status: ankr_const.CliReplyStatusFailure, Taskid: -1}, nil
+		return &pb.AddTaskResponse{Status: ankr_const.CliReplyStatusFailure, Taskid: -1, Reason: ankr_const.CliErrorReasonUserNotExist}, nil
 	} else {
 
 		// check datacenter name valid
-		if len(in.Datacenter) != 0 {
-			dc := util.GetDatacenter(in.Datacenter)
+		if in.Datacenterid != 0 {
+			dc := util.GetDatacenterByID(int(in.Datacenterid))
 
 			if dc.ID == 0 {
 				util.WriteLog("add new task fail for datacenter name does not exist")
-				return &pb.AddTaskResponse{Status: ankr_const.CliReplyStatusFailure, Taskid: -1}, nil
-
+				return &pb.AddTaskResponse{Status: ankr_const.CliReplyStatusFailure, Taskid: -1, Reason: ankr_const.CliErrorReasonDataCenterNotExist}, nil
+			} else {
+				dataCenterName = dc.Name
 			}
+
 		}
 		//end check datacenter name
 
-		task := util.Task{Name: in.Name, Datacenter: in.Datacenter, Userid: user.ID, Type: in.Type}
+		task := util.Task{Name: in.Name, Datacenter: dataCenterName, Userid: user.ID, Type: in.Type}
 		id := util.AddTask(task)
 		task.ID = id
 
@@ -92,7 +96,7 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 
 	if user.ID == 0 {
 		util.WriteLog("task list reqeust fail for user token error")
-		return &pb.TaskListResponse{}, nil
+		return &pb.TaskListResponse{Reason: ankr_const.CliErrorReasonUserNotExist}, nil
 	} else {
 		tasks := util.TaskList(int(user.ID))
 
@@ -110,8 +114,11 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 			if len(taskInfo.Datacenter) == 0 {
 				taskInfo.Datacenter = task.Datacenter // for user assign datacenter name but not startsuccess
 			}
+			if task.Hidden == ankr_const.TaskHidden {
+				continue // ignore hidden (purge )task
+			}
+
 			taskList = append(taskList, taskInfo)
-			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}
 
 		return &pb.TaskListResponse{Tasksinfo: taskList}, nil
@@ -126,7 +133,7 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 
 	if user.ID == 0 {
 		util.WriteLog("task list reqeust fail for user token error")
-		return &pb.DataCenterListResponse{}, nil
+		return &pb.DataCenterListResponse{Reason: ankr_const.CliErrorReasonUserNotExist}, nil
 	} else {
 		dataCenters := util.DataCeterList()
 
@@ -136,6 +143,7 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 			dcInfo := &pb.DataCenterInfo{}
 			dcInfo.Id = dataCenter.ID
 			dcInfo.Name = dataCenter.Name
+			dcInfo.Status = dataCenter.Status
 			dcList = append(dcList, dcInfo)
 			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}
@@ -154,17 +162,17 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 
 	if task.ID == 0 {
 		util.WriteLog("can not find task")
-		return &pb.CancelTaskResponse{Status: "Failure"}, nil
+		return &pb.CancelTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonTaskNotExist}, nil
 	}
 
 	if user.ID == 0 {
 		util.WriteLog("cancel task fail for user token error")
-		return &pb.CancelTaskResponse{Status: "Failure"}, nil
+		return &pb.CancelTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUserNotExist}, nil
 	}
 
 	if task.Userid != user.ID {
 		util.WriteLog("task uid != user id")
-		return &pb.CancelTaskResponse{Status: "Failure"}, nil
+		return &pb.CancelTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUserNotOwn}, nil
 	}
 
 	logStr := fmt.Sprintf("task %d in DataCenter %d", task.ID, int(task.Datacenterid))
@@ -182,6 +190,45 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 
 }
 
+func (s *server) PurgeTask(ctx context.Context, in *pb.PurgeTaskRequest) (*pb.PurgeTaskResponse, error) {
+	util.WriteLog("received cancel task request")
+	token := in.Usertoken
+	user := util.GetUser(token)
+
+	task := util.GetTask(int(in.Taskid))
+
+	if task.ID == 0 {
+		util.WriteLog("can not find task")
+		return &pb.PurgeTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonTaskNotExist}, nil
+	}
+
+	if user.ID == 0 {
+		util.WriteLog("cancel task fail for user token error")
+		return &pb.PurgeTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUserNotExist}, nil
+	}
+
+	if task.Userid != user.ID {
+		util.WriteLog("task uid != user id")
+		return &pb.PurgeTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUserNotOwn}, nil
+	}
+
+	logStr := fmt.Sprintf("task %d in DataCenter %d", task.ID, int(task.Datacenterid))
+	util.WriteLog(logStr)
+
+	if task.Status != ankr_const.TaskStatusCancelled {
+		e := util.Event{}
+		e.Type = ankr_const.CancelTaskEvent
+		e.TaskID = int(task.ID)
+		util.Send(ankr_const.TaskManagerQueueName, e)
+
+	}
+
+	util.UpdateTaskHidden(int(task.ID), ankr_const.TaskHidden)
+
+	return &pb.PurgeTaskResponse{Status: "Success"}, nil
+
+}
+
 func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.UpdateTaskResponse, error) {
 	util.WriteLog("received update task request")
 	token := in.Usertoken
@@ -191,30 +238,30 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 
 	if task.ID == 0 {
 		util.WriteLog("can not find task")
-		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
+		return &pb.UpdateTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonTaskNotExist}, nil
 	}
 
 	if user.ID == 0 {
 		util.WriteLog("cancel task fail for user token error")
-		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
+		return &pb.UpdateTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUserNotExist}, nil
 	}
 
 	if task.Userid != user.ID {
 		util.WriteLog("task uid != user id")
-		return &pb.UpdateTaskResponse{Status: "Failure"}, nil
+		return &pb.UpdateTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUserNotOwn}, nil
 	}
 
-	if len(task.Uniquename) == 0 {
-		util.WriteLog("task does not have Uniquename in mongodb")
-		return &pb.UpdateTaskResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
-	}
+	//if len(task.Uniquename) == 0 {
+	//	util.WriteLog("task does not have Uniquename in mongodb")
+	//	return &pb.UpdateTaskResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
+	//}
 
 	logStr := fmt.Sprintf("task %d in DataCenter %d", task.ID, int(task.Datacenterid))
 	util.WriteLog(logStr)
 
 	//check replica is valid
-	if task.Replica == 0 { // support previous
-		task.Replica = 1
+	if in.Replica == 0 { // support previous task setting, do not change replica
+		in.Replica = int64(task.Replica)
 	}
 
 	if in.Replica <= 0 || in.Replica > 100 {

@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"github.com/Ankr-network/dccn-rpc"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
@@ -27,6 +28,7 @@ type Task struct {
 	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled 6. updating 7. updateFailed
 	Uniquename   string
 	URL          string
+	Hidden       string
 }
 
 type User struct {
@@ -47,7 +49,7 @@ type DataCenter struct {
 	Name           string
 	Report         string
 	LastReportTime int64
-	Status         string //1. running  2. stopped  3. dropped
+	Status         string //1. online  2. offline
 	DatacenterId   int
 }
 
@@ -198,6 +200,12 @@ func UpdateTask(taskid int, status string, datacentrid int) {
 	}
 }
 
+func UpdateTaskHidden(taskid int, hidden string) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"hidden": hidden}})
+}
+
 func UpdateTaskReplica(taskid int, replica int) {
 	db := GetDBInstance()
 	c := db.C("task")
@@ -263,6 +271,14 @@ func GetDatacenter(name string) DataCenter {
 	return dc
 }
 
+func GetDatacenterByID(id int) DataCenter {
+	dc := DataCenter{}
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	c.Find(bson.M{"_id": id}).One(&dc)
+	return dc
+}
+
 func GetUser(token string) User {
 	user := User{}
 	db := GetDBInstance()
@@ -302,4 +318,33 @@ func GetTaskIDFromTaskNameForK8s(name string) int64 {
 
 }
 
+func UpdataDataCentersStatus(successList []int64) {
+	dclist := DataCeterList()
+	for i := range dclist {
+		dc := dclist[i]
+		if Contains(successList, dc.ID) {
+			UpdataDataCenteStatus(dc.ID, ankr_const.DataCenteStatusOnLine)
+		} else {
+			UpdataDataCenteStatus(dc.ID, ankr_const.DataCenteStatusOffLine)
+		}
+	}
 
+}
+
+func UpdataDataCenteStatus(id int64, status string) {
+	logStr := fmt.Sprintf("UpdataDataCenteStatus : %d   %s ", id, status)
+	WriteLog(logStr)
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"status": status}})
+
+}
+
+func Contains(a []int64, x int64) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
+}

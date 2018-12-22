@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	port = ":50051"
+	port = ":50052"
 )
 
 type server struct {
@@ -164,13 +164,20 @@ func heartbeat(s *server) {
 	for {
 		logStr := fmt.Sprintf("send HeartBeat to %d DataCenters ", len(s.dcstreams))
 		util.WriteLog(logStr)
+
+		successList := []int64{}
+
 		for key, stream := range s.dcstreams {
 			if sendMessageToK8(stream, "HeartBeat", -1, "", "", 0, "") == false {
 				delete(s.dcstreams, key)
+			} else {
+				successList = append(successList, int64(key))
 			}
 		}
 
-		time.Sleep(time.Second * 300)
+		util.UpdataDataCentersStatus(successList)
+
+		time.Sleep(time.Second * 30)
 	}
 }
 
@@ -238,8 +245,13 @@ func (s server) Handle(e util.Event) {
 		if sendMessageToK8(datacenter, "UpdateTask", task.ID, task.Uniquename, e.Name, e.Replica, "") == false {
 			delete(s.dcstreams, int(task.Datacenterid))
 		} else {
-			util.UpdateTaskReplica(e.TaskID, e.Replica)
-			util.UpdateTaskImage(e.TaskID, e.Name)
+			if e.Replica != 0 {
+				util.UpdateTaskReplica(e.TaskID, e.Replica)
+			}
+			if len(e.Name) > 0 {
+				util.UpdateTaskImage(e.TaskID, e.Name)
+			}
+
 		}
 	}
 
