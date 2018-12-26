@@ -2,10 +2,9 @@ package subscriber
 
 import (
 	"context"
+	"github.com/Ankr-network/refactor/gateway/proto/dccenter"
 	"github.com/micro/go-log"
 	"github.com/micro/go-micro/metadata"
-
-	"github.com/Ankr-network/refactor/app_dccn_dccenter/proto"
 )
 
 type DcCenterSubscriber struct{}

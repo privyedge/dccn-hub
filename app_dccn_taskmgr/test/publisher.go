@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/Ankr-network/refactor/app_dccn_taskmgr/proto"
 	"github.com/go-log/log"
 	"github.com/micro/go-micro"
 	"github.com/pborman/uuid"
-	"time"
 )
 
 // send events using the publisher
@@ -19,8 +20,8 @@ func sendEv(topic string, p micro.Publisher) {
 		ev := &taskmgr.Event{
 			Id:        uuid.NewUUID().String(),
 			Timestamp: time.Now().Unix(),
-			Message:  fmt.Sprintf("Messaging you all day on %s", topic),
-			Op:			taskmgr.OpCode_ADD,
+			Message:   fmt.Sprintf("Messaging you all day on %s", topic),
+			Op:        taskmgr.OpCode_ADD,
 		}
 
 		log.Logf("publishing %+v\n", ev)
@@ -50,4 +51,3 @@ func main() {
 	// block forever
 	select {}
 }
-

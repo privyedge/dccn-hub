@@ -10,6 +10,12 @@ micro new github.com/Ankr-network/refactor/app_dccn_taskmgr --namespace=go.micro
 
 ## Getting Started
 
+- publisher: publish the user's task info to "topic.task.new, topic.task.cancel, topic.task.update"
+- subscriber: subscribe tasks's result from "topic.task.result"
+- handler: request handler
+- config: all configuration
+- proto: serve's interface
+
 - [Configuration](#configuration)
 - [Dependencies](#dependencies)
 - [Usage](#usage)
@@ -22,14 +28,14 @@ micro new github.com/Ankr-network/refactor/app_dccn_taskmgr --namespace=go.micro
 
 ## Dependencies
 
+`go get -v go.etcd.io/etcd`
 Micro services depend on service discovery. The default is consul.
 
 ```
-# install consul
-brew install consul
+# install etcd
+brew install etcd
 
-# run consul
-consul agent -dev
+# run etcd
 ```
 
 ## Usage

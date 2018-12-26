@@ -7,10 +7,20 @@ import (
 	"github.com/Ankr-network/dccn-rpc"
 	"github.com/Ankr-network/refactor/app_dccn_taskmgr/proto"
 	"github.com/Ankr-network/refactor/util"
+	"github.com/micro/go-micro"
 )
 
 type TaskMgrHandler struct{
-	name string
+	name      string
+	newPub micro.Publisher
+	cancelPub micro.Publisher
+}
+
+func New(newPub, cancelPub micro.Publisher) *TaskMgrHandler {
+	return &TaskMgrHandler{
+		newPub:   newPub,
+		cancelPub: cancelPub,
+	}
 }
 
 func (p *TaskMgrHandler) AddTask(ctx context.Context, req *taskmgr.AddTaskRequest, rsp *taskmgr.AddTaskResponse) error {
@@ -58,7 +68,10 @@ func (p *TaskMgrHandler) AddTask(ctx context.Context, req *taskmgr.AddTaskReques
 		e.Type = ankr_const.NewTaskEvent
 		e.TaskID = int(task.ID)
 
-		util.Send(ankr_const.TaskManagerQueueName, e)
+		if err := p.newPub.Publish(context.Background(), e); err != nil {
+			util.WriteLog(err.Error())
+			return err
+		}
 
 		rsp.Status = ankr_const.CliReplyStatusSuccess
 		rsp.Taskid = id
@@ -66,6 +79,7 @@ func (p *TaskMgrHandler) AddTask(ctx context.Context, req *taskmgr.AddTaskReques
 	}
 }
 
+// TaskList get all task list from DB
 func (p *TaskMgrHandler) TaskList(ctx context.Context, in *taskmgr.TaskListRequest, rsp *taskmgr.TaskListResponse) error {
 		token := in.Usertoken
 	user := util.GetUser(token)
@@ -100,6 +114,7 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, in *taskmgr.TaskListReque
 	}
 }
 
+// CancelTask broadcast
 func (p *TaskMgrHandler) CancelTask(ctx context.Context, in *taskmgr.CancelTaskRequest, rsp *taskmgr.CancelTaskResponse) error {
 		util.WriteLog("received cancel task request")
 	token := in.Usertoken
@@ -132,7 +147,11 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, in *taskmgr.CancelTaskR
 		e := util.Event{}
 		e.Type = ankr_const.CancelTaskEvent
 		e.TaskID = int(task.ID)
-		util.Send(ankr_const.TaskManagerQueueName, e)
+		// util.Send(ankr_const.TaskManagerQueueName, e)
+		if err := p.cancelPub.Publish(context.Background(), e); err != nil {
+			util.WriteLog(err.Error())
+			return err
+		}
 
 	}
 
@@ -140,6 +159,7 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, in *taskmgr.CancelTaskR
 	return nil
 }
 
+// UpdateTask first cancel task, then add new task
 func (p *TaskMgrHandler) UpdateTask(ctx context.Context, in *taskmgr.UpdateTaskRequest, rsp *taskmgr.UpdateTaskResponse) error {
 		util.WriteLog("received update task request")
 	token := in.Usertoken
@@ -215,6 +235,7 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, in *taskmgr.UpdateTaskR
 	return nil
 }
 
+// TaskDetail get the deatil info
 func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.TaskDetailRequest, rsp *taskmgr.TaskDetailResponse) error {
 	token := req.Usertoken
 	user := util.GetUser(token)

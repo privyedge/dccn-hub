@@ -1,11 +1,11 @@
-# Dccenter Service
+# Dcmgr Service
 
-This is the Dccenter service
+This is the Dcmgr service
 
 Generated with
 
 ```
-micro new github.com/Ankr-network/refactor/app_dccn_dccenter --namespace=network.ankr --alias=dccenter --type=srv
+micro new github.com/Ankr-network/refactor/app_dccn_dcmgr --namespace=network.ankr --alias=dcmgr --type=srv
 ```
 
 ## Getting Started
@@ -16,9 +16,9 @@ micro new github.com/Ankr-network/refactor/app_dccn_dccenter --namespace=network
 
 ## Configuration
 
-- FQDN: network.ankr.srv.dccenter
+- FQDN: network.ankr.srv.dcmgr
 - Type: srv
-- Alias: dccenter
+- Alias: dcmgr
 
 ## Dependencies
 
@@ -44,7 +44,7 @@ make build
 
 Run the service
 ```
-./dccenter-srv
+./dcmgr-srv
 ```
 
 Build a docker image

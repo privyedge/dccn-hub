@@ -9,7 +9,6 @@ It is generated from these files:
 
 It has these top-level messages:
 	Event
-	Task
 	AddTaskRequest
 	AddTaskResponse
 	TaskListRequest
@@ -21,6 +20,8 @@ It has these top-level messages:
 	UpdateTaskResponse
 	TaskDetailRequest
 	TaskDetailResponse
+	Task
+	TaskResult
 */
 package taskmgr
 
