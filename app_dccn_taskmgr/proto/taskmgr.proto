@@ -61,9 +61,6 @@ message Event {
     OpCode op = 4;
 }
 
-message Task {
-}
-
 // The dccn client request message containing the user's token
 message AddTaskRequest {
     string name = 1; // name of the task/image to run
@@ -127,3 +124,21 @@ message TaskDetailResponse{
     string body = 1;
 }
 
+message Task{
+    string Type = 1;  //"NewTask"  "CancelTask"  "UpdateTask"
+    int64 taskid = 2;  //id of task
+    string taskType = 3; // default or "web"
+    string name = 4;  // UniqueName of the task as taskid
+    string image = 5; // name of docker image
+    int64 replica = 6;
+    string extra = 7; //extra for other arguments
+}
+
+message TaskResult {
+    /* task_id identifies a unique task */
+    string task_id = 1;
+    /* user_id indicates the user to whom the task belongs */
+    string user_id = 2;
+    /* result Results of the calculation */
+    int64 result = 3;
+}

@@ -7,16 +7,10 @@ import (
 	"github.com/micro/go-micro/metadata"
 )
 
-type TaskMgrSubscriber struct{}
-
-func (e *TaskMgrSubscriber) Handle(ctx context.Context, event *taskmgr.Event) error {
+// GetResult receives task result from data center, returns to user
+func GetResult(ctx context.Context, event *taskmgr.TaskResult) error {
 	md, _ := metadata.FromContext(ctx)
-	log.Logf("Handler Received message: ", event, md)
-	return nil
-}
-
-func Handler(ctx context.Context, event *taskmgr.Event) error {
-	md, _ := metadata.FromContext(ctx)
-	log.Logf("Handler Received message: ", event, md)
+	log.Logf("Received Result: ", event, md)
+	// TODO: Deposit the result into DB; mysql or mongodb
 	return nil
 }

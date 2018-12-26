@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/Ankr-network/refactor/app_dccn_taskmgr/filter"
+	"github.com/micro/go-micro/client"
 	"time"
 
 	"github.com/Ankr-network/refactor/app_dccn_taskmgr/handler"
@@ -39,7 +41,8 @@ func init() {
 }
 
 func main() {
-	// New Service
+	// New Service.
+	// TODO: add autheracation module
 	service := micro.NewService(
 		micro.Name("network.ankr.srv.taskmgr"),
 		micro.Version("latest"),
@@ -47,19 +50,21 @@ func main() {
 		micro.RegisterInterval(time.Second*10),
 	)
 
-	// Initialise service
+	// Initialise service.
 	service.Init()
 
-	// Register Handler
-	taskmgr.RegisterTaskMgrHandler(service.Server(), new(handler.TaskMgrHandler))
+	// New Publisher filter with policy
+	pubNew := micro.NewPublisher("topc.task.new", client.NewClient(client.Wrap(taskfilter.NewACWrapper)))
+	// Cancel Publisher broadcast
+	pubCancel := micro.NewPublisher("topic.task.cancel",client.DefaultClient )
 
-	// Register Struct as Subscriber
-	micro.RegisterSubscriber("network.ankr.srv.taskmgr", service.Server(), new(subscriber.TaskMgrSubscriber))
+	// Register Handler.
+	taskmgr.RegisterTaskMgrHandler(service.Server(), handler.New(pubNew, pubCancel))
 
-	// Register Function as Subscriber
-	micro.RegisterSubscriber("network.ankr.srv.taskmgr", service.Server(), subscriber.Handler)
+	// Register Function as Subscriber.
+	micro.RegisterSubscriber("topic.task.result", service.Server(), subscriber.GetResult)
 
-	// Run service
+	// Run service.
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}

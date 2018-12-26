@@ -6,6 +6,7 @@ import (
 	"github.com/micro/go-config/source/file"
 	"github.com/micro/go-log"
 	"github.com/micro/go-micro"
+	"time"
 
 	"github.com/Ankr-network/refactor/app_dccn_dccenter/proto"
 	"github.com/Ankr-network/refactor/app_dccn_dccenter/handler"
@@ -43,6 +44,8 @@ func main() {
 	service := micro.NewService(
 		micro.Name("network.ankr.srv.dccenter"),
 		micro.Version("latest"),
+		micro.RegisterTTL(time.Second*30),
+		micro.RegisterInterval(time.Second*15),
 	)
 
 	// Initialise service
