@@ -251,6 +251,12 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 		return &pb.UpdateTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUserNotOwn}, nil
 	}
 
+	if task.Status == ankr_const.TaskStatusRunning || task.Status == ankr_const.TaskStatusNew {
+		// it is ok
+	} else {
+		return &pb.UpdateTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUpdateFailed}, nil
+	}
+
 	//if len(task.Uniquename) == 0 {
 	//	util.WriteLog("task does not have Uniquename in mongodb")
 	//	return &pb.UpdateTaskResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
@@ -309,6 +315,8 @@ func StartService() {
 	if len(os.Args) == 3 {
 		util.RabbitMQHost = os.Args[2]
 	}
+
+	util.CheckDataBaseExist() // check database initialized
 
 	util.WriteLog("Start API Listner ")
 
