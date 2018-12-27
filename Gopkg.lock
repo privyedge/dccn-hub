@@ -2,18 +2,17 @@
 
 
 [[projects]]
-  branch = "feature/swdev-110-ankr_rpc"
-  digest = "1:46a3371c18503145214688de990711362b4b59e9a211491df16c8b75b9ddc2f2"
-  name = "github.com/Ankr-network/dccn-rpc"
+  branch = "feature/SWDEV-117-ankr_comm"
+  digest = "1:09120b80b2f3e51ab0ea7db299b6673a30177b4a0b7bb9d7f3310ab9b5381955"
+  name = "github.com/Ankr-network/dccn-common"
   packages = [
     ".",
-    "protocol",
-    "protocol_new/cli",
-    "protocol_new/k8s",
+    "protocol/cli",
+    "protocol/k8s",
     "server_rpc",
   ]
   pruneopts = "UT"
-  revision = "fc9bf26f6f0e4a58db776b0f6eeee9f875b954f4"
+  revision = "51e285c2ba623f927bfb7cb37b60e1da3bc8e3b6"
 
 [[projects]]
   digest = "1:5d1b5a25486fc7d4e133646d834f6fca7ba1cef9903d40e7aa786c41b89e9e91"
@@ -153,14 +152,12 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Ankr-network/dccn-rpc",
-    "github.com/Ankr-network/dccn-rpc/protocol",
-    "github.com/Ankr-network/dccn-rpc/protocol_new/cli",
-    "github.com/Ankr-network/dccn-rpc/protocol_new/k8s",
-    "github.com/Ankr-network/dccn-rpc/server_rpc",
+    "github.com/Ankr-network/dccn-common",
+    "github.com/Ankr-network/dccn-common/protocol/cli",
+    "github.com/Ankr-network/dccn-common/protocol/k8s",
+    "github.com/Ankr-network/dccn-common/server_rpc",
     "github.com/streadway/amqp",
     "golang.org/x/net/context",
-    "google.golang.org/grpc",
     "google.golang.org/grpc/reflection",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",

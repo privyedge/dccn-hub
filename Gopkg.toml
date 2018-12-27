@@ -5,13 +5,13 @@
 
 # Required: DCCN RPC package is required to rpc connection among Ankr DCCN
 [[constraint]]
-  branch = "feature/swdev-110-ankr_rpc"
-  name = "github.com/Ankr-network/dccn-rpc"
+  branch = "feature/SWDEV-117-ankr_comm"
+  name = "github.com/Ankr-network/dccn-common"
 
 # Required: Protobuf is required by gRPC
 [[constraint]]
-  name = "github.com/golang/protobuf"
-  version = "1.2.0"
+  branch = "master"
+  name = "github.com/streadway/amqp"
 
 # Required: net.context is required by gRPC
 [[constraint]]
@@ -21,7 +21,7 @@
 # Required: gRPC underlying package
 [[constraint]]
   name = "google.golang.org/grpc"
-  version = "1.16.0"
+  version = "1.17.0"
 
 # Required: MongoDb connector implementation of Golang
 [[constraint]]

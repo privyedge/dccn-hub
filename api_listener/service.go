@@ -2,10 +2,10 @@ package api_listener
 
 import (
 	"fmt"
+	ankr_const "github.com/Ankr-network/dccn-common"
+	pb "github.com/Ankr-network/dccn-common/protocol/cli"
+	"github.com/Ankr-network/dccn-common/server_rpc"
 	"github.com/Ankr-network/dccn-hub/util"
-	ankr_const "github.com/Ankr-network/dccn-rpc"
-	pb "github.com/Ankr-network/dccn-rpc/protocol_new/cli"
-	"github.com/Ankr-network/dccn-rpc/server_rpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/reflection"
 	"log"
@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	port = ":50051"
+	port = ":" + ankr_const.DefaultPort
 )
 
 type server struct {

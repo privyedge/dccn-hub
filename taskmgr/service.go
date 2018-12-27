@@ -2,8 +2,8 @@ package taskmgr
 
 import (
 	"fmt"
+	ankr_const "github.com/Ankr-network/dccn-common"
 	"github.com/Ankr-network/dccn-hub/util"
-	ankr_const "github.com/Ankr-network/dccn-rpc"
 	"os"
 )
 

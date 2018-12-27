@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"github.com/Ankr-network/dccn-rpc"
+	ankr_const "github.com/Ankr-network/dccn-common"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
