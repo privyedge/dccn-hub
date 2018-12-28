@@ -23,7 +23,9 @@ var taskID int64
 const replicaValue int64 = 2
 
 func ClientCreate() {
-	if len(os.Args) == 2 {
+	if len(os.Args) == 3 {
+		address = os.Args[2] + ":" + ankr_const.DefaultPort
+	} else if len(os.Args) == 2 {
 		address = os.Args[1] + ":" + ankr_const.DefaultPort
 	}
 
