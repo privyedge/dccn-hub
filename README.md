@@ -115,3 +115,12 @@ docker run -p 50051:50051 dccn_hub
 ```
 
 for the CircleCI setting, check the .circleci/config.yml for detail,  CircleCI pipeline will build and push the docker image to aws ecr repository "815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr" 
+
+
+## Go test
+cd test  
+go test -v  -args localhost  
+or 
+go test  -args localhost  
+ 
+
