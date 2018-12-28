@@ -34,7 +34,17 @@ func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.
 	if task.Userid != user.ID { // can not get other user task
 		return &pb.TaskDetailResponse{Body: "", Reason: ankr_const.CliErrorReasonUserNotOwn}, nil
 	}
-	return &pb.TaskDetailResponse{Body: task.URL}, nil
+
+	dcs := util.GetDatacentersMap()
+
+	taskInfo := &pb.TaskInfo{}
+	taskInfo.Taskid = task.ID
+	taskInfo.Taskname = task.Name
+	taskInfo.Status = task.Status
+	taskInfo.Replica = int64(task.Replica)
+	taskInfo.Datacenter = dcs[task.Datacenterid]
+
+	return &pb.TaskDetailResponse{Body: task.URL, Taskinfo: taskInfo}, nil
 
 }
 
@@ -315,8 +325,6 @@ func StartService() {
 	if len(os.Args) == 3 {
 		util.RabbitMQHost = os.Args[2]
 	}
-
-	util.CheckDataBaseExist() // check database initialized
 
 	util.WriteLog("Start API Listner ")
 
