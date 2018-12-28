@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package accountmgr;
+
+service AccountMgr{
+    // Creates Create a new Account
+    rpc Create(Account ) returns (Response) {}
+    // Gets the specified Account
+    rpc Get(Account) returns (Response) {}
+    // Gets all Account
+    rpc GetAll(Empty) returns (Account) {}
+    // Auth  validates Account
+    rpc Auth(Account) returns (Token) {}
+    // ValidateToken Validated Token
+    rpc ValidateToken(Token) returns (Token) {}
+}
+
+message Empty {
+}
+
+message Account {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string password = 4;
+    string token = 5;
+}
+
+message Response {
+    Account account = 1;
+}
+
+message Token {
+    string token = 1;
+    bool valid = 2;
+    repeated Error errors = 3;
+}
+
+message Error {
+    int32 code = 1;
+    string description = 2;
+}
