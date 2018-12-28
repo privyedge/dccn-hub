@@ -11,6 +11,6 @@ import (
 func GetResult(ctx context.Context, event *taskmgr.TaskResult) error {
 	md, _ := metadata.FromContext(ctx)
 	log.Logf("Received Result: ", event, md)
-	// TODO: Deposit the result into DB; mysql or mongodb
+	// TODO: Deposit the result into DBConfig; mysql or mongodb
 	return nil
 }

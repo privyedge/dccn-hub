@@ -79,7 +79,7 @@ func (p *TaskMgrHandler) AddTask(ctx context.Context, req *taskmgr.AddTaskReques
 	}
 }
 
-// TaskList get all task list from DB
+// TaskList get all task list from DBConfig
 func (p *TaskMgrHandler) TaskList(ctx context.Context, in *taskmgr.TaskListRequest, rsp *taskmgr.TaskListResponse) error {
 		token := in.Usertoken
 	user := util.GetUser(token)
