@@ -1,38 +1,38 @@
 package handler
 
 import (
-	"context"
-	"errors"
-
-	"github.com/Ankr-network/refactor/util"
-	pb "github.com/Ankr-network/refactor/app_dccn_dccenter/proto"
+	"github.com/Ankr-network/refactor/app_dccn_account/db_account"
+	"github.com/Ankr-network/refactor/app_dccn_account/proto"
+	"github.com/Ankr-network/refactor/app_dccn_account/token"
 )
 
-type DcCenterHandler struct{}
+type AccountHandler struct{
+	accountDB dbaccount.AccountDBService
+	token token.TokenService
+}
 
-func (p *DcCenterHandler) DataCenterList(ctx context.Context, req *pb.DataCenterListRequest, rsp *pb.DataCenterListResponse) error {
-	token := req.Usertoken
-	// TODO: Abstract DB interface
-	user := util.GetUser(token)
-	util.WriteLog("task list reqeust")
-
-	if user.ID == 0 {
-		util.WriteLog("task list reqeust fail for user token error")
-		return errors.New("task list reqeust fail for user token error")
-	} else {
-		dataCenters := util.DataCeterList()
-
-		var dcList []*pb.DataCenterInfo
-		for i := range dataCenters {
-			dataCenter := dataCenters[i]
-			dcInfo := &pb.DataCenterInfo{}
-			dcInfo.Id = dataCenter.ID
-			dcInfo.Name = dataCenter.Name
-			dcList = append(dcList, dcInfo)
-			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
-		}
-
-		rsp.DcList = dcList
-		return nil
+func New(db dbaccount.AccountDBService, token token.TokenService) *AccountHandler {
+	return &AccountHandler{
+		accountDB:db,
+		token:token,
 	}
 }
+
+func (p *AccountHandler) New(ctx context.Context, ac *accountmgr.Account, rsp *accountmgr.Response) error {
+	rsp.Error =  p.accountDB.New(ac)
+	return nil
+}
+
+func (p *AccountHandler) Get(ctx context.Context, name *accountmgr.Name, rsp *accountmgr.Response) error {
+	rsp.Account, rsp.Error = p.accountDB.Get(name.Name)
+	return nil
+}
+
+func (p *AccountHandler) Auth(ctx context.Context, ac *accountmgr.Account, rsp *accountmgr.Token) error {
+	return nil
+}
+
+func (p *AccountHandler) ValidateToken(ctx context.Context, t *accountmgr.Token, rsp *accountmgr.Token) error {
+	return nil
+}
+

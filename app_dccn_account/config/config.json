@@ -1,0 +1,9 @@
+{
+  "DB": {
+    "Addrs": ["127.0.0.1:2380"],
+    "Timeout": 15,
+    "PoolLimit": 4096,
+    "DBName": "ankr",
+    "Collection": "account"
+  }
+}
