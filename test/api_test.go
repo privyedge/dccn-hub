@@ -67,7 +67,8 @@ func TestCreateTask(t *testing.T) {
 
 	taskID = r.Taskid
 
-	time.Sleep(time.Second * 1)
+	fmt.Printf("wait 10 seconds for dataCenter update  ...  \n")
+	time.Sleep(time.Second * 10)
 	status := getTaskStatus(taskID).Status
 
 	if status != ankr_const.TaskStatusRunning {
@@ -93,7 +94,8 @@ func TestUpdateTask(t *testing.T) {
 		t.Error("reply status error")
 	}
 
-	time.Sleep(time.Second * 1)
+	fmt.Printf("wait 10 seconds for dataCenter update  ...  \n")
+	time.Sleep(time.Second * 10)
 	replica := getTaskStatus(taskID).Replica
 
 	if replicaValue != replica {
