@@ -120,7 +120,7 @@ for the CircleCI setting, check the .circleci/config.yml for detail,  CircleCI p
 ## Go test
 cd test  
 go test -v  -args localhost  
-or 
+or    
 go test  -args localhost  
  
 
