@@ -15,12 +15,12 @@ $(SUBDIRS):
 .PHONY: build
 build: proto
 
-	go build -o app_dccn_dccenter main.go plugin.go
+	go build -o app_dccn_account main.go plugin.go
 
 .PHONY: run
 run: build
 	MICRO_BROKER=rabbitmq \
-	./app_dccn_dccenter
+	./app_dccn_account
 
 .PHONY: test
 test:
@@ -28,4 +28,4 @@ test:
 
 .PHONY: docker
 docker:
-	docker build . -t app_dccn_dccenter:latest
+	docker build . -t app_dccn_account:latest

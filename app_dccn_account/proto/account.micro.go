@@ -9,7 +9,9 @@ It is generated from these files:
 
 It has these top-level messages:
 	Empty
+	Name
 	Account
+	Accounts
 	Response
 	Token
 	Error
@@ -19,6 +21,7 @@ package accountmgr
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
+import _ "google.golang.org/genproto/googleapis/api/annotations"
 
 import (
 	context "context"
@@ -45,12 +48,10 @@ var _ server.Option
 // Client API for AccountMgr service
 
 type AccountMgrService interface {
-	// Creates Create a new Account
-	Create(ctx context.Context, in *Account, opts ...client.CallOption) (*Response, error)
+	// New Create a new Account
+	New(ctx context.Context, in *Account, opts ...client.CallOption) (*Response, error)
 	// Gets the specified Account
-	Get(ctx context.Context, in *Account, opts ...client.CallOption) (*Response, error)
-	// Gets all Account
-	GetAll(ctx context.Context, in *Empty, opts ...client.CallOption) (*Account, error)
+	Get(ctx context.Context, in *Name, opts ...client.CallOption) (*Response, error)
 	// Auth  validates Account
 	Auth(ctx context.Context, in *Account, opts ...client.CallOption) (*Token, error)
 	// ValidateToken Validated Token
@@ -75,8 +76,8 @@ func NewAccountMgrService(name string, c client.Client) AccountMgrService {
 	}
 }
 
-func (c *accountMgrService) Create(ctx context.Context, in *Account, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "AccountMgr.Create", in)
+func (c *accountMgrService) New(ctx context.Context, in *Account, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "AccountMgr.New", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -85,19 +86,9 @@ func (c *accountMgrService) Create(ctx context.Context, in *Account, opts ...cli
 	return out, nil
 }
 
-func (c *accountMgrService) Get(ctx context.Context, in *Account, opts ...client.CallOption) (*Response, error) {
+func (c *accountMgrService) Get(ctx context.Context, in *Name, opts ...client.CallOption) (*Response, error) {
 	req := c.c.NewRequest(c.name, "AccountMgr.Get", in)
 	out := new(Response)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accountMgrService) GetAll(ctx context.Context, in *Empty, opts ...client.CallOption) (*Account, error) {
-	req := c.c.NewRequest(c.name, "AccountMgr.GetAll", in)
-	out := new(Account)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -128,12 +119,10 @@ func (c *accountMgrService) ValidateToken(ctx context.Context, in *Token, opts .
 // Server API for AccountMgr service
 
 type AccountMgrHandler interface {
-	// Creates Create a new Account
-	Create(context.Context, *Account, *Response) error
+	// New Create a new Account
+	New(context.Context, *Account, *Response) error
 	// Gets the specified Account
-	Get(context.Context, *Account, *Response) error
-	// Gets all Account
-	GetAll(context.Context, *Empty, *Account) error
+	Get(context.Context, *Name, *Response) error
 	// Auth  validates Account
 	Auth(context.Context, *Account, *Token) error
 	// ValidateToken Validated Token
@@ -142,9 +131,8 @@ type AccountMgrHandler interface {
 
 func RegisterAccountMgrHandler(s server.Server, hdlr AccountMgrHandler, opts ...server.HandlerOption) error {
 	type accountMgr interface {
-		Create(ctx context.Context, in *Account, out *Response) error
-		Get(ctx context.Context, in *Account, out *Response) error
-		GetAll(ctx context.Context, in *Empty, out *Account) error
+		New(ctx context.Context, in *Account, out *Response) error
+		Get(ctx context.Context, in *Name, out *Response) error
 		Auth(ctx context.Context, in *Account, out *Token) error
 		ValidateToken(ctx context.Context, in *Token, out *Token) error
 	}
@@ -159,16 +147,12 @@ type accountMgrHandler struct {
 	AccountMgrHandler
 }
 
-func (h *accountMgrHandler) Create(ctx context.Context, in *Account, out *Response) error {
-	return h.AccountMgrHandler.Create(ctx, in, out)
+func (h *accountMgrHandler) New(ctx context.Context, in *Account, out *Response) error {
+	return h.AccountMgrHandler.New(ctx, in, out)
 }
 
-func (h *accountMgrHandler) Get(ctx context.Context, in *Account, out *Response) error {
+func (h *accountMgrHandler) Get(ctx context.Context, in *Name, out *Response) error {
 	return h.AccountMgrHandler.Get(ctx, in, out)
-}
-
-func (h *accountMgrHandler) GetAll(ctx context.Context, in *Empty, out *Account) error {
-	return h.AccountMgrHandler.GetAll(ctx, in, out)
 }
 
 func (h *accountMgrHandler) Auth(ctx context.Context, in *Account, out *Token) error {
