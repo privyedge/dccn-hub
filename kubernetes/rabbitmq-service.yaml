@@ -11,3 +11,4 @@ spec:
   selector:
     name: rabbitmq
 
+

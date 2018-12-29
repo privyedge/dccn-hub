@@ -8,9 +8,10 @@ import (
 )
 
 type server struct {
-	name string // protects data
+	name string
 }
 
+//Listen RambbitMQ queue (ankr_const.TaskManagerQueueName), handle the event from api_listener, router the event to DataCetner
 func (s server) Handle(e util.Event) {
 	logStr := fmt.Sprintf("this is handle message %s\n", e.Type)
 	util.WriteLog(logStr)

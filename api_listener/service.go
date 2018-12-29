@@ -20,6 +20,7 @@ type server struct {
 	name string
 }
 
+// gRPC interface function
 func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.TaskDetailResponse, error) {
 	util.WriteLog("received task detail request")
 	token := in.Usertoken
@@ -48,6 +49,7 @@ func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.
 
 }
 
+// gRPC interface function
 func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTaskResponse, error) {
 	util.WriteLog("received add task request")
 	token := in.Usertoken
@@ -78,8 +80,8 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 		id := util.AddTask(task)
 		task.ID = id
 
-		tastName := util.GetTaskNameAsTaskIDForK8s(task)
-		util.UpdateTaskUnqueName(int(id), tastName)
+		taskName := util.GetTaskNameAsTaskIDForK8s(task)
+		util.UpdateTaskUnqueName(int(id), taskName)
 
 		if in.Replica <= 0 || in.Replica > 100 {
 			logStr := fmt.Sprintf("replica is eror %d use default 1 ", in.Replica)
@@ -99,6 +101,7 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 
 }
 
+// gRPC interface function
 func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.TaskListResponse, error) {
 	token := in.Usertoken
 	user := util.GetUser(token)
@@ -136,6 +139,7 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 
 }
 
+// gRPC interface function
 func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListRequest) (*pb.DataCenterListResponse, error) {
 	token := in.Usertoken
 	user := util.GetUser(token)
@@ -163,6 +167,7 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 
 }
 
+// gRPC interface function
 func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.CancelTaskResponse, error) {
 	util.WriteLog("received cancel task request")
 	token := in.Usertoken
@@ -200,6 +205,7 @@ func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.
 
 }
 
+// gRPC interface function
 func (s *server) PurgeTask(ctx context.Context, in *pb.PurgeTaskRequest) (*pb.PurgeTaskResponse, error) {
 	util.WriteLog("received cancel task request")
 	token := in.Usertoken
@@ -239,6 +245,7 @@ func (s *server) PurgeTask(ctx context.Context, in *pb.PurgeTaskRequest) (*pb.Pu
 
 }
 
+// gRPC interface function
 func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.UpdateTaskResponse, error) {
 	util.WriteLog("received update task request")
 	token := in.Usertoken
@@ -266,11 +273,6 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 	} else {
 		return &pb.UpdateTaskResponse{Status: "Failure", Reason: ankr_const.CliErrorReasonUpdateFailed}, nil
 	}
-
-	//if len(task.Uniquename) == 0 {
-	//	util.WriteLog("task does not have Uniquename in mongodb")
-	//	return &pb.UpdateTaskResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
-	//}
 
 	logStr := fmt.Sprintf("task %d in DataCenter %d", task.ID, int(task.Datacenterid))
 	util.WriteLog(logStr)

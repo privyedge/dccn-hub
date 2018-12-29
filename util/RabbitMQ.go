@@ -45,6 +45,7 @@ func getRabbitMQHost() string {
 	return host
 }
 
+//send message to RabbitMQ queue
 func Send(qName string, e Event) {
 
 	conn, err := amqp.Dial(getRabbitMQHost())
@@ -82,6 +83,7 @@ func Send(qName string, e Event) {
 	failOnError(err, "Failed to publish a message")
 }
 
+//receive messages from RabbitMQ queue, support failed reconnect function
 func Receive(qName string, handler Handler) {
 	var rabbitCloseError chan *amqp.Error
 

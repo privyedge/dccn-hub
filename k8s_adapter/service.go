@@ -32,7 +32,6 @@ func slelecDatacenterByID(s *server, dcID int) pb.Dccnk8S_K8TaskServer {
 	}
 
 	return nil
-
 }
 
 func SelectFreeDatacenter(s *server) pb.Dccnk8S_K8TaskServer {
@@ -51,6 +50,7 @@ func SelectFreeDatacenter(s *server) pb.Dccnk8S_K8TaskServer {
 
 }
 
+// send message to DataCenter by stream
 func sendMessageToK8(stream pb.Dccnk8S_K8TaskServer, taskType string, taskid int64, name string, image string, replica int, extra string) bool {
 	logStr := fmt.Sprintf("send sendMessageToK8 id %d name %s image %s replica %d  ", int(taskid), name, image, replica)
 	util.WriteLog(logStr)
@@ -68,6 +68,7 @@ func sendMessageToK8(stream pb.Dccnk8S_K8TaskServer, taskType string, taskid int
 	return false
 }
 
+//receive message from DataCenter by stream, two type of messages: HeartBeat Task
 func (s *server) K8Task(stream pb.Dccnk8S_K8TaskServer) error {
 
 	for {
@@ -99,6 +100,7 @@ func (s *server) K8Task(stream pb.Dccnk8S_K8TaskServer) error {
 	}
 }
 
+//deal with HeartBeat message from DataCenter
 func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccnk8S_K8TaskServer) {
 	datacenter := util.GetDataCenter(in.Datacenter)
 	if datacenter.ID == 0 {
@@ -119,6 +121,7 @@ func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccnk8S_K8TaskServ
 
 }
 
+//deal with Task message from DataCenter
 func processTaskStatus(taskid int64, status string, dcName string, url string) {
 	datacenter := util.GetDataCenter(dcName)
 	if datacenter.ID == 0 {
@@ -160,6 +163,7 @@ func processTaskStatus(taskid int64, status string, dcName string, url string) {
 	}
 }
 
+//send heartbeat to datacenter and also update datacenter status
 func heartbeat(s *server) {
 	for {
 		logStr := fmt.Sprintf("send HeartBeat to %d DataCenters ", len(s.dcstreams))
@@ -181,6 +185,7 @@ func heartbeat(s *server) {
 	}
 }
 
+//Listen RambbitMQ queue (ankr_const.DataCenterName), handle the task (create/update/cancel/purge) event
 func (s server) Handle(e util.Event) {
 	logStr := fmt.Sprintf("this is handle event type %s taskid %d ", e.Type, e.TaskID)
 	util.WriteLog(logStr)
