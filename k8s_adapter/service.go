@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	port = ":50052"
+	port = ":" + ankr_const.DefaultPort
 )
 
 type server struct {
