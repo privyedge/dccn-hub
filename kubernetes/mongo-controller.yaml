@@ -24,5 +24,5 @@ spec:
       volumes:
         - name: mongo-persistent-storage
           awsElasticBlockStore:
-            volumeID: aws://us-west-2a/vol-0435e64fb343f9ff5
+            volumeID: aws://us-west-1a/vol-02a5718a39dab646d
             fsType: ext4

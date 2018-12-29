@@ -16,7 +16,7 @@ spec:
       imagePullSecrets:
       - name: dccn-ecr
       containers:
-      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-k8s-adapter:feat
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-k8s-adapter:stage20181222041227
         imagePullPolicy: "Always"
         name: hub
         ports:
