@@ -219,7 +219,8 @@ func (s server) Handle(e util.Event) {
 				logStr := fmt.Sprintf(">>>send add task message %s to data center failed", message.Name)
 				util.WriteLog(logStr)
 			} else {
-				logStr := fmt.Sprintf(">>>send add task message %s to data center success", message.Name)
+				logStr := fmt.Sprintf(">>>send add task message %s to data center success  taskid :%s  name: %s tasktype: %s replica: %s image: %s ",
+					message.Name, message.Taskid, message.Name, message.TaskType, message.Replica, message.Image)
 				util.WriteLog(logStr)
 			}
 		} else {
