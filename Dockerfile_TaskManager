@@ -1,5 +1,5 @@
 FROM golang:1.11.2-alpine3.8
-RUN apk update && apk add git && apk add --update bash && apk add openssh     this is a test
+RUN apk update && apk add git && apk add --update bash && apk add openssh
 
 RUN go get github.com/golang/dep/cmd/dep
 
