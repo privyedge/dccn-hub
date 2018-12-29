@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	port = ":" + ankr_const.DefaultPort
+	port = ":50052"
 )
 
 type server struct {
@@ -219,7 +219,7 @@ func (s server) Handle(e util.Event) {
 				logStr := fmt.Sprintf(">>>send add task message %s to data center failed", message.Name)
 				util.WriteLog(logStr)
 			} else {
-				logStr := fmt.Sprintf(">>>send add task message %s to data center success  taskid :%s  name: %s tasktype: %s replica: %s image: %s ",
+				logStr := fmt.Sprintf(">>>send add task message %s to data center success  taskid :%d  name: %s tasktype: %s replica: %d image: %s ",
 					message.Name, message.Taskid, message.Name, message.TaskType, message.Replica, message.Image)
 				util.WriteLog(logStr)
 			}
