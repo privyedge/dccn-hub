@@ -2,17 +2,18 @@ package taskmgr
 
 import (
 	"fmt"
-	"github.com/Ankr-network/dccn-hub/util"
-	pb "github.com/Ankr-network/dccn-rpc/protocol"
-	server_rpc "github.com/Ankr-network/dccn-rpc/server_rpc"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/reflection"
 	"io"
 	"log"
 	"math/rand"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/Ankr-network/dccn-hub/util"
+	pb "github.com/Ankr-network/dccn-rpc/protocol"
+	server_rpc "github.com/Ankr-network/dccn-rpc/server_rpc"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -24,6 +25,7 @@ type server struct {
 	dcstreams map[int]pb.Dccncli_K8TaskServer //datacenterid => stream
 }
 
+// Add a new task to a data center
 func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTaskResponse, error) {
 	fmt.Printf("received add task request\n")
 	token := in.Usertoken
@@ -57,6 +59,7 @@ func (s *server) AddTask(ctx context.Context, in *pb.AddTaskRequest) (*pb.AddTas
 
 }
 
+// Select a data center. This is currently using round-robin and ßwill be updated in the future using Federation.
 func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer {
 	keys := []int{}
 	for key, _ := range s.dcstreams {
@@ -73,6 +76,7 @@ func SelectFreeDatacenter(s *server) pb.Dccncli_K8TaskServer {
 
 }
 
+// List all the tasks for the current user.
 func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.TaskListResponse, error) {
 	token := in.Usertoken
 	user := util.GetUser(token)
@@ -100,6 +104,7 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 
 }
 
+// Cancel a task with given task id.
 func (s *server) CancelTask(ctx context.Context, in *pb.CancelTaskRequest) (*pb.CancelTaskResponse, error) {
 	fmt.Printf("received cancel task request\n")
 	token := in.Usertoken
@@ -230,8 +235,11 @@ func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccncli_K8TaskServ
 //deal with Task message from DataCenter
 func processTaskStatus(taskid int64, status string, dcName string) {
 	datacenter := util.GetDataCenter(dcName)
+	// fmt.Printf the error message for now. They are supposed to be throw as an exception in the future.
 	if datacenter.ID == 0 {
 		fmt.Printf("datacenter not found\n")
+	} else if taskid <= 0 {
+		fmt.Printf("Task id is supposed to be larger than zero\n")
 	} else {
 
 		fmt.Printf("processTaskStatus %d %s\n", taskid, status)
@@ -254,6 +262,7 @@ func processTaskStatus(taskid int64, status string, dcName string) {
 	}
 }
 
+// Deal with heartbeats between Ankr hub and Data centers.
 func heartbeat(s *server) {
 	for {
 		fmt.Printf("send HeartBeat to %d DataCenters \n", len(s.dcstreams))
@@ -267,6 +276,7 @@ func heartbeat(s *server) {
 	}
 }
 
+// Serving gRPC request.
 func Serve() {
 	if len(os.Args) == 2 {
 		util.MongoDBHost = os.Args[1]
