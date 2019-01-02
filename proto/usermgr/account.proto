@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package usermgr;
+
+import "google/api/annotations.proto";
+
+// TODO: supports filter
+service UserMgr {
+    // New Create a new user
+    rpc New(User) returns (Response) {
+        option (google.api.http) = {
+			post: "/user/new"
+			body: "*"
+		};
+    }
+    // Gets the specified user
+    rpc Get(Name) returns (Response) {
+        option (google.api.http) = {
+			post: "/user/get"
+			body: "*"
+		};
+    }
+    // Auth  validates user
+    rpc NewToken(User) returns (Token) {
+        option (google.api.http) = {
+			post: "/user/token/new"
+			body: "*"
+		};
+    }
+    // ValidateToken Validated Token
+    rpc VerifyToken(Token) returns (Token) {
+        option (google.api.http) = {
+			post: "/user/token/verify"
+			body: "*"
+		};
+    }
+}
+
+message Request {}
+
+message Name{
+    string name = 1;
+}
+
+message User {
+    // id self-increase
+    uint64 id = 1;
+    // name should be unique
+    string name = 2;
+    // nickname show on UI
+    string nickname = 4;
+    // email user's email
+    string email = 5;
+    // password string
+    string password = 6;
+    // balance user's balance in account
+    int32 balance = 7;
+    // is_deleted user's status
+    bool is_deleted = 8;
+}
+
+message Response {
+    User user = 1;
+    Error error = 2;
+}
+
+message Token {
+    string token_string = 1;
+    bool valid = 2;
+    Error error = 3;
+}
+
+message Error {
+    int32 code = 1;
+    string description = 2;
+}

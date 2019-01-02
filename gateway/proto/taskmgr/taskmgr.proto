@@ -64,12 +64,12 @@ message Event {
 message Task {
 }
 
-// The dccn client request message containing the user's token
+// The dccn client request message containing the taskmgr's token
 message AddTaskRequest {
     string name = 1; // name of the task/image to run
     string type = 2; // default or "web" as website
     string datacenter = 3; // default or  datacenter name
-    string usertoken = 4; //user account, alphanumeric chars, may not be used now for authentication
+    string usertoken = 4; //taskmgr account, alphanumeric chars, may not be used now for authentication
     int64 replica = 5;   // how many replica of docker instance
 }
 

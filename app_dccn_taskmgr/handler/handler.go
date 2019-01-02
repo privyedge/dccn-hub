@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Ankr-network/dccn-rpc"
-	"github.com/Ankr-network/refactor/app_dccn_taskmgr/proto"
+	"github.com/Ankr-network/refactor/proto"
 	"github.com/Ankr-network/refactor/util"
 	"github.com/micro/go-micro"
 )
@@ -29,11 +29,11 @@ func (p *TaskMgrHandler) AddTask(ctx context.Context, req *taskmgr.AddTaskReques
 	user := util.GetUser(token)
 
 	if user.ID == 0 {
-		util.WriteLog("add new task fail for user token error")
+		util.WriteLog("add new task fail for taskmgr token error")
 		rsp.Status = ankr_const.CliReplyStatusFailure
 		rsp.Taskid = -1
 
-		return errors.New("add new task fail for user token error")
+		return errors.New("add new task fail for taskmgr token error")
 	} else {
 
 		// check datacenter name valid
@@ -86,8 +86,8 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, in *taskmgr.TaskListReque
 	util.WriteLog("task list reqeust")
 
 	if user.ID == 0 {
-		util.WriteLog("task list reqeust fail for user token error")
-		return errors.New("task list reqeust fail for user token error")
+		util.WriteLog("task list reqeust fail for taskmgr token error")
+		return errors.New("task list reqeust fail for taskmgr token error")
 	} else {
 		tasks := util.TaskList(int(user.ID))
 
@@ -103,7 +103,7 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, in *taskmgr.TaskListReque
 			taskInfo.Replica = int64(task.Replica)
 			taskInfo.Datacenter = dcs[task.Datacenterid]
 			if len(taskInfo.Datacenter) == 0 {
-				taskInfo.Datacenter = task.Datacenter // for user assign datacenter name but not startsuccess
+				taskInfo.Datacenter = task.Datacenter // for taskmgr assign datacenter name but not startsuccess
 			}
 			taskList = append(taskList, taskInfo)
 			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
@@ -129,15 +129,15 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, in *taskmgr.CancelTaskR
 	}
 
 	if user.ID == 0 {
-		util.WriteLog("cancel task fail for user token error")
+		util.WriteLog("cancel task fail for taskmgr token error")
 		rsp.Status = "Failure"
-		return errors.New("cancel task fail for user token error")
+		return errors.New("cancel task fail for taskmgr token error")
 	}
 
 	if task.Userid != user.ID {
-		util.WriteLog("task uid != user id")
+		util.WriteLog("task uid != taskmgr id")
 		rsp.Status = "Failure"
-		return errors.New("task uid != user id")
+		return errors.New("task uid != taskmgr id")
 	}
 
 	logStr := fmt.Sprintf("task %d in DataCenter %d", task.ID, int(task.Datacenterid))
@@ -174,15 +174,15 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, in *taskmgr.UpdateTaskR
 	}
 
 	if user.ID == 0 {
-		util.WriteLog("cancel task fail for user token error")
+		util.WriteLog("cancel task fail for taskmgr token error")
 		rsp.Status = "Failure"
-		return errors.New("cancel task fail for user token error")
+		return errors.New("cancel task fail for taskmgr token error")
 	}
 
 	if task.Userid != user.ID {
-		util.WriteLog("task uid != user id")
+		util.WriteLog("task uid != taskmgr id")
 		rsp.Status = "Failure"
-		return errors.New("task uid != user id")
+		return errors.New("task uid != taskmgr id")
 	}
 
 	if len(task.Uniquename) == 0 {
@@ -241,12 +241,12 @@ func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.TaskDetail
 	user := util.GetUser(token)
 
 	if user.ID == 0 {
-		util.WriteLog("add new task fail for user token error")
-		return errors.New("add new task fail for user token error")
+		util.WriteLog("add new task fail for taskmgr token error")
+		return errors.New("add new task fail for taskmgr token error")
 	}
 	task := util.GetTask(int(req.Taskid))
-	if task.Userid != user.ID { // can not get other user task
-		return errors.New("can not get other user task")
+	if task.Userid != user.ID { // can not get other taskmgr task
+		return errors.New("can not get other taskmgr task")
 	}
 
 	rsp.Body = task.URL

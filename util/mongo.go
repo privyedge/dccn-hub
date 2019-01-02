@@ -239,9 +239,9 @@ func CancelTask(taskid int) {
 func AddUser(user User) {
 
 	db := GetDBInstance()
-	c := db.C("user")
+	c := db.C("taskmgr")
 	id := GetID("userid", db)
-	logStr := fmt.Sprintf("Id of user: %d", id)
+	logStr := fmt.Sprintf("Id of taskmgr: %d", id)
 	WriteLog(logStr)
 	c.Insert(bson.M{"_id": id, "id": id, "name": user.Name, "token": user.Token, "money": user.Money})
 
@@ -282,12 +282,8 @@ func GetDatacenterByID(id int) DataCenter {
 func GetUser(token string) User {
 	user := User{}
 	db := GetDBInstance()
-	c := db.C("user")
-	err := c.Find(bson.M{"token": token}).One(&user)
-	if err != nil {
-		WriteLog("DoReConnectMongodb")
-		DoReConnectMongodb()
-	}
+	c := db.C("taskmgr")
+	c.Find(bson.M{"token": token}).One(&user)
 	return user
 }
 

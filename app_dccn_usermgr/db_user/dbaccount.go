@@ -1,45 +1,38 @@
 package dbuser
 
 import (
-	pb "github.com/Ankr-network/refactor/app_dccn_usermgr/proto"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"errors"
 	"sync"
 	"sync/atomic"
-)
 
-const (
-	userCollection = "user"
-)
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
-// 101:  User already exists"
-// 102: Other errors
+	pb "github.com/Ankr-network/refactor/proto/usermgr"
+)
 
 // mysql or mongodb. who is better.
-type UserDBService interface {
-	// New Creates a new user if not exits
-	New(user *pb.User) *pb.Error
-	// Get get user by user's id
-	Get(name string) (*pb.User, *pb.Error)
+type DBService interface {
+	// New Creates a new usermgr if not exits
+	New(user *pb.User) error
+	// Get get usermgr by usermgr's id
+	Get(name string) (*pb.User, error)
 }
 
-// UserDB implements UserDBService
+// UserDB implements DBService
 type UserDB struct{
 	mu sync.Mutex
 	count int64
 	c *mgo.Collection
 }
 
-// New Creates a new user if not exits.
-func New(c *mgo.Collection) (*UserDB, error) {
-	count, err := c.Find(bson.M{}).Count()
-	if err != nil {
-		return nil, err
-	}
-	return &UserDB{count: int64(count), c: c}, nil
+// New Creates a new usermgr if not exits.
+func New(c *mgo.Collection) *UserDB {
+	count, _ := c.Find(bson.M{}).Count()
+	return &UserDB{count: int64(count), c: c}
 }
 
-// Get gets user by user's id.
+// Get gets usermgr by usermgr's id.
 func (p *UserDB) Get(name string) (*pb.User, error) {
 	var result *pb.User
 	if err := p.c.Find(bson.M{"name": name}).One(result); err != nil {
@@ -48,20 +41,20 @@ func (p *UserDB) Get(name string) (*pb.User, error) {
 	return result, nil
 }
 
-// New creates a new user if it not exists, name unique as _id
+// New creates a new usermgr if it not exists, name unique as _id
 // TODO: batch operations throught bulk
-func (p *UserDB) New(user pb.User) *pb.Error {
+func (p *UserDB) New(user *pb.User) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	// the UI ensures the name not empty
-	ac, err := p.Get(user.Name)
+	u, err := p.Get(user.Name)
 	if err != nil {
-		return &pb.Error{Code:102, Description: err.Error()}
+		return err
 	}
 
-	if ac != nil {
-		return &pb.Error{Code: 101, Description: "User already exists"}
+	if u != nil {
+		return errors.New("User already exists")
 	}
 
 	err = p.c.Insert(bson.M{
@@ -75,7 +68,7 @@ func (p *UserDB) New(user pb.User) *pb.Error {
 	})
 
 	if err != nil {
-		return &pb.Error{Code:102, Description:err.Error()}
+		return err
 	}
 
 	return nil

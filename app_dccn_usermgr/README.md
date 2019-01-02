@@ -1,11 +1,11 @@
-# Account Service
+# user Service
 
-This is Account Management & Authentication Services
+This is taskmgr Management & Authentication Services
 
 ## Contents
 - config     - configuration information for hot updates
-- db_account - wrapper operations of account table
-- handler    - an RPC account service
+- db_user - wrapper operations of taskmgr table
+- handler    - an RPC taskmgr service
 - proto      - declaration of data structures and interfaces
 - testdata   - here are test data
 - token      - Authentication Service
@@ -18,12 +18,13 @@ This is Account Management & Authentication Services
 - [Protobufs](#protobufs)
 - [Warnning](#warnning)
 - [TODO](#todo)
+- [Curl](#curl)
 
 
 Generated with
 
 ```
-micro new github.com/Ankr-network/refactor/app_dccn_account --namespace=network.ankr --alias=account --type=srv
+micro new github.com/Ankr-network/refactor/app_dccn_user --namespace=network.ankr --alias=user --type=srv
 ```
 
 ### Setup
@@ -62,9 +63,20 @@ Install the protoc-gen libraries and other dependencies:
 
 
 ### Warnning
-    $ Account in database can only be operated and maintained by the service
+    $ user in database can only be operated and maintained by the service
 
 ### TODO:
     $ using TOML as a configuration file
     $ add support for bulk operations
     $ support for filtering lookups
+
+### Curl
+
+* Authentication request
+
+    $ curl --request POST http://host:port/session -H "Content-Type:application/json" -d '{"username":"admin","password":"123"}'
+
+* Resourse request
+
+    $ curl --request GET http://www.video4.cn:3030/api/projects/2 -H "Authorization:Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiJ9.d1bf66192c1bff9038bcd212ba05dfde55c40d4e2254dd99c9c7653dd27c39ba"
+

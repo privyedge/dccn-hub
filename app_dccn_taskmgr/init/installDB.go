@@ -28,7 +28,7 @@ func main() {
 	c.Insert(bson.M{"_id": "taskid", "sequencevalue": 10})
 	c.Insert(bson.M{"_id": "datacenterid", "sequencevalue": 10})
 
-	u := session.DB("test").C("user")
+	u := session.DB("test").C("taskmgr")
 	u.Insert(bson.M{"_id": 1, "id": 1, "name": "John", "token": "ed1605e17374bde6c68864d072c9f5c9", "money": 1000})
 
 }

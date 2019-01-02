@@ -61,12 +61,12 @@ message Event {
     OpCode op = 4;
 }
 
-// The dccn client request message containing the user's token
+// The dccn client request message containing the taskmgr's token
 message AddTaskRequest {
     string name = 1; // name of the task/image to run
     string type = 2; // default or "web" as website
     string datacenter = 3; // default or  datacenter name
-    string usertoken = 4; //user account, alphanumeric chars, may not be used now for authentication
+    string usertoken = 4; //taskmgr account, alphanumeric chars, may not be used now for authentication
     int64 replica = 5;   // how many replica of docker instance
 }
 
@@ -137,7 +137,7 @@ message Task{
 message TaskResult {
     /* task_id identifies a unique task */
     string task_id = 1;
-    /* user_id indicates the user to whom the task belongs */
+    /* user_id indicates the taskmgr to whom the task belongs */
     string user_id = 2;
     /* result Results of the calculation */
     int64 result = 3;

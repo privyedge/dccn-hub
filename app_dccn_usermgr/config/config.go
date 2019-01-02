@@ -1,23 +1,32 @@
 package config
 
 import (
-	"github.com/Ankr-network/refactor/util"
-	"github.com/Ankr-network/refactor/util/db"
+	"fmt"
+	"sync"
+
 	"github.com/micro/go-config"
 	"github.com/micro/go-config/source/file"
-	"sync"
+
+	"github.com/Ankr-network/refactor/util"
+	"github.com/Ankr-network/refactor/util/db"
+	"github.com/Ankr-network/refactor/app_dccn_usermgr/token"
 )
 
 
-type ReloadFunc func()
-
 type Config struct {
-	once sync.Once
-	DB utildb.DBConfig
-	DBName string
+	DBConfig   utildb.Config
+	TokenConfig token.Config
+
+	DB         string
 	Collection string
-	update chan struct{}
-	done chan struct{}
+
+	TTL int
+	Interval int
+
+	once       sync.Once
+	update     chan struct{}
+	done       chan struct{}
+	watcher config.Watcher
 }
 
 func New(path string) (*Config, error) {
@@ -31,9 +40,16 @@ func New(path string) (*Config, error) {
 		return nil, err
 	}
 
+	// w, err := config.Watch("DB")
+	// if err != nil {
+	// 	util.WriteLog(err.Error())
+	// 	return nil, err
+	// }
+
 	conf := &Config{
-		update: make(chan struct{}),
-		done: make(chan struct{}),
+		update: make(chan struct{}, 1),
+		done: make(chan struct{}, 1),
+		// watcher: w,
 	}
 
 	if err = config.Scan(&conf); err != nil {
@@ -45,17 +61,12 @@ func New(path string) (*Config, error) {
 
 // Watch watches the config's update.
 func (p *Config) Watch(path string, relaod func()) {
-	w, err := config.Watch(path)
-	if err != nil {
-		util.WriteLog(err.Error())
-		return
-	}
 	for {
 		select {
 		case <- p.done:
 			return
 		default:
-			v, err := w.Next()
+			v, err := p.watcher.Next()
 			if err != nil {
 				util.WriteLog(err.Error())
 				// ignores the errors
@@ -70,10 +81,11 @@ func (p *Config) Watch(path string, relaod func()) {
 				break
 			}
 
+			fmt.Printf("refresh config: %+v", tmpConf)
 			p.Refresh(tmpConf)
 
 			// Sends refresh signal.
-			p.update <- struct{}{}
+			// p.update <- struct{}{}
 			relaod()
 		}
 	}
@@ -81,11 +93,8 @@ func (p *Config) Watch(path string, relaod func()) {
 
 // refresh update the value with new
 func (p *Config) Refresh(tmp Config)  {
-	p.DB = tmp.DB
-}
-
-func (p *Config) WatchNew() <- chan struct{} {
-	return p.update
+	util.WriteLog("Relaod configaration")
+	p.DBConfig = tmp.DBConfig
 }
 
 // Finalize ensures all resources released
@@ -93,5 +102,6 @@ func (p *Config) Finalize()  {
 	p.once.Do(func() {
 		close(p.update)
 		close(p.done)
+		p.watcher.Stop()
 	})
 }

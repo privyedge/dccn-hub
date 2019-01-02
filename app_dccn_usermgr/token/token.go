@@ -1,71 +1,87 @@
 package token
 
 import (
-	"github.com/Ankr-network/refactor/app_dccn_account/db_account"
-	"github.com/Ankr-network/refactor/app_dccn_account/proto"
-	"github.com/dgrijalva/jwt-go"
+	"errors"
 	"time"
+
+	"github.com/Ankr-network/refactor/proto/usermgr"
+	"github.com/dgrijalva/jwt-go"
 )
 
-var (
+type TokenService interface {
+	New(user *usermgr.User) (string, error)
+	Verify(tokenString string) error
+}
 
+type Config struct {
+	Issuer string
+	Audience string
+	Subject string
+	ActiveTime int
+	NotBefore int64
 	// Define a secure key string used
 	// as a salt when hashing our tokens.
 	// Please make your own way more secure than this,
 	// use a randomly generated md5 hash or something.
-	key = []byte("mySuperSecretKeyLol")
-)
-
-// CustomClaims is our custom metadata, which will be hashed
-// and sent as the second segment in our JWT
-type CustomClaims struct {
-	*accountmgr.Account
-	jwt.StandardClaims
-}
-
-type TokenService interface {
-	Decode(token string) (*CustomClaims, error)
-	Encode(user *accountmgr.Account) (string, error)
+	Secret string
 }
 
 type Token struct {
-	dbaccount.AccountDBService
+	config *Config
 }
 
-// Decode a token string into a token object
-func (srv *Token) Decode(tokenString string) (*CustomClaims, error) {
+// UserPayload is our custom metadata, which will be hashed
+// and sent as the second segment in our JWT
+type UserPayload struct {
+	*usermgr.User
+	jwt.StandardClaims
+}
+
+func New(conf *Config) *Token {
+	return &Token{conf}
+}
+
+// Verify a token string into a token object
+func (p *Token) Verify(tokenString string) error {
 
 	// Parse the token
-	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return key, nil
+	token, err := jwt.ParseWithClaims(tokenString, &UserPayload{}, func(token *jwt.Token) (interface{}, error) {
+		return p.config.Secret, nil
 	})
 
-	// Validate the token and return the custom claims
-	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-		return claims, nil
+	if err != nil {
+		return err
+	}
+
+	// Validate the token
+	if _, ok := token.Claims.(*UserPayload); ok && token.Valid {
+		return nil
 	} else {
-		return nil, err
+		return errors.New("invalid taskmgr")
 	}
 }
 
-// Encode a claim into a JWT
-func (srv *Token) Encode(ac *accountmgr.Account) (string, error) {
+// New a claim into a JWT
+func (p *Token) New(user *usermgr.User) (string, error) {
 
-	expireToken := time.Now().Add(time.Hour * 72).Unix()
+	expireToken := time.Now().Add(time.Minute * time.Duration(p.config.ActiveTime)).Unix()
 
 	// Create the Claims
-	claims := CustomClaims{
-		ac,
+	payload := UserPayload{
+		user,
 		jwt.StandardClaims{
 			ExpiresAt: expireToken,
-			Issuer:    "ankr",
+			Issuer:    p.config.Issuer,
+			Subject:p.config.Subject,
+			NotBefore:p.config.NotBefore,
+			Audience:p.config.Audience,
 		},
 	}
 
 	// Create token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
 	// Sign token and return
-	return token.SignedString(key)
+	return token.SignedString(p.config.Secret)
 }
 

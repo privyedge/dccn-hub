@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Ankr-network/refactor/app_dccn_taskmgr/proto"
+	"github.com/Ankr-network/refactor/proto"
 	"github.com/go-log/log"
 	"github.com/micro/go-micro"
 	"github.com/pborman/uuid"

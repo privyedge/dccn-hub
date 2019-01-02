@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Ankr-network/refactor/app_dccn_taskmgr/handler"
-	"github.com/Ankr-network/refactor/app_dccn_taskmgr/proto"
+	"github.com/Ankr-network/refactor/proto"
 	"github.com/Ankr-network/refactor/app_dccn_taskmgr/subscriber"
 	"github.com/micro/go-config"
 	"github.com/micro/go-config/source/file"
