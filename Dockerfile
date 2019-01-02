@@ -1,12 +1,24 @@
-# UPGRADE: Go Docker image
-FROM golang:1.11.1-stretch
+FROM golang:1.11.2-alpine3.8
+RUN apk update && \
+    apk add --no-cache git && \
+    apk add --upgrade --no-cache bash && \
+    apk add --no-cache openssh
 
-WORKDIR /go/src/hello-world
-COPY . .
+RUN go get github.com/golang/dep/cmd/dep
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+# Copy the RSA key from the CircleCI build environment into
+# this Docker build process in order
+# to retrieve the project dependencies from other private repos
+# The RSA key must be provisioned into CircleCI ahead of time
+COPY id_rsa /root/.ssh/
+RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN chmod go-w /root
+RUN chmod 700 /root/.ssh
+RUN chmod 600 /root/.ssh/id_rsa
 
-EXPOSE 8080
+WORKDIR $GOPATH/src/github.com/Ankr-network/dccn-hub/
+COPY Gopkg.toml Gopkg.lock ./
+RUN dep ensure -vendor-only
+COPY . $GOPATH/src/github.com/Ankr-network/dccn-hub/
 
-CMD ["hello-world"]
+CMD go run cmd/main.go mongo
