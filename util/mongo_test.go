@@ -22,5 +22,5 @@ func TestAddUser(t *testing.T) {
 	user := User{Name: "John", Token: "ed1605e17374bde6c68864d072c9f5c9", Money: 1000}
 	AddUser(user)
 
-	t.Logf("Successfully add user")
+	t.Logf("Successfully add taskmgr")
 }

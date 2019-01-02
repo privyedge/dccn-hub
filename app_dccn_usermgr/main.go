@@ -1,20 +1,22 @@
 package main
 
 import (
-	"github.com/Ankr-network/refactor/app_dccn_account/handler"
-	"github.com/Ankr-network/refactor/app_dccn_account/proto"
-	"github.com/Ankr-network/refactor/app_dccn_account/config"
-	"github.com/Ankr-network/refactor/util"
-	"github.com/Ankr-network/refactor/util/db"
-	"github.com/micro/go-log"
 	"github.com/micro/go-micro"
 	k8s "github.com/micro/kubernetes/go/micro"
 	"gopkg.in/mgo.v2"
 	"time"
+
+	"github.com/Ankr-network/refactor/util"
+	"github.com/Ankr-network/refactor/util/db"
+	"github.com/Ankr-network/refactor/proto/usermgr"
+	"github.com/Ankr-network/refactor/app_dccn_usermgr/token"
+	"github.com/Ankr-network/refactor/app_dccn_usermgr/config"
+	"github.com/Ankr-network/refactor/app_dccn_usermgr/db_user"
+	"github.com/Ankr-network/refactor/app_dccn_usermgr/handler"
 )
 
 var (
-	configPath = "config/account.json"
+	configPath = "refactor/app_dccn_usermgr/config/config.json"
 	conf *config.Config
 	db *mgo.Session
 	err error
@@ -22,57 +24,47 @@ var (
 
 func main() {
 
-	StartConfigWatcher(configPath)
+	LoadConfig(configPath)
 	defer conf.Finalize()
 
-	if db, err = utildb.CreateDBConnection(conf.DB); err != nil {
+	if db, err = utildb.CreateDBConnection(conf.DBConfig); err != nil {
 		util.WriteLog(err.Error())
 		return
 	}
 
-	StartHandler(db.DB(conf.DBName).C(conf.Collection))
+	StartHandler(db.DB(conf.DB).C(conf.Collection), conf)
 	defer db.Close()
 }
 
-// StartConfigWatcher loads config and watch the update
-func StartConfigWatcher(path string) {
+// LoadConfig loads config and watch the update
+func LoadConfig(path string) {
 	conf, err = config.New(path)
 	if err != nil {
 		util.WriteLog(err.Error())
-		return
+		panic(err.Error())
 	}
-
-	go conf.Watch(path, func() {
-		tmp, err := utildb.CreateDBConnection(conf.DB)
-		if err != nil {
-			util.WriteLog("new db failed: " +  err.Error())
-		}
-
-		// TODO: ensure the collection setting right
-		// tmp.Ensure()
-		db, tmp = tmp, db
-		tmp.Close()
-	})
 }
 
 // StartHandler startes hander to listen.
-func StartHandler(table *mgo.Collection) {
+func StartHandler(c *mgo.Collection, conf *config.Config) {
 	// New Service
 	service := k8s.NewService(
-		micro.Name("network.ankr.srv.account"),
-		micro.Version("latest"),
-		micro.RegisterTTL(time.Second*30),
-		micro.RegisterInterval(time.Second*15),
+		micro.Name("network.ankr.srv.user"),
+		micro.Version("user daemon"),
+		micro.RegisterTTL(time.Second*time.Duration(conf.TTL)),
+		micro.RegisterInterval(time.Second*time.Duration(conf.Interval)),
 	)
 
 	// Initialise service
 	service.Init()
 
 	// Register Handler
-	accountmgr.RegisterAccountMgrHandler(service.Server(), handler.New(table))
+	usermgr.RegisterUserMgrHandler(service.Server(), handler.New(dbuser.New(c), token.New(&conf.TokenConfig)))
+
+	// Maybe send message service here
 
 	// Run service
 	if err := service.Run(); err != nil {
-		log.Fatal(err)
+		util.WriteLog(err.Error())
 	}
 }

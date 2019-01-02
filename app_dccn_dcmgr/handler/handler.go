@@ -12,13 +12,13 @@ type DcCenterHandler struct{}
 
 func (p *DcCenterHandler) DataCenterList(ctx context.Context, req *pb.DataCenterListRequest, rsp *pb.DataCenterListResponse) error {
 	token := req.Usertoken
-	// TODO: Abstract DB interface
+	// TODO: Abstract DBConfig interface
 	user := util.GetUser(token)
 	util.WriteLog("task list reqeust")
 
 	if user.ID == 0 {
-		util.WriteLog("task list reqeust fail for user token error")
-		return errors.New("task list reqeust fail for user token error")
+		util.WriteLog("task list reqeust fail for taskmgr token error")
+		return errors.New("task list reqeust fail for taskmgr token error")
 	} else {
 		dataCenters := util.DataCeterList()
 

@@ -10,7 +10,7 @@ micro new github.com/Ankr-network/refactor/app_dccn_taskmgr --namespace=go.micro
 
 ## Getting Started
 
-- publisher: publish the user's task info to "topic.task.new, topic.task.cancel, topic.task.update"
+- publisher: publish the taskmgr's task info to "topic.task.new, topic.task.cancel, topic.task.update"
 - subscriber: subscribe tasks's result from "topic.task.result"
 - handler: request handler
 - config: all configuration

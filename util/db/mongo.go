@@ -8,8 +8,8 @@ import (
 
 var once sync.Once
 
-// DBConfig uses to init a db connect
-type DBConfig struct {
+// Config uses to init a db connect
+type Config struct {
 	// Addrs holds the addresses for the seed servers.
 	Addrs []string `json:"addrs"`
 	// PoolLimit defines the per-server socket pool limit. Defaults to 4096.
@@ -20,7 +20,7 @@ type DBConfig struct {
 
 // CreateDBConnection returns a db connection, it is recommended to use for once, and then use copy or clone to reuse it
 // remembers to close after every copy() or clone()
-func CreateDBConnection(conf DBConfig) (s *mgo.Session, err error) {
+func CreateDBConnection(conf Config) (s *mgo.Session, err error) {
 	once.Do( func() {
 		info := mgo.DialInfo{
 			Addrs: conf.Addrs,

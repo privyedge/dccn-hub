@@ -156,7 +156,7 @@ func (m *Task) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Task proto.InternalMessageInfo
 
-// The dccn client request message containing the user's token
+// The dccn client request message containing the taskmgr's token
 type AddTaskRequest struct {
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Type                 string   `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
