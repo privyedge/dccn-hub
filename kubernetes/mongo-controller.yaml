@@ -23,6 +23,6 @@ spec:
               mountPath: /data/db
       volumes:
         - name: mongo-persistent-storage
-          awsElasticBlockStore:
-            volumeID: aws://us-west-1a/vol-02a5718a39dab646d
-            fsType: ext4
+          persistentVolumeClaim:
+            claimName: mongopvc
+            
