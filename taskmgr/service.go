@@ -21,7 +21,7 @@ func (s server) Handle(e util.Event) {
 	logStr2 := fmt.Sprintf("task %d in DataCenter id %d  datacenter name %s  \n", task.ID, int(task.Datacenterid), task.Datacenter)
 	util.WriteLog(logStr2)
 
-	util.Send(ankr_const.DataCenterName, e)
+	util.Send(ankr_const.K8sAdopterQueueName, e)
 }
 
 func StartService() {

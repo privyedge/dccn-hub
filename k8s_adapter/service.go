@@ -14,9 +14,7 @@ import (
 	"time"
 )
 
-const (
-	port = ":" + ankr_const.DefaultPort
-)
+var port = fmt.Sprintf(":%d", ankr_const.DefaultPort)
 
 type server struct {
 	mu        sync.Mutex                      // protects data
@@ -181,7 +179,7 @@ func heartbeat(s *server) {
 
 		util.UpdataDataCentersStatus(successList)
 
-		time.Sleep(time.Second * 30)
+		time.Sleep(time.Second * ankr_const.HeartBeatInterval)
 	}
 }
 
@@ -275,7 +273,7 @@ func StartService() {
 
 	lis, s := server_rpc.Connect(port)
 	ss := server{}
-	go util.Receive(ankr_const.DataCenterName, &ss)
+	go util.Receive(ankr_const.K8sAdopterQueueName, &ss)
 	ss.dcstreams = map[int]pb.Dccnk8S_K8TaskServer{}
 
 	go heartbeat(&ss)

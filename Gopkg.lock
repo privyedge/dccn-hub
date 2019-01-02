@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "feature/SWDEV-117-ankr_comm"
-  digest = "1:549c3320145204a2ddfb90fca8a713382d1abcf3b618ec1d90af9eefb3f749b5"
+  digest = "1:180a48875cf4dce088bbd3ad3c9c127bd674e3532a16e44835db42ba3ba10a68"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     ".",
@@ -12,7 +12,7 @@
     "server_rpc",
   ]
   pruneopts = "UT"
-  revision = "82fc47aea11f6c652798a01933378fcd51b5b86c"
+  revision = "630226b9390dd1500effe9826b5e8ba5bef4226a"
 
 [[projects]]
   digest = "1:5d1b5a25486fc7d4e133646d834f6fca7ba1cef9903d40e7aa786c41b89e9e91"

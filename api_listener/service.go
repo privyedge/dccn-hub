@@ -2,7 +2,7 @@ package api_listener
 
 import (
 	"fmt"
-	ankr_const "github.com/Ankr-network/dccn-common"
+	"github.com/Ankr-network/dccn-common"
 	pb "github.com/Ankr-network/dccn-common/protocol/cli"
 	"github.com/Ankr-network/dccn-common/server_rpc"
 	"github.com/Ankr-network/dccn-hub/util"
@@ -12,9 +12,7 @@ import (
 	"os"
 )
 
-const (
-	port = ":" + ankr_const.DefaultPort
-)
+var port = fmt.Sprintf(":%d", ankr_const.DefaultPort)
 
 type server struct {
 	name string
@@ -127,7 +125,7 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 			if len(taskInfo.Datacenter) == 0 {
 				taskInfo.Datacenter = task.Datacenter // for user assign datacenter name but not startsuccess
 			}
-			if task.Hidden == ankr_const.TaskHidden {
+			if task.Hidden == true {
 				continue // ignore hidden (purge )task
 			}
 
@@ -239,7 +237,7 @@ func (s *server) PurgeTask(ctx context.Context, in *pb.PurgeTaskRequest) (*pb.Pu
 
 	}
 
-	util.UpdateTaskHidden(int(task.ID), ankr_const.TaskHidden)
+	util.UpdateTaskHidden(int(task.ID))
 
 	return &pb.PurgeTaskResponse{Status: "Success"}, nil
 

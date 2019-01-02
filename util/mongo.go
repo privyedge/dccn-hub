@@ -28,7 +28,7 @@ type Task struct {
 	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled 6. updating 7. updateFailed
 	Uniquename   string
 	URL          string
-	Hidden       string
+	Hidden       bool
 }
 
 type User struct {
@@ -200,10 +200,10 @@ func UpdateTask(taskid int, status string, datacentrid int) {
 	}
 }
 
-func UpdateTaskHidden(taskid int, hidden string) {
+func UpdateTaskHidden(taskid int) {
 	db := GetDBInstance()
 	c := db.C("task")
-	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"hidden": hidden}})
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"hidden": true}})
 }
 
 func UpdateTaskReplica(taskid int, replica int) {
