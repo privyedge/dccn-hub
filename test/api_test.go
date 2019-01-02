@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var address = ":" + ankr_const.DefaultPort
+var address = fmt.Sprintf(":%d", ankr_const.DefaultPort)
 
 var totalTask = 0
 var c pb.DccncliClient
@@ -24,9 +24,9 @@ const replicaValue int64 = 2
 
 func ClientCreate() {
 	if len(os.Args) == 3 {
-		address = os.Args[2] + ":" + ankr_const.DefaultPort
+		address = fmt.Sprintf("%s:%d", os.Args[2], ankr_const.DefaultPort)
 	} else if len(os.Args) == 2 {
-		address = os.Args[1] + ":" + ankr_const.DefaultPort
+		address = fmt.Sprintf("%s:%d", os.Args[1], ankr_const.DefaultPort)
 	}
 
 	fmt.Printf("connect Ankr Hub with address %s \n", address)
