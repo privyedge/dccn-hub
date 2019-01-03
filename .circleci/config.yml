@@ -33,13 +33,13 @@ jobs:
             elif [[ ($BRANCH_NAME == "master") ]]
             then
               BRANCH_NAME="stage"
-            else 
+            else
               BRANCH_NAME="feat"
             fi
 
             declare -a component_arr=("dccn-hub-api-listener" "dccn-hub-task-manager" "dccn-hub-k8s-adapter")
-            declare -a dockerfile_arr=("Dockerfile_API_Listener" "Dockerfile_TaskManager" "Dockerfile_K8s_Adapter")
-            if [[ (${#component_arr[@]} == ${#dockerfile_arr[@]}) ]] 
+            declare -a dockerfile_arr=("API_Listener.dockerfile" "TaskManager.dockerfile" "K8s_Adapter.dockerfile")
+            if [[ (${#component_arr[@]} == ${#dockerfile_arr[@]}) ]]
             then
               arrlen=${#component_arr[@]}
             else
@@ -52,4 +52,3 @@ jobs:
                 docker push $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/${component_arr[$i]}:$TAG
               done
             done
-            
