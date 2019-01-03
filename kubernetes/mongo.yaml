@@ -1,9 +1,33 @@
-kind: ReplicationController
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 16Gi
+  storageClassName: gp2
+---
+apiVersion: v1
+kind: Service
 metadata:
   labels:
     name: mongo
-  name: mongo-controller
+  name: mongo
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    name: mongo
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongo
 spec:
   replicas: 1
   template:
@@ -24,5 +48,4 @@ spec:
       volumes:
         - name: mongo-persistent-storage
           persistentVolumeClaim:
-            claimName: mongopvc
-            
+            claimName: mongo-pvc

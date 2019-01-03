@@ -37,7 +37,7 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
 * A tenant can close any active deployment at any time
 
 ## Install
-* set $GOPATH
+* set $GOPATH  (for example ~/go)  
 
 * install grcp package  
   * go get -u google.golang.org/grpc
@@ -47,7 +47,9 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
   * git clone git@github.com:Ankr-network/dccn-hub.git  -b feature/78-ankr-hub dccn-hub
 
 * run server :   
-  * go run taskmanager/service.go
+  * go run cmd/api_listener.go  
+  * go run cmd/task_manager.go  
+  * go run cmd/k8s_adapter.go  
 
 * run client:   
   * go run test/cli/add_task.go
@@ -69,17 +71,63 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
   * mongo   
   * use test    
   * db.user.find()
+  
+  
+  * start RabbitMQ by docker-compose up  
+``` 
+# docker-compose.yml    
+    version: "3"  
+    services:  
+    rabbitmq:  
+        image: "rabbitmq:3-management"  
+        hostname: "rabbit"  
+        ports:  
+        - "5672:5672"  
+        - "15672:15672"  
+        - "5671:5671"  
+ ```
+
+
+* New Way Run MongoDB  (by docker)   
+```
+cd dccn-hub/docker/   
+docker run   -p 27017:27017  --name ankr_mongo -d mongo  
+docker logs ankr_mongo  // check logs 
+```
+
+* Two way to install default data:
+1. go run db/install.go  
+2. mongorestore -d test db/backup   
+
+
+* To test mongo is running
+```
+mongo   
+use test    
+db.user.find()
+```
 
 * proto compiler tools
   * go get github.com/golang/protobuf/protoc-gen-go   
   * protoc --go_out=plugins=grpc:. *.proto
 
 ## Building with Docker and CircleCI
-Using the docker build using the "Dockerfile.dep" file if you download the source and build locally:
+Using the docker build using the "Dockerfile.dep" file if you download the source and build locally: 
 ```
 dep ensure -update
-docker build -f local.dockerfile. -t dccn_hub .
+docker build -f Dockerfile.dep -t api_listener .
 docker run -p 50051:50051 dccn_hub
 ```
 
-for the CircleCI setting, check the .circleci/config.yml for detail,  CircleCI pipeline will build and push the docker image to aws ecr repository "815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr"
+for the CircleCI setting, check the .circleci/config.yml for detail,  CircleCI pipeline will build and push the docker image to aws ecr repository "815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn_ecr" 
+
+
+## Go test
+```
+cd test  
+go test -v  -args localhost  
+or    
+go test  -args localhost  
+```
+ 
+

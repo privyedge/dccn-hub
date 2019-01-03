@@ -19,4 +19,5 @@ COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure -vendor-only
 COPY . $GOPATH/src/github.com/Ankr-network/dccn-hub/
 
-CMD go run cmd/main.go mongo
+
+CMD go run cmd/k8s_adapter.go mongo rabbitmq

@@ -2,8 +2,6 @@ package util
 
 import (
 	"fmt"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"log"
 	"math/rand"
 	"os"
@@ -12,6 +10,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	ankr_const "github.com/Ankr-network/dccn-common"
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var MongoDBHost = "127.0.0.1"
@@ -20,11 +22,14 @@ type Task struct {
 	ID           int64
 	Userid       int64
 	Name         string
-	Region       string
-	Zone         string
+	Datacenter   string
+	Type         string
+	Replica      int
 	Datacenterid int64  // mongodb name is low field
-	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled
-
+	Status       string // 1 new 2 running 3. done 4 cancelling 5.canceled 6. updating 7. updateFailed
+	Uniquename   string
+	URL          string
+	Hidden       bool
 }
 
 type User struct {
@@ -43,10 +48,8 @@ type DataCenter struct {
 	ID             int64
 	Name           string
 	Report         string
-	Host           string
-	Port           int64
 	LastReportTime int64
-	Status         string //1. running  2. stopped  3. dropped
+	Status         string //1. online  2. offline
 	DatacenterId   int
 }
 
@@ -61,12 +64,9 @@ func GetDataCenter(name string) DataCenter {
 func AddDataCenter(d DataCenter) int64 {
 	db := GetDBInstance()
 	c := db.C("datacenter")
-	//p := Person{"xxxx", "123455"}
-	// p._id = 19
-	// fmt.Printf("Id of person: %d\n", p._id)
 	id := GetID("datacenterid", db)
 	msec := time.Now().UnixNano() / 1000000
-	err := c.Insert(bson.M{"_id": id, "id": id, "name": d.Name, "report": d.Report, "host": d.Host, "port": d.Port, "lastReporTtime": msec, "status": "Running"})
+	err := c.Insert(bson.M{"_id": id, "id": id, "name": d.Name, "report": d.Report, "lastReporTtime": msec, "status": "Running"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,9 +76,7 @@ func AddDataCenter(d DataCenter) int64 {
 func UpdateDataCenter(d DataCenter, id int) {
 	db := GetDBInstance()
 	c := db.C("datacenter")
-	fmt.Printf("UpdateDataCenter report %s \n", d.Report)
-
-	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"name": d.Name, "report": d.Report, "host": d.Host, "port": d.Port}})
+	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"name": d.Name, "report": d.Report}})
 }
 
 var instance *mgo.Database
@@ -92,10 +90,12 @@ func GetDBInstance() *mgo.Database {
 }
 
 func mongodbconnect() *mgo.Database {
-	fmt.Printf("where db name user : %s\n", MongoDBHost)
+	logStr := fmt.Sprintf("mongodb hostname : %s", MongoDBHost)
+	WriteLog(logStr)
 	session, err := mgo.Dial(MongoDBHost)
 	if err != nil {
-		panic(err)
+		WriteLog("dail return error , so return nil")
+		return nil
 	}
 	//defer session.Close()
 
@@ -109,11 +109,8 @@ func mongodbconnect() *mgo.Database {
 func AddTask(task Task) int64 {
 	db := GetDBInstance()
 	c := db.C("task")
-	//p := Person{"xxxx", "123455"}
-	// p._id = 19
-	// fmt.Printf("Id of person: %d\n", p._id)
 	id := GetID("taskid", db)
-	err := c.Insert(bson.M{"_id": id, "id": id, "name": task.Name, "userid": task.Userid, "region": task.Region, "zone": task.Zone, "status": "new"})
+	err := c.Insert(bson.M{"_id": id, "id": id, "name": task.Name, "userid": task.Userid, "type": task.Type, "datacenter": task.Datacenter, "status": "new"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,7 +124,6 @@ func GetID(name string, db *mgo.Database) int64 {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s id  %d \n", name, result.Sequencevalue)
 	id := result.Sequencevalue
 	id += 1
 	c.Update(bson.M{"_id": name}, bson.M{"$set": bson.M{"sequencevalue": id}})
@@ -147,11 +143,42 @@ func TaskList(userid int) []Task {
 	return tasks
 }
 
+func DataCeterList() []DataCenter {
+	var dataCenters []DataCenter
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	result := DataCenter{}
+	iter := c.Find(nil).Limit(100).Iter()
+	for iter.Next(&result) {
+		dataCenters = append(dataCenters, result)
+	}
+	return dataCenters
+}
+
+func ReConnectMongodb(count int) bool {
+	logStr := fmt.Sprintf("retry : %d ", count)
+	WriteLog(logStr)
+	instance = mongodbconnect()
+	if instance == nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func DoReConnectMongodb() {
+	go Retry(ReConnectMongodb)
+}
+
 func GetTask(taskid int) Task {
 	task := Task{}
 	db := GetDBInstance()
 	c := db.C("task")
-	c.Find(bson.M{"_id": taskid}).One(&task)
+	err := c.Find(bson.M{"_id": taskid}).One(&task)
+	if err != nil {
+		WriteLog("DoReConnectMongodb")
+		DoReConnectMongodb()
+	}
 	return task
 }
 
@@ -163,8 +190,7 @@ func GetNewTask() Task {
 	return task
 }
 
-func UpdateTask(taskid int, status string, datacentrid int) Task {
-	task := Task{}
+func UpdateTask(taskid int, status string, datacentrid int) {
 	db := GetDBInstance()
 	c := db.C("task")
 	if datacentrid == 0 {
@@ -172,8 +198,36 @@ func UpdateTask(taskid int, status string, datacentrid int) Task {
 	} else {
 		c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"status": status, "datacenterid": datacentrid}})
 	}
+}
 
-	return task
+func UpdateTaskHidden(taskid int) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"hidden": true}})
+}
+
+func UpdateTaskReplica(taskid int, replica int) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"replica": replica}})
+}
+
+func UpdateTaskUnqueName(taskid int, uniqueName string) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"uniquename": uniqueName}})
+}
+
+func UpdateTaskImage(taskid int, image string) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"name": image}})
+}
+
+func UpdateTaskURL(taskid int, url string) {
+	db := GetDBInstance()
+	c := db.C("task")
+	c.Update(bson.M{"_id": taskid}, bson.M{"$set": bson.M{"url": url}})
 }
 
 func CancelTask(taskid int) {
@@ -187,7 +241,8 @@ func AddUser(user User) {
 	db := GetDBInstance()
 	c := db.C("user")
 	id := GetID("userid", db)
-	fmt.Printf("Id of user: %d\n", id)
+	logStr := fmt.Sprintf("Id of user: %d", id)
+	WriteLog(logStr)
 	c.Insert(bson.M{"_id": id, "id": id, "name": user.Name, "token": user.Token, "money": user.Money})
 
 }
@@ -199,11 +254,40 @@ func SelectFreeDatacenter() int {
 
 }
 
+func GetDatacentersMap() map[int64]string {
+	var dcs map[int64]string = map[int64]string{}
+	dclist := DataCeterList()
+	for i := range dclist {
+		dc := dclist[i]
+		dcs[dc.ID] = dc.Name
+	}
+	return dcs
+}
+func GetDatacenter(name string) DataCenter {
+	dc := DataCenter{}
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	c.Find(bson.M{"name": name}).One(&dc)
+	return dc
+}
+
+func GetDatacenterByID(id int) DataCenter {
+	dc := DataCenter{}
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	c.Find(bson.M{"_id": id}).One(&dc)
+	return dc
+}
+
 func GetUser(token string) User {
 	user := User{}
 	db := GetDBInstance()
 	c := db.C("user")
-	c.Find(bson.M{"token": token}).One(&user)
+	err := c.Find(bson.M{"token": token}).One(&user)
+	if err != nil {
+		WriteLog("DoReConnectMongodb")
+		DoReConnectMongodb()
+	}
 	return user
 }
 
@@ -230,4 +314,36 @@ func GetTaskIDFromTaskNameForK8s(name string) int64 {
 	} else {
 		return 0
 	}
+
+}
+
+func UpdataDataCentersStatus(successList []int64) {
+	dclist := DataCeterList()
+	for i := range dclist {
+		dc := dclist[i]
+		if Contains(successList, dc.ID) {
+			UpdataDataCenteStatus(dc.ID, ankr_const.DataCenteStatusOnLine)
+		} else {
+			UpdataDataCenteStatus(dc.ID, ankr_const.DataCenteStatusOffLine)
+		}
+	}
+
+}
+
+func UpdataDataCenteStatus(id int64, status string) {
+	logStr := fmt.Sprintf("UpdataDataCenteStatus : %d   %s ", id, status)
+	WriteLog(logStr)
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"status": status}})
+
+}
+
+func Contains(a []int64, x int64) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
 }

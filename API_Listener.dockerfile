@@ -14,9 +14,11 @@ RUN chmod go-w /root
 RUN chmod 700 /root/.ssh
 RUN chmod 600 /root/.ssh/id_rsa
 
+RUN apk add build-base
+
 WORKDIR $GOPATH/src/github.com/Ankr-network/dccn-hub/
 COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure -vendor-only
 COPY . $GOPATH/src/github.com/Ankr-network/dccn-hub/
 
-CMD go run cmd/main.go mongo
+CMD go run cmd/api_listener.go mongo rabbitmq
