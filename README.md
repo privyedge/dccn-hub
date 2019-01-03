@@ -73,24 +73,27 @@ This is the central component for Ankr DCCN. Ankr Hub consists of two microservi
   * db.user.find()
   
   
-  * start RabbitMQ by docker-compose up   
-  docker-compose.yml    
-  version: "3"  
-services:  
- rabbitmq:  
-    image: "rabbitmq:3-management"  
-    hostname: "rabbit"  
-    ports:  
-      - "5672:5672"  
-      - "15672:15672"  
-      - "5671:5671"  
- 
+  * start RabbitMQ by docker-compose up  
+``` 
+# docker-compose.yml    
+    version: "3"  
+    services:  
+    rabbitmq:  
+        image: "rabbitmq:3-management"  
+        hostname: "rabbit"  
+        ports:  
+        - "5672:5672"  
+        - "15672:15672"  
+        - "5671:5671"  
+ ```
 
 
 * New Way Run MongoDB  (by docker)   
+```
 cd dccn-hub/docker/   
 docker run   -p 27017:27017  --name ankr_mongo -d mongo  
 docker logs ankr_mongo  // check logs 
+```
 
 * Two way to install default data:
 1. go run db/install.go  
@@ -98,9 +101,11 @@ docker logs ankr_mongo  // check logs
 
 
 * To test mongo is running
+```
 mongo   
 use test    
 db.user.find()
+```
 
 * proto compiler tools
   * go get github.com/golang/protobuf/protoc-gen-go   
@@ -118,9 +123,11 @@ for the CircleCI setting, check the .circleci/config.yml for detail,  CircleCI p
 
 
 ## Go test
+```
 cd test  
 go test -v  -args localhost  
 or    
 go test  -args localhost  
+```
  
 

@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	pb "dccn-hub/protocol"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"log"
 	"time"
+
+	pb "github.com/Ankr-network/dccn-hub/protocol"
+
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 const (

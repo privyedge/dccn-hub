@@ -2,9 +2,6 @@ package util
 
 import (
 	"fmt"
-	ankr_const "github.com/Ankr-network/dccn-common"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"log"
 	"math/rand"
 	"os"
@@ -13,6 +10,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	ankr_const "github.com/Ankr-network/dccn-common"
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var MongoDBHost = "127.0.0.1"
@@ -39,10 +40,9 @@ type User struct {
 }
 
 type Counter struct {
-	ID             string
+	ID            string
 	Sequencevalue int64
 }
-
 
 type DataCenter struct {
 	ID             int64
@@ -311,10 +311,9 @@ func GetTaskIDFromTaskNameForK8s(name string) int64 {
 			os.Exit(2)
 		}
 		return int64(value)
-	}else{
+	} else {
 		return 0
 	}
-
 
 }
 

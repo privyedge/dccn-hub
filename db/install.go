@@ -1,13 +1,13 @@
 package main
 
 import (
-        "gopkg.in/mgo.v2"
-        "gopkg.in/mgo.v2/bson"
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Person struct {
-        Name string
-        Phone string
+	Name  string
+	Phone string
 }
 
 func main() {

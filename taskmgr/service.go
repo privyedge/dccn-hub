@@ -2,9 +2,10 @@ package taskmgr
 
 import (
 	"fmt"
+	"os"
+
 	ankr_const "github.com/Ankr-network/dccn-common"
 	"github.com/Ankr-network/dccn-hub/util"
-	"os"
 )
 
 type server struct {

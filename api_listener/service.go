@@ -2,14 +2,15 @@ package api_listener
 
 import (
 	"fmt"
-	"github.com/Ankr-network/dccn-common"
+	"log"
+	"os"
+
+	ankr_const "github.com/Ankr-network/dccn-common"
 	pb "github.com/Ankr-network/dccn-common/protocol/cli"
 	"github.com/Ankr-network/dccn-common/server_rpc"
 	"github.com/Ankr-network/dccn-hub/util"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"os"
 )
 
 var port = fmt.Sprintf(":%d", ankr_const.DefaultPort)

@@ -3,8 +3,9 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/streadway/amqp"
 	"time"
+
+	"github.com/streadway/amqp"
 )
 
 var RabbitMQHost = "127.0.0.1"

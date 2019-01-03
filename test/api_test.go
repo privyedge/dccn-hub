@@ -2,14 +2,15 @@ package test
 
 import (
 	"fmt"
-	"github.com/Ankr-network/dccn-common"
-	pb "github.com/Ankr-network/dccn-common/protocol/cli"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"log"
 	"os"
 	"testing"
 	"time"
+
+	ankr_const "github.com/Ankr-network/dccn-common"
+	pb "github.com/Ankr-network/dccn-common/protocol/cli"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 var address = fmt.Sprintf(":%d", ankr_const.DefaultPort)
