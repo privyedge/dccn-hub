@@ -1,9 +1,33 @@
 apiVersion: v1
-kind: ReplicationController
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 16Gi
+  storageClassName: gp2
+---
+apiVersion: v1
+kind: Service
 metadata:
   labels:
     name: rabbitmq
-  name: rabbitmq-controller
+  name: rabbitmq
+spec:
+  ports:
+    - port: 5672
+      targetPort: 5672
+  selector:
+    name: rabbitmq
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rabbitmq
 spec:
   replicas: 1
   template:
@@ -26,7 +50,5 @@ spec:
             mountPath: /var/lib/rabbitmq
       volumes:
         - name: rabbitmq-data
-          awsElasticBlockStore:
-            volumeID: aws://us-west-2a/vol-0581e8cf8b49a0010
-            fsType: ext4
-
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc
