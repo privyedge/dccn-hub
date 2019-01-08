@@ -1,3 +1,53 @@
-## TODO
-    1. load balance: github.com/micro/go-micro/selector
-    2. cache: same up
+# Api Service
+
+This is the Api service
+
+Generated with
+
+```
+micro new github.com/Ankr-network/dccn-hub/api --namespace=go.micro --type=api
+```
+
+## Getting Started
+
+- [Configuration](#configuration)
+- [Dependencies](#dependencies)
+- [Usage](#usage)
+
+## Configuration
+
+- FQDN: go.micro.gateway.gateway
+- Type: gateway
+- Alias: gateway
+
+## Dependencies
+
+Micro services depend on service discovery. The default is consul.
+
+```
+# install consul
+brew install consul
+
+# run consul
+consul agent -dev
+```
+
+## Usage
+
+A Makefile is included for convenience
+
+Build the binary
+
+```
+make build
+```
+
+Run the service
+```
+./api-api
+```
+
+Build a docker image
+```
+make docker
+```

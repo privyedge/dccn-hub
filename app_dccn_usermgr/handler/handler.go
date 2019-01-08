@@ -2,61 +2,56 @@ package handler
 
 import (
 	"context"
-
-	"github.com/Ankr-network/refactor/proto/usermgr"
-	"github.com/Ankr-network/refactor/app_dccn_usermgr/db_user"
-	"github.com/Ankr-network/refactor/app_dccn_usermgr/token"
+	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/token"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct{
-	dbuser.DBService
-	token.TokenService
+	db dbservice.DBService
+	token token.TokenService
 }
 
-func New(dbService dbuser.DBService, tokenService token.TokenService) *UserHandler {
-	return &UserHandler{DBService: dbService, TokenService: tokenService}
+func New(dbService dbservice.DBService, tokenService token.TokenService) *UserHandler {
+	return &UserHandler{db: dbService, token: tokenService}
 }
 
-func (p *UserHandler) New(ctx context.Context, user *usermgr.User, rsp *usermgr.Response) error {
-	err := p.DBService.New(user)
+func (p *UserHandler) Get(ctx context.Context, id *pb.ID, user *pb.User) error {
+	var err error
+	user, err = p.db.Get(id.Id)
+	return err
+}
+
+func (p *UserHandler) Add(ctx context.Context, user *pb.User, rsp *pb.Response) error {
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		rsp.Error.Code = 101
-		rsp.Error.Description = err.Error()
+		return err
 	}
-	return nil
+	user.Password = string(hashedPwd)
+	return p.db.Add(*user)
 }
 
-func (p *UserHandler) Get(ctx context.Context, name *usermgr.Name, rsp *usermgr.Response) error {
-	user, err := p.DBService.Get(name.Name)
+func (p *UserHandler) Update(ctx context.Context, user *pb.User, rsp *pb.Response) error {
+	return p.db.Update(user)
+}
+
+func (p *UserHandler) NewToken(ctx context.Context, user *pb.User, rsp *pb.TokenString) error {
+	u, err := p.db.Get(user.Id.Id)
 	if err != nil {
-		rsp.Error.Code = 102
-		rsp.Error.Description = err.Error()
-	} else {
-		rsp.User = user
+		return err
 	}
-	return nil
+
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(user.Password)); err != nil {
+		return err
+	}
+
+	rsp.TokenString, err = p.token.New(user)
+
+	return err
 }
 
-func (p *UserHandler) NewToken(ctx context.Context, user *usermgr.User, rsp *usermgr.Token) error {
-	tokenString, err := p.TokenService.New(user)
-	if err != nil {
-		rsp.Error.Code = 103
-		rsp.Error.Description = "New Token Error"
-	} else {
-		rsp.TokenString = tokenString
-	}
-
-	return nil
-}
-
-func (p *UserHandler) VerifyToken(ctx context.Context, token *usermgr.Token, rsp *usermgr.Token) error {
-	if err := p.TokenService.Verify(token.TokenString); err != nil {
-		rsp.Error.Code = 104
-		rsp.Error.Description = err.Error()
-	} else {
-		rsp.Valid = true
-	}
-
-	return nil
+func (p *UserHandler) VerifyToken(ctx context.Context, token *pb.TokenString, rsp *pb.Response) error {
+	return p.token.Verify(token.TokenString)
 }
 

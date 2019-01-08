@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package go.micro.srv.usermgr;
+
+// TODO: supports filter
+service UserMgr {
+    // Add Create a new user
+    rpc Add(User) returns (Response) {
+    }
+    // Gets the specified user
+    rpc Get(ID) returns (User) {
+    }
+    // Auth  validates user
+    rpc NewToken(User) returns (TokenString) {
+    }
+    // VerifyToken Validated Token
+    rpc VerifyToken(TokenString) returns (Response) {
+    }
+}
+
+message ID {
+    int64 id = 1;
+}
+
+message User {
+    // id self-increase
+    ID id = 1;
+    // name should be unique
+    string name = 2;
+    // nickname show on UI
+    string nickname = 4;
+    // email user's email
+    string email = 5;
+    // password string
+    string password = 6;
+    // balance user's balance in account
+    int32 balance = 7;
+    // is_deleted user's status
+    bool is_deleted = 8;
+}
+
+message Response {
+}
+
+message TokenString {
+    string token_string = 1;
+}

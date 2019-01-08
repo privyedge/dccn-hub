@@ -4,26 +4,27 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Ankr-network/refactor/proto/usermgr"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
 type TokenService interface {
-	New(user *usermgr.User) (string, error)
+	New(user *pb.User) (string, error)
 	Verify(tokenString string) error
 }
 
 type Config struct {
-	Issuer string
-	Audience string
-	Subject string
-	ActiveTime int
-	NotBefore int64
+	Issuer string `json:"issuer,omitempty"`
+	Audience string `json:"audience,omitempty"`
+	Subject string `json:"subject,omitempty"`
+	ActiveTime int `json:"active_time,omitempty"`
+	NotBefore int64 `json:"not_before,omitempty"`
 	// Define a secure key string used
 	// as a salt when hashing our tokens.
 	// Please make your own way more secure than this,
 	// use a randomly generated md5 hash or something.
-	Secret string
+	Secret string `json:"secret,omitempty"`
 }
 
 type Token struct {
@@ -33,13 +34,39 @@ type Token struct {
 // UserPayload is our custom metadata, which will be hashed
 // and sent as the second segment in our JWT
 type UserPayload struct {
-	*usermgr.User
+	*pb.User
 	jwt.StandardClaims
 }
 
+// New returns Token instance.
 func New(conf *Config) *Token {
 	return &Token{conf}
 }
+
+// New returns JWT string.
+func (p *Token) New(user *pb.User) (string, error) {
+
+	expireTime := time.Now().Add(time.Hour * time.Duration(p.config.ActiveTime)).Unix()
+
+	// Create the Claims
+	payload := UserPayload{
+		user,
+		jwt.StandardClaims{
+			ExpiresAt: expireTime,
+			Issuer:    p.config.Issuer,
+			Subject:   p.config.Subject,
+			NotBefore: p.config.NotBefore,
+			Audience:  p.config.Audience,
+		},
+	}
+
+	// Create token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+
+	// Sign token and return
+	return token.SignedString(p.config.Secret)
+}
+
 
 // Verify a token string into a token object
 func (p *Token) Verify(tokenString string) error {
@@ -54,34 +81,10 @@ func (p *Token) Verify(tokenString string) error {
 	}
 
 	// Validate the token
-	if _, ok := token.Claims.(*UserPayload); ok && token.Valid {
+	payload, ok := token.Claims.(*UserPayload)
+	if ok && payload.User.Id !=  nil && token.Valid {
 		return nil
-	} else {
-		return errors.New("invalid taskmgr")
 	}
-}
-
-// New a claim into a JWT
-func (p *Token) New(user *usermgr.User) (string, error) {
-
-	expireToken := time.Now().Add(time.Minute * time.Duration(p.config.ActiveTime)).Unix()
-
-	// Create the Claims
-	payload := UserPayload{
-		user,
-		jwt.StandardClaims{
-			ExpiresAt: expireToken,
-			Issuer:    p.config.Issuer,
-			Subject:p.config.Subject,
-			NotBefore:p.config.NotBefore,
-			Audience:p.config.Audience,
-		},
-	}
-
-	// Create token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-
-	// Sign token and return
-	return token.SignedString(p.config.Secret)
+	return errors.New("invalid user")
 }
 

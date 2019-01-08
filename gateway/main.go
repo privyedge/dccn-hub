@@ -1,56 +1,46 @@
 package main
 
 import (
-	"context"
-	"flag"
-	"net/http"
+	go_micro_srv_dcmgr "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/dcmgr"
+	go_micro_srv_taskmgr "github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/proto/taskmgr"
+	go_micro_srv_usermgr "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	"github.com/Ankr-network/dccn-hub/gateway/handler"
+	go_micro_api_dcmgr "github.com/Ankr-network/dccn-hub/gateway/proto/dcmgr"
+	go_micro_api_taskmgr "github.com/Ankr-network/dccn-hub/gateway/proto/taskmgr"
+	go_micro_api_usermgr "github.com/Ankr-network/dccn-hub/gateway/proto/usermgr"
+	"github.com/micro/examples/template/api/client"
 
-	"github.com/Ankr-network/refactor/gateway/proto/k8s"
-	"github.com/golang/glog"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"google.golang.org/grpc"
-
-	"github.com/Ankr-network/refactor/gateway/proto/dccenter"
-	"github.com/Ankr-network/refactor/gateway/proto/taskmgr"
+	log "github.com/micro/go-log"
+	micro "github.com/micro/go-micro"
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
-
-var (
-	// the go.micro.srv.greeter address
-	endpoint = flag.String("endpoint", "localhost:9090", "go.micro.srv.greeter address")
-)
-
-func run() error {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-
-	err := taskmgr.RegisterTaskMgrHandlerFromEndpoint(ctx, mux, *endpoint, opts)
-	if err != nil {
-		return err
-	}
-
-	err = dccenter.RegisterDccenterHandlerFromEndpoint(ctx, mux, *endpoint, opts)
-	if err != nil {
-		return err
-	}
-
-	err = k8s.RegisterK8sHandlerFromEndpoint(ctx, mux, *endpoint, opts)
-	if err != nil {
-		return err
-	}
-
-	return http.ListenAndServe(":8080", mux)
-}
 
 func main() {
-	flag.Parse()
+	// New Service
+	service := micro.NewService(
+		micro.Name("go.micro.api.gateway"),
+		micro.Version("latest"),
+	)
 
-	defer glog.Flush()
+	// Initialise service
+	service.Init(
+		// create wrap for the Example srv client
+		micro.WrapHandler(client.ExampleWrapper(service)),
+	)
 
-	if err := run(); err != nil {
-		glog.Fatal(err)
+	// Register Handlers
+	go_micro_api_usermgr.RegisterUserMgrHandler(service.Server(), handler.NewUserApi(
+		go_micro_srv_usermgr.NewUserMgrService("go.micro.srv.usermgr", service.Client()),
+	))
+	go_micro_api_taskmgr.RegisterTaskMgrHandler(service.Server(), handler.NewTaskApi(
+		go_micro_srv_taskmgr.NewTaskMgrService("go.micro.srv.taskmgr", service.Client()),
+	))
+	go_micro_api_dcmgr.RegisterDcMgrHandler(service.Server(), handler.NewDataCenterApi(
+		go_micro_srv_dcmgr.NewDcMgrService("go.micro.srv.dcmgr", service.Client()),
+	))
+
+	// Run service
+	if err := service.Run(); err != nil {
+		log.Fatal(err)
 	}
 }

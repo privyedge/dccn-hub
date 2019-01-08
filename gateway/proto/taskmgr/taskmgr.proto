@@ -1,129 +1,91 @@
 syntax = "proto3";
 
-package taskmgr;
-
-import "google/api/annotations.proto";
+package go.micro.api.taskmgr;
 
 service TaskMgr {
-    rpc AddTask (AddTaskRequest) returns (AddTaskResponse) {
-        option (google.api.http) = {
-			post: "/taskmgr/add"
-			body: "*"
-		};
+    rpc Get(ID) returns (Task) {
     }
 
-    rpc CancelTask (CancelTaskRequest) returns (CancelTaskResponse) {
-        option (google.api.http) = {
-                post: "/taskmgr/cancel"
-                body: "*"
-            };
+    rpc Create(Task) returns (Response) {
     }
 
-    rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse) {
-        option (google.api.http) = {
-                post: "/taskmgr/update"
-                body: "*"
-            };
+    rpc Cancel(ID) returns (Response) {
     }
 
-    rpc TaskList (TaskListRequest) returns (TaskListResponse) {
-        option (google.api.http) = {
-                post: "/taskmgr/list"
-                body: "*"
-            };
-    }
-
-    rpc TaskDetail (TaskDetailRequest) returns (TaskDetailResponse) {
-        option (google.api.http) = {
-                post: "/taskmgr/detail"
-                body: "*"
-            };
+    rpc Update(Task) returns (Response) {
     }
 }
 
-enum OpCode {
-    ADD = 0;
-    CANCEL = 1;
-    UPDATE = 2;
-    LIST = 3;
-    DETAIL = 4;
-}
-
-//Pub/Sub Event
-message Event {
-    // unique id
-    string id = 1;
-    // unix timestamp
-    int64 timestamp = 2;
-    // message
-    string message = 3;
-    // Operation code
-    OpCode op = 4;
+message ID {
+    int64 id = 1;
 }
 
 message Task {
+    enum Status {
+        CREATING = 0;
+        CREATED = 1;
+        RUNNING = 2;
+        CANCELING = 3;
+        CANCELED = 4;
+        UPDATING = 5;
+        UPDATED = 6;
+        FAILURE = 7;
+        SUCCESS = 8;
+    }
+    // id task id, unique.
+    int64 id = 1;
+    // event_id the flag of updating task info.
+    // filter log with event id
+    string event_id = 2;
+    // user_id the task belongs.
+    int64 user_id = 3;
+    // name task name
+    string name = 4;
+    // task type
+    string type = 5;
+    // status [CREATING,RUNNING,CANCELING,CANCELED,UPDATING,UPDATED,FAILURE,SUCCESS]
+    Status status = 6;
+     // startup time of the this task
+    uint32 startup_time = 7;
+    // mission data center id
+    int64 data_center_id = 8;
+     // task creation date
+    uint64 create_time = 9;
+    // task cancel date
+    uint64 cancel_time = 10;
+    // task update date
+    uint64 update_time = 11;
+    // task returns date
+    uint64 return_time = 12;
+    // extra for other arguments
+    bytes extra = 13;
+    // result of the task
+    bytes result = 14;
 }
 
-// The dccn client request message containing the taskmgr's token
-message AddTaskRequest {
-    string name = 1; // name of the task/image to run
-    string type = 2; // default or "web" as website
-    string datacenter = 3; // default or  datacenter name
-    string usertoken = 4; //taskmgr account, alphanumeric chars, may not be used now for authentication
-    int64 replica = 5;   // how many replica of docker instance
+message Response {
 }
 
-// The Ankr Hub response message containing the success or failure
-message AddTaskResponse{
-    string status = 1; // Success or Failure
-    int64 taskid = 2; //  id of task if success, in case of failure return -1
+message Event {
+    enum OpCode {
+        CREATE = 0;
+        CANCEL = 1;
+        UPDATE = 2;
+        RETURN = 3;
+        REFUSED = 4;
+    }
+    // unique id
+    string id = 1;
+    // event based on task_id.
+    int64 task_id = 2;
+    // unix timestamp
+    int64 timestamp = 3;
+    // operation code []
+    OpCode operation = 4;
+    // data_center_id task's executer dc
+    int64 data_center_id = 5;
+    // modify_time status's change time
+    int64 modify_time = 6;
+    // result task result
+    bytes result = 7;
 }
-
-// The Client List request message
-message TaskListRequest {
-    string usertoken = 1; // List task for the account
-}
-
-message TaskInfo {
-    int64  taskid = 1;
-    string taskname = 2; // List task for the account
-    uint32 uptime = 3; // uptime of the task
-    uint64 creationdate = 4; //task creation date
-    string status = 5; // Active or inactive, Right now all tasks active
-    string datacenter = 6;
-    int64 replica = 7;  //
-}
-
-message TaskListResponse{
-    repeated TaskInfo tasksinfo = 1; // repeated groups of taskinfo list
-}
-
-message CancelTaskRequest {
-    string usertoken = 1;
-    int64  taskid = 2;
-}
-
-message CancelTaskResponse{
-    string status = 1; // Success or Failure
-}
-
-message UpdateTaskRequest {
-    string usertoken = 1;
-    int64  taskid = 2;
-    string name = 3;
-    int64 replica = 4;
-}
-
-message UpdateTaskResponse{
-    string status = 1; // Success or Failure
-}
-
-message TaskDetailRequest{
-    int64 taskid = 2;
-    string usertoken = 1;
-}
-
-message TaskDetailResponse{
-    string body = 1;
-}
-

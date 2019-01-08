@@ -1,56 +1,46 @@
 package main
 
 import (
-	"github.com/micro/go-micro"
-	k8s "github.com/micro/kubernetes/go/micro"
-	"gopkg.in/mgo.v2"
+	"log"
 	"time"
 
-	"github.com/Ankr-network/refactor/util"
-	"github.com/Ankr-network/refactor/util/db"
-	"github.com/Ankr-network/refactor/proto/usermgr"
-	"github.com/Ankr-network/refactor/app_dccn_usermgr/token"
-	"github.com/Ankr-network/refactor/app_dccn_usermgr/config"
-	"github.com/Ankr-network/refactor/app_dccn_usermgr/db_user"
-	"github.com/Ankr-network/refactor/app_dccn_usermgr/handler"
+	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/config"
+	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
+	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/handler"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/token"
+
+	micro "github.com/micro/go-micro"
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 var (
-	configPath = "refactor/app_dccn_usermgr/config/config.json"
-	conf *config.Config
-	db *mgo.Session
-	err error
+	configPath = "config.json"
 )
 
 func main() {
-
-	LoadConfig(configPath)
-	defer conf.Finalize()
-
-	if db, err = utildb.CreateDBConnection(conf.DBConfig); err != nil {
-		util.WriteLog(err.Error())
+	conf, err := config.New(configPath)
+	if err != nil {
+		println(err.Error())
 		return
 	}
 
-	StartHandler(db.DB(conf.DB).C(conf.Collection), conf)
-	defer db.Close()
-}
-
-// LoadConfig loads config and watch the update
-func LoadConfig(path string) {
-	conf, err = config.New(path)
+	db, err := dbservice.New(conf.DBConfig)
 	if err != nil {
-		util.WriteLog(err.Error())
-		panic(err.Error())
+		println(err.Error())
+		return
 	}
+	defer db.Close()
+
+	StartHandler(db, conf)
 }
 
-// StartHandler startes hander to listen.
-func StartHandler(c *mgo.Collection, conf *config.Config) {
+// StartHandler starts hander to listen.
+func StartHandler(db dbservice.DBService, conf *config.Config) {
 	// New Service
-	service := k8s.NewService(
-		micro.Name("network.ankr.srv.user"),
-		micro.Version("user daemon"),
+	service := micro.NewService(
+		micro.Name(conf.SrvName),
+		micro.Version(conf.Version),
 		micro.RegisterTTL(time.Second*time.Duration(conf.TTL)),
 		micro.RegisterInterval(time.Second*time.Duration(conf.Interval)),
 	)
@@ -59,12 +49,10 @@ func StartHandler(c *mgo.Collection, conf *config.Config) {
 	service.Init()
 
 	// Register Handler
-	usermgr.RegisterUserMgrHandler(service.Server(), handler.New(dbuser.New(c), token.New(&conf.TokenConfig)))
-
-	// Maybe send message service here
+	pb.RegisterUserMgrHandler(service.Server(), handler.New(db, token.New(&conf.TokenConfig)))
 
 	// Run service
 	if err := service.Run(); err != nil {
-		util.WriteLog(err.Error())
+		log.Println(err.Error())
 	}
 }

@@ -1,45 +1,45 @@
 
-GOPATH := $(shell go env GOPATH)
-#SUBDIRS := $(wildcard ../app_*/proto/*.proto)
-SUBDIRS := $(wildcard */*/*.proto)
+GOPATH:=$(shell go env GOPATH)
 
-.PHONY: proto
+all: run test deploy devtools local
+
+SUBDIRS := $(wildcard proto/**/*.proto)
+.PHONY: proto build test run deploy $(SUBDIRS) clean
+
 proto: $(SUBDIRS)
 $(SUBDIRS):
-	@protoc -I/usr/local/include -I. \
-	  	-I${GOPATH}/src \
-	  	-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-	  	--go_out=plugins=grpc:. \
-	  	$@
-	@protoc -I/usr/local/include -I. \
-		-I${GOPATH}/src \
-		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-		--grpc-gateway_out=logtostderr=true:. \
-		$@
 	@protoc -I. \
-		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-		--swagger_out=. \
+	    -I${GOPATH}/src:. \
+	    --micro_out=. \
+	    --go_out=. \
 		$@
 
-.PHONY: proto $(SUBDIRS)
-
-.PHONY: build
 build: proto
+	docker build . -t gateway:latest
 
-	go build -o gateway main.go
-
-.PHONY: run
 run: build
-	./gateway
+	docker run -d \
+		-p 8080:8080\
+		microhq/micro api --handler=rpc \
+		-e MICRO_API_ADDRESS=:8080
+		gateway
 
-.PHONY: clean
+local:
+	echo "ensure run micro api --handler=rpc"
+	go run main.go
+
 clean:
 	rm gateway
 
-# .PHONY: test
-# test:
-# 	go test -v ./... -cover
+test:
+	go test -v ./... -cover -race
 
-# .PHONY: docker
-# docker:
-# 	docker build . -t taskmgr-srv:latest
+deploy:
+	@echo "docker push"
+
+devtools:
+	env GOBIN= go get -u github.com/golang/protobuf/protoc-gen-go
+	env GOBIN= go get github.com/micro/protoc-gen-micro
+	@type "protoc" 2> /dev/null || echo 'Please install protoc'
+	@type "protoc-gen-micro" 2> /dev/null || echo 'Please install protoc-gen-micro'
+

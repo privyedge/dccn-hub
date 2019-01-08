@@ -2,37 +2,29 @@ package handler
 
 import (
 	"context"
-	"errors"
-
-	"github.com/Ankr-network/refactor/util"
-	pb "github.com/Ankr-network/refactor/app_dccn_dccenter/proto"
+	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/db_service"
+	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/dcmgr"
 )
 
-type DcCenterHandler struct{}
-
-func (p *DcCenterHandler) DataCenterList(ctx context.Context, req *pb.DataCenterListRequest, rsp *pb.DataCenterListResponse) error {
-	token := req.Usertoken
-	// TODO: Abstract DBConfig interface
-	user := util.GetUser(token)
-	util.WriteLog("task list reqeust")
-
-	if user.ID == 0 {
-		util.WriteLog("task list reqeust fail for taskmgr token error")
-		return errors.New("task list reqeust fail for taskmgr token error")
-	} else {
-		dataCenters := util.DataCeterList()
-
-		var dcList []*pb.DataCenterInfo
-		for i := range dataCenters {
-			dataCenter := dataCenters[i]
-			dcInfo := &pb.DataCenterInfo{}
-			dcInfo.Id = dataCenter.ID
-			dcInfo.Name = dataCenter.Name
-			dcList = append(dcList, dcInfo)
-			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
-		}
-
-		rsp.DcList = dcList
-		return nil
-	}
+type DcMgrHandler struct {
+	db dbservice.DBService
 }
+
+func NewDcMgrHandler(db dbservice.DBService) *DcMgrHandler {
+	return &DcMgrHandler{db}
+}
+
+func (p *DcMgrHandler) Get(ctx context.Context, id *go_micro_srv_dcmgr.ID, center *go_micro_srv_dcmgr.DataCenter) error {
+	var err error
+	center, err = p.db.Get(id.Id)
+	return err
+}
+
+func (p *DcMgrHandler) Add(ctx context.Context, center *go_micro_srv_dcmgr.DataCenter, rsp *go_micro_srv_dcmgr.Response) error {
+	return p.db.Add(*center)
+}
+
+func (p *DcMgrHandler) Update(ctx context.Context, center *go_micro_srv_dcmgr.DataCenter, rsp *go_micro_srv_dcmgr.Response) error {
+	return p.db.Update(center)
+}
+
