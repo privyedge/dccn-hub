@@ -1,31 +1,62 @@
+.PHONY: proto build test run deploy local clean
 
 GOPATH:=$(shell go env GOPATH)
-SUBDIRS := $(wildcard */*.proto)
 
-proto: $(SUBDIRS)
-$(SUBDIRS):
-	@protoc -I/usr/local/include -I. \
-	    -I${GOPATH}/src \
-	    -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-	    --micro_out=. --go_out=. \
-	    $@
+all: run test deploy devtools
 
-.PHONY: proto $(SUBDIRS)
+proto:
+	@protoc -I. \
+	    -I${GOPATH}/src:. \
+	    --micro_out=. \
+	    --go_out=. \
+	    proto/dcmgr/dcmgr.proto
 
-.PHONY: build
 build: proto
+	docker build . -t app_dccn_dcmgr:latest
 
-	go build -o app_dccn_dccenter main.go plugin.go
-
-.PHONY: run
 run: build
-	MICRO_BROKER=rabbitmq \
-	./app_dccn_dccenter
+	docker run -d \
+		-p 50051 \
+		-e DB_HOST="127.0.0.1 \
+		-e DB=dccn \
+		-e COLLECTION=datacenter \
+		-e POOL_LIMIT=4096 \
+		-e TIMEOUT=15 \
+		-e MICRO_REGISTER_TTL=30 \
+		-e MICRO_REGISTER_INTERVAL=30 \
+		-e MICRO_SERVER_NAME=go.micro.srv.dcmgr \
+		-e MICRO_SERVER_VERSION=v0.1 \
+		-e MICRO_SERVER_ADDRESS=:50051 \
+		// TODO: use kubernetes
+		-e MICRO_REGISTRY=consul \
+		-e MICRO_REGISTRY_ADDRESS=:8300 \
+		app_dccn_dcmgr
 
-.PHONY: test
+local:
+		DB_HOST="127.0.0.1" \
+		DB=dccn \
+		COLLECTION=datacenter \
+		POOL_LIMIT=4096 \
+		TIMEOUT=15 \
+		MICRO_REGISTER_TTL=30 \
+		MICRO_REGISTER_INTERVAL=30 \
+		MICRO_SERVER_NAME=go.micro.srv.dcmgr \
+		MICRO_SERVER_VERSION=v0.1 \
+		MICRO_SERVER_ADDRESS=:50051 \
+		go run main.go
+
+clean:
+	rm app_dccn_dcmgr
+
 test:
-	go test -v ./... -cover
+	go test -v ./... -cover -race
 
-.PHONY: docker
-docker:
-	docker build . -t app_dccn_dccenter:latest
+deploy:
+	@echo "docker push"
+
+devtools:
+	env GOBIN= go get -u github.com/golang/protobuf/protoc-gen-go
+	env GOBIN= go get github.com/micro/protoc-gen-micro
+	@type "protoc" 2> /dev/null || echo 'Please install protoc'
+	@type "protoc-gen-micro" 2> /dev/null || echo 'Please install protoc-gen-micro'
+

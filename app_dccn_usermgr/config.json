@@ -1,0 +1,21 @@
+{
+  "srv_name": "go.micro.srv.usermgr",
+  "version": "lastest",
+  "ttl": 30,
+  "interval": 30,
+  "db_config": {
+    "addrs": ["127.0.0.1"],
+    "db": "dccn",
+    "collection": "user",
+    "timeout": 15,
+    "pool_limit": 4096
+  },
+  "token_config": {
+    "secret": "342b97795deac7da8b88c1d7bedc4516",
+    "issuer": "ankr",
+    "audience": "",
+    "subject": "",
+    "active_time": 60,
+    "not_before": 0
+  }
+}

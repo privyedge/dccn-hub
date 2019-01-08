@@ -1,31 +1,37 @@
+.PHONY: proto build test run deploy clean
 
 GOPATH:=$(shell go env GOPATH)
-SUBDIRS := $(wildcard */*.proto)
 
-proto: $(SUBDIRS)
-$(SUBDIRS):
-	@protoc -I/usr/local/include -I. \
-	    -I${GOPATH}/src \
-	    -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-	    --micro_out=. --go_out=. \
-	    $@
+all: run test deploy devtools
 
-.PHONY: proto $(SUBDIRS)
+proto:
+	@protoc -I. \
+	    -I${GOPATH}/src:. \
+	    --micro_out=. \
+	    --go_out=. \
+	    proto/usermgr/usermgr.proto
 
-.PHONY: build
 build: proto
+	docker build . -t app_dccn_usermgr:latest
 
-	go build -o app_dccn_user main.go plugin.go
-
-.PHONY: run
 run: build
-	MICRO_BROKER=rabbitmq \
-	./app_dccn_user
+	docker run -d \
+		-p 50051 \
+		-e DB_HOST="127.0.0.1" \
+		app_dccn_usermgr
 
-.PHONY: test
+clean:
+	rm app_dccn_usermgr
+
 test:
-	go test -v ./... -cover
+	go test -v ./... -cover -race
 
-.PHONY: docker
-docker:
-	docker build . -t app_dccn_user:latest
+deploy:
+	@echo "docker push"
+
+devtools:
+	env GOBIN= go get -u github.com/golang/protobuf/protoc-gen-go
+	env GOBIN= go get github.com/micro/protoc-gen-micro
+	@type "protoc" 2> /dev/null || echo 'Please install protoc'
+	@type "protoc-gen-micro" 2> /dev/null || echo 'Please install protoc-gen-micro'
+

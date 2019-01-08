@@ -4,7 +4,7 @@ This is taskmgr Management & Authentication Services
 
 ## Contents
 - config     - configuration information for hot updates
-- db_user - wrapper operations of taskmgr table
+- db_service - wrapper operations of taskmgr table
 - handler    - an RPC taskmgr service
 - proto      - declaration of data structures and interfaces
 - testdata   - here are test data
@@ -35,18 +35,21 @@ Protobuf v3 are required:
 
     $ brew install protobuf
 
-Install the protoc-gen libraries and other dependencies:
+Install the protoc libraries and other dependencies:
 
-    $ go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+    $ go get -u github.com/golang/protobuf/protoc-gen-go
     $ go get -u github.com/micro/protoc-gen-micro
     $ go get -u github.com/micro/go-micro
     $ go get -u github.com/hailocab/go-geoindex
 
 ## Dependencies
 
-    $ go get -u -d github.com:micro/micro
     $ go get -u -d gopkg.in/mgo.v2
     $ go get -u -d github.com/dgrijalva/jwt-go
+    $ go get -u -d github.com/micro/micro
+    $ go get -u -d github.com/micro/go-micro
+    go get github.com/micro/kubernetes
+    go get github.com/micro/go-plugins
 
 ### Protobufs
 
