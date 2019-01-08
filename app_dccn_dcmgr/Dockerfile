@@ -1,4 +1,4 @@
-FROM golang:1.10.4-alpine as builder
+FROM golang:1.11.4-alpine as builder
 
 WORKDIR /go/src/github.com/Ankr-network/dccn-hub/app_dccn_dcmgr
 COPY . .

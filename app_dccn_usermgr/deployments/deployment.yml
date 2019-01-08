@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: user-manager
+  name: usermgr
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        name: user-manager
+        name: usermgr
     spec:
       imagePullSecrets:
       - name: dccn-ecr
       containers:
-      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-user-manager:stage20181222041227
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/app_dccn_usermgr:latest
         imagePullPolicy: "Always"
-        name: user-manager
+        name: usermgr

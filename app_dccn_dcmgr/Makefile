@@ -17,19 +17,6 @@ build: proto
 run: build
 	docker run -d \
 		-p 50051 \
-		-e DB_HOST="127.0.0.1 \
-		-e DB=dccn \
-		-e COLLECTION=datacenter \
-		-e POOL_LIMIT=4096 \
-		-e TIMEOUT=15 \
-		-e MICRO_REGISTER_TTL=30 \
-		-e MICRO_REGISTER_INTERVAL=30 \
-		-e MICRO_SERVER_NAME=go.micro.srv.dcmgr \
-		-e MICRO_SERVER_VERSION=v0.1 \
-		-e MICRO_SERVER_ADDRESS=:50051 \
-		// TODO: use kubernetes
-		-e MICRO_REGISTRY=consul \
-		-e MICRO_REGISTRY_ADDRESS=:8300 \
 		app_dccn_dcmgr
 
 local:

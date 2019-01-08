@@ -11,7 +11,6 @@ services:
     - 50051:50051
     environment:
       MICRO_ADRESS: ":50051"
-      MICRO_BROKER: "rabbitmq"
       DB_HOST: "datastore:27017"
 
   app_dccn_dcmgr:
@@ -20,9 +19,14 @@ services:
     - 50052:50052
     environment:
       MICRO_SERVER_ADDRESS: ":50052"
-      MICRO_TRANSPORT: "nats"
-      MICRO_BROKER: "rabbitmq"
-      MICRO_REGISTRY: "kubernetes"
+      DB: "dccn"
+      COLLECTION: "datacenter"
+      POOL_LIMIT: 4096
+      TIMEOUT: 15
+      MICRO_REGIxTER_TTL: 30
+      MICRO_REGISTER_INTERVAL: 30
+      MICRO_SERVER_NAME: "go.micro.srv.dcmgr"
+      MICRO_SERVER_VERSION: "v0.1"
       DB_HOST: "datastore:27017"
 
   app_dccn_taskmgr:
@@ -31,25 +35,7 @@ services:
     - 50053:50053
     environment:
       MICRO_ADRESS: ":50053"
-      MICRO_TRANSPORT: "nats"
-      MICRO_BROKER: "rabbitmq"
-      MICRO_REGISTRY: "kubernetes"
       DB_HOST: "datastore:27017"
-
-  user-service:
-    build: ./user-service
-    ports:
-    - 50053:50051
-    environment:
-      MICRO_ADRESS: ":50051"
-      MICRO_REGISTRY: "mdns"
-      DB_NAME: "postgres"
-      DB_HOST: "database"
-      DB_PORT: "5432"
-      DB_USER: "postgres"
-      DB_PASSWORD: "postgres"
-    depends_on:
-    - database
 
   datastore:
     image: mongo
@@ -59,12 +45,12 @@ services:
   broker:
     image: rabbitmq
     ports:
-      -5672:5672
-      -15672:15672
+      - 5672:5672
+      - 15672:15672
 
   micro:
     image: microhq/micro
     ports:
-      -8080:8080
+      - 8080:8080
 
 
