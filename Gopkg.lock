@@ -2,8 +2,8 @@
 
 
 [[projects]]
-  branch = "feature/SWDEV-117-ankr_comm"
-  digest = "1:d6fc484d602bfab2bb696aa579dedd7fb15dac280de052e84978411904c34a8e"
+  branch = "develop"
+  digest = "1:08c60d8fa05643b81c113301e21d98d4faa26877633f796e775f39c1569d80cf"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     ".",
@@ -12,7 +12,7 @@
     "server_rpc",
   ]
   pruneopts = "UT"
-  revision = "9780e22d1bf07e9730d6a206c0f7b0243f7d4e40"
+  revision = "bbf3e6f5f41109030acb1a761cf04824faa0669d"
 
 [[projects]]
   digest = "1:5d1b5a25486fc7d4e133646d834f6fca7ba1cef9903d40e7aa786c41b89e9e91"
@@ -51,15 +51,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "927f97764cc334a6575f4b7a1584a147864d5723"
+  revision = "1e06a53dbb7e2ed46e91183f219db23c6943c532"
 
 [[projects]]
   branch = "master"
-  digest = "1:5004e851e5eccde563d17871cd9d11c82e2faa578b1a0de81dc74867ad3845a4"
+  digest = "1:f106a08663d0031b576f61ab81ffd80124da17096eab36aceb25b1b0d847da9a"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "82a175fd1598e8a172e58ebdf5ed262bb29129e5"
+  revision = "7fbe1cd0fcc20051e1fcb87fbabec4a1bacaaeba"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -90,7 +90,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "bd9b4fb69e2ffd37621a6caa54dcbead29b546f2"
+  revision = "ae2f86662275e140f395167f1dab7081a5bd5fa8"
 
 [[projects]]
   digest = "1:8c8ed249fa6a8db070bf2082f02052c697695fa5e1558b4e28dd0fb5f15f70a2"
@@ -158,7 +158,7 @@
     "github.com/Ankr-network/dccn-common/server_rpc",
     "github.com/streadway/amqp",
     "golang.org/x/net/context",
-    "google.golang.org/grpc",
+    "google.golang.org/grpc/peer",
     "google.golang.org/grpc/reflection",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",

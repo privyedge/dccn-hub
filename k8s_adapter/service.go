@@ -2,15 +2,18 @@ package k8s_adapter
 
 import (
 	"fmt"
+	"google.golang.org/grpc/peer"
 	"io"
 	"math/rand"
+	"net"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
-	ankr_const "github.com/Ankr-network/dccn-common"
+	"github.com/Ankr-network/dccn-common"
 	pb "github.com/Ankr-network/dccn-common/protocol/k8s"
-	server_rpc "github.com/Ankr-network/dccn-common/server_rpc"
+	"github.com/Ankr-network/dccn-common/server_rpc"
 	"github.com/Ankr-network/dccn-hub/util"
 	"google.golang.org/grpc/reflection"
 )
@@ -101,18 +104,47 @@ func (s *server) K8Task(stream pb.Dccnk8S_K8TaskServer) error {
 
 //deal with HeartBeat message from DataCenter
 func updateDataCenter(s *server, in *pb.K8SMessage, stream pb.Dccnk8S_K8TaskServer) {
+	ctx := stream.Context()
+	pr, ok := peer.FromContext(ctx)
+	if !ok {
+		util.WriteLog("failed to get peer from ctx " )
+	}
+	if pr.Addr == net.Addr(nil) {
+		util.WriteLog("failed to get peer address")
+	}
+
+	values :=  strings.Split(pr.Addr.String(), ":")
+	util.WriteLog(in.Datacenter + " >>  IP : " + values[0])
+
 	datacenter := util.GetDataCenter(in.Datacenter)
+
+	isUpdateLocation := false
+
+	datacenterID := 0
+
+
 	if datacenter.ID == 0 {
-		datacenter := util.DataCenter{Name: in.Datacenter, Report: in.Report}
-		id := util.AddDataCenter(datacenter)
-		logStr := fmt.Sprintf("insert new  DataCenter id %d", id)
+		isUpdateLocation = true
+		datacenter := util.DataCenter{Name: in.Datacenter, Report: in.Report, IP: values[0]}
+		datacenterID = int(util.AddDataCenter(datacenter))
+		logStr := fmt.Sprintf("insert new  DataCenter id %d", datacenterID)
 		util.WriteLog(logStr)
 	} else {
-		datacenter2 := util.DataCenter{Name: in.Datacenter, Report: in.Report}
+		if datacenter.IP != values[0] {
+			isUpdateLocation = true
+		}
+		datacenterID = int(datacenter.ID)
+		datacenter2 := util.DataCenter{Name: in.Datacenter, Report: in.Report, IP:values[0]}
 		util.UpdateDataCenter(datacenter2, int(datacenter.ID))
 		logStr := fmt.Sprintf("update  DataCenter id %d", datacenter.ID)
 		util.WriteLog(logStr)
 
+	}
+	util.WriteLog("before update location")
+	if isUpdateLocation {
+		util.WriteLog("update location")
+		lat, lng := util.GetLatLng("8.8.8.8")
+		util.UpdateDataCenterLocation(lat, lng, datacenterID)
 	}
 
 	datacenter = util.GetDataCenter(in.Datacenter)

@@ -157,6 +157,8 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 			dcInfo.Id = dataCenter.ID
 			dcInfo.Name = dataCenter.Name
 			dcInfo.Status = dataCenter.Status
+			dcInfo.Lat = dataCenter.Lat
+			dcInfo.Lng = dataCenter.Lng
 			dcList = append(dcList, dcInfo)
 			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}

@@ -51,6 +51,9 @@ type DataCenter struct {
 	LastReportTime int64
 	Status         string //1. online  2. offline
 	DatacenterId   int
+	IP             string
+	Lat            string // location lat
+	Lng            string // lng
 }
 
 func GetDataCenter(name string) DataCenter {
@@ -76,7 +79,13 @@ func AddDataCenter(d DataCenter) int64 {
 func UpdateDataCenter(d DataCenter, id int) {
 	db := GetDBInstance()
 	c := db.C("datacenter")
-	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"name": d.Name, "report": d.Report}})
+	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"name": d.Name, "report": d.Report, "ip": d.IP}})
+}
+
+func UpdateDataCenterLocation(lat string, lng string, id int) {
+	db := GetDBInstance()
+	c := db.C("datacenter")
+	c.Update(bson.M{"_id": id}, bson.M{"$set": bson.M{"lat": lat, "lng": lng}})
 }
 
 var instance *mgo.Database

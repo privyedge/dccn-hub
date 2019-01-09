@@ -9,9 +9,6 @@
 
 # UPGRADE: Protobuf
 
-[[constraint]]
-  branch = "feature/SWDEV-117-ankr_comm"
-  name = "github.com/Ankr-network/dccn-common"
 
 # Required: Protobuf is required by gRPC
 [[constraint]]
