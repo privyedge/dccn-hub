@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: datastore-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 16Gi
+  storageClassName: gp2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: datastore
+  name: datastore
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    name: datastore
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: datastore
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: datastore
+    spec:
+      containers:
+      - image: datastore
+        name: datastore
+        ports:
+        - name: datastore
+          containerPort: 27017
+          hostPort: 27017
+        volumeMounts:
+            - name: datastore-persistent-storage
+              mountPath: /data/db
+      volumes:
+        - name: datastore-persistent-storage
+          persistentVolumeClaim:
+            claimName: datastore-pvc

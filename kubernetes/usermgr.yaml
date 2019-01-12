@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-dccn-usermgr
+  labels:
+    name: app-dccn-usermgr
+spec:
+  ports:
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+  selector:
+    name: app-dccn-usermgr
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: app-dccn-usermgr
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: app-dccn-usermgr
+    spec:
+      imagePullSecrets:
+      - name: dccn-ecr
+      containers:
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-usermgr:feat
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 50051
+        env:
+        - name: DB_HOST
+          value: "datastore:27017"
+        - name: "MICRO_ADRESS"
+          value: ":50051"

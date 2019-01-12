@@ -4,7 +4,7 @@ This is the Taskmgr service
 
 Generated with
 
-```
+```bash
 micro new github.com/Ankr-network/refactor/app_dccn_taskmgr --namespace=go.micro --alias=taskmgr --type=srv
 ```
 
@@ -31,7 +31,7 @@ micro new github.com/Ankr-network/refactor/app_dccn_taskmgr --namespace=go.micro
 `go get -v go.etcd.io/etcd`
 Micro services depend on service discovery. The default is consul.
 
-```
+```bash
 # install etcd
 brew install etcd
 
@@ -44,16 +44,18 @@ A Makefile is included for convenience
 
 Build the binary
 
-```
+```bash
 make build
 ```
 
 Run the service
-```
+
+```bash
 ./taskmgr-srv
 ```
 
 Build a docker image
-```
+
+```bash
 make docker
 ```

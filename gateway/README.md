@@ -4,7 +4,7 @@ This is the Api service
 
 Generated with
 
-```
+```bash
 micro new github.com/Ankr-network/dccn-hub/api --namespace=go.micro --type=api
 ```
 
@@ -24,7 +24,7 @@ micro new github.com/Ankr-network/dccn-hub/api --namespace=go.micro --type=api
 
 Micro services depend on service discovery. The default is consul.
 
-```
+```bash
 # install consul
 brew install consul
 
@@ -38,16 +38,18 @@ A Makefile is included for convenience
 
 Build the binary
 
-```
+```bash
 make build
 ```
 
 Run the service
-```
+
+```bash
 ./api-api
 ```
 
 Build a docker image
-```
+
+```bash
 make docker
 ```
