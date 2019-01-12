@@ -32,6 +32,6 @@ spec:
         - containerPort: 50051
         env:
         - name: DB_HOST
-          value: "mongo:27017"
+          value: "datastore:27017"
         - name: "MICRO_ADRESS"
           value: ":50051"
