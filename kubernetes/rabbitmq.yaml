@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: rabbitmq-pvc
+  name: broker-pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -15,40 +15,42 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    name: rabbitmq
-  name: rabbitmq
+    name: broker
+  name: broker
 spec:
   ports:
     - port: 5672
       targetPort: 5672
+    - port: 15672
+      targetPort: 15672
   selector:
-    name: rabbitmq
+    name: broker
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: rabbitmq
+  name: broker
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        name: rabbitmq
+        name: broker
     spec:
       containers:
       - image: rabbitmq:3-management
-        name: rabbitmq
+        name: broker
         ports:
-        - name: rabbitmq
+        - name: broker
           containerPort: 5672
           hostPort: 5672
-        - name: rabbitmq-ma
+        - name: broker-ma
           containerPort: 15672
           hostPort: 15672
         volumeMounts:
-          - name: rabbitmq-data
+          - name: broker-data
             mountPath: /var/lib/rabbitmq
       volumes:
-        - name: rabbitmq-data
+        - name: broker-data
           persistentVolumeClaim:
-            claimName: rabbitmq-pvc
+            claimName: broker-pvc
