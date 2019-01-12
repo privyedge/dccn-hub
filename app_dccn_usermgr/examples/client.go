@@ -53,32 +53,32 @@ func main() {
 		log.Fatalf("want: %#v\n, but %#v\n", user, u)
 	}
 
+	if u, err := cli.Login(context.TODO(), &pb.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
+		log.Fatal(err.Error())
+	} else {
+		log.Printf("login feedback: %+v", u.Token)
+	}
+
 	token, err := cli.NewToken(context.TODO(), user)
 	if err != nil {
 		log.Fatal(err.Error())
+	} else {
+		log.Println("Receive Token: ", token)
 	}
 
-	log.Println("Generate Token: ", token)
-
+	// Verify same Password
 	_, err = cli.VerifyToken(context.TODO(), &pb.Token{Token: token.Token})
 	if err != nil {
 		log.Fatal(err.Error())
-	}
-	log.Println("VerifyToken OK")
-
-	_, err = cli.VerifyToken(context.TODO(), &pb.Token{Token: "14444749c1ecc982cd0f91113db98211"})
-	if err != nil {
-		log.Println("VerifyToken OK")
 	} else {
-		log.Fatal("Token Want Not OK, But ok")
+		log.Println("VerifyToken OK")
 	}
 
-	loginUser, err := cli.Login(context.TODO(), &pb.LoginRequest{Email: user.Email, Password: user.Password})
+	// Verify different Password
+	_, err = cli.VerifyToken(context.TODO(), &pb.Token{Token: "fyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NDcyODA4NTIsImlzcyI6ImFwcF9kY2NuX3VzZXJtZ3IifQ.5k3bMjtryTPDZ_v_-_3tgUXEba6eqvN56fa2P7y3wj9"})
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Println("Invalid OK.")
+	} else {
+		log.Fatal("VerifyToken Failed.")
 	}
-	log.Printf("+%v\n", loginUser)
-}
-
-func get() {
 }

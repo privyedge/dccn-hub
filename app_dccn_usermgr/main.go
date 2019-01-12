@@ -67,10 +67,6 @@ func Init() micro.Service {
 				Name:  "TOKEN_ACTIVE_TIME",
 				Usage: "JWT ActiveTie",
 			},
-			cli.IntFlag{
-				Name:  "TOKEN_NOT_BEFORE",
-				Usage: "JWT NotBefore",
-			},
 		),
 	)
 	conf.Token = token.DefaultTokenConfig()
@@ -87,7 +83,6 @@ func Init() micro.Service {
 			conf.DB.PoolLimit = ctx.Int("DB_POOL_LIMIT")
 			// TOKEN
 			conf.Token.ActiveTime = ctx.Int("TOKEN_ACTIVE_TIME")
-			conf.Token.NotBefore = int64(ctx.Int("TOKEN_NOT_BEFORE"))
 		}),
 	)
 
