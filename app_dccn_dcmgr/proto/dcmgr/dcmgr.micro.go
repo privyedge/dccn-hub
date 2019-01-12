@@ -22,6 +22,7 @@ import math "math"
 
 import (
 	context "context"
+
 	client "github.com/micro/go-micro/client"
 	server "github.com/micro/go-micro/server"
 )
@@ -80,7 +81,7 @@ func (c *dcMgrService) Get(ctx context.Context, in *ID, opts ...client.CallOptio
 }
 
 func (c *dcMgrService) Add(ctx context.Context, in *DataCenter, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "DcMgr.Add", in)
+	req := c.c.NewRequest(c.name, "DcMgr.Create", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {

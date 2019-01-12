@@ -6,20 +6,20 @@ import (
 
 	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
-type TokenService interface {
+type IToken interface {
 	New(user *pb.User) (string, error)
 	Verify(tokenString string) error
 }
 
 type Config struct {
-	Issuer string `json:"issuer,omitempty"`
-	Audience string `json:"audience,omitempty"`
-	Subject string `json:"subject,omitempty"`
-	ActiveTime int `json:"active_time,omitempty"`
-	NotBefore int64 `json:"not_before,omitempty"`
+	Issuer     string `json:"issuer,omitempty"`
+	Audience   string `json:"audience,omitempty"`
+	Subject    string `json:"subject,omitempty"`
+	ActiveTime int    `json:"active_time,omitempty"`
+	NotBefore  int64  `json:"not_before,omitempty"`
 	// Define a secure key string used
 	// as a salt when hashing our tokens.
 	// Please make your own way more secure than this,
@@ -29,6 +29,17 @@ type Config struct {
 
 type Token struct {
 	config *Config
+}
+
+func DefaultTokenConfig() Config {
+	return Config{
+		Issuer:     "",
+		Audience:   "",
+		Subject:    "",
+		ActiveTime: 20,
+		NotBefore:  20,
+		Secret:     "14444749c1ecc982cd0f91113db98211",
+	}
 }
 
 // UserPayload is our custom metadata, which will be hashed
@@ -67,7 +78,6 @@ func (p *Token) New(user *pb.User) (string, error) {
 	return token.SignedString(p.config.Secret)
 }
 
-
 // Verify a token string into a token object
 func (p *Token) Verify(tokenString string) error {
 
@@ -81,10 +91,9 @@ func (p *Token) Verify(tokenString string) error {
 	}
 
 	// Validate the token
-	payload, ok := token.Claims.(*UserPayload)
-	if ok && payload.User.Id !=  nil && token.Valid {
+	_, ok := token.Claims.(*UserPayload)
+	if ok && token.Valid {
 		return nil
 	}
 	return errors.New("invalid user")
 }
-

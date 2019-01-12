@@ -61,9 +61,15 @@
   version = "v0.1.0"
 
 [[projects]]
-  digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
+  digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
   name = "github.com/golang/protobuf"
-  packages = ["proto"]
+  packages = [
+    "proto",
+    "ptypes",
+    "ptypes/any",
+    "ptypes/duration",
+    "ptypes/timestamp",
+  ]
   pruneopts = "UT"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
   version = "v1.2.0"
@@ -194,6 +200,14 @@
   version = "v0.3.6"
 
 [[projects]]
+  digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
+  name = "github.com/json-iterator/go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "1624edc4454b8682399def8740d46db5e4362ba4"
+  version = "v1.1.5"
+
+[[projects]]
   branch = "master"
   digest = "1:30284237628259cb445afc0e1b4c7b4ed265ba1a6111ee72927452c0864f789f"
   name = "github.com/micro/cli"
@@ -210,10 +224,10 @@
     "template/srv/proto/example",
   ]
   pruneopts = "UT"
-  revision = "71cd614487c8951770b56321001f4e7f71ddd84e"
+  revision = "e99ca21771caff9be5a85ed7f3a1b76682f037ba"
 
 [[projects]]
-  digest = "1:e2fd456541de3991d3965eab6083e9f4234e384e6dcb6587e375f1942b96163b"
+  digest = "1:f16c17dcba3c89ad2ea58040aad87fc0a73fff5ab5ccb64a9e671af2aa39388d"
   name = "github.com/micro/go-config"
   packages = [
     ".",
@@ -231,8 +245,8 @@
     "source/file",
   ]
   pruneopts = "UT"
-  revision = "1bf51c5c888a67d4ddf8d3e447bf4e9a6e2453da"
-  version = "v0.13.1"
+  revision = "766dcfd950c2a004f1a424b737872e19b7daf3b4"
+  version = "v0.13.2"
 
 [[projects]]
   branch = "master"
@@ -279,9 +293,12 @@
   version = "v0.17.0"
 
 [[projects]]
-  digest = "1:e7a31eb93091054d21be2adeb60ce6db47343ac81f790a65fe7ffe13947344ee"
+  digest = "1:cbe64805e442775f9fe9be9cb229064435961852c2ed167fdc518b253fd15d7e"
   name = "github.com/micro/go-plugins"
-  packages = ["broker/rabbitmq"]
+  packages = [
+    "broker/rabbitmq",
+    "client/grpc",
+  ]
   pruneopts = "UT"
   revision = "bd1391cf158fc87656fc897628574bed475704e6"
   version = "v0.18.0"
@@ -301,6 +318,40 @@
   pruneopts = "UT"
   revision = "148958e31a0237e4d8b0af63210ac30f80d5e7b3"
   version = "v0.5.2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:1031bd6e4f49a411c865e30590cd093b1e0493405eebf2d1d4388ee2a847ea15"
+  name = "github.com/micro/grpc-go"
+  packages = [
+    ".",
+    "balancer",
+    "balancer/base",
+    "balancer/roundrobin",
+    "codes",
+    "connectivity",
+    "credentials",
+    "encoding",
+    "encoding/proto",
+    "internal",
+    "internal/backoff",
+    "internal/channelz",
+    "internal/envconfig",
+    "internal/grpcrand",
+    "keepalive",
+    "logger",
+    "metadata",
+    "naming",
+    "peer",
+    "resolver",
+    "resolver/dns",
+    "resolver/passthrough",
+    "stats",
+    "status",
+    "transport",
+  ]
+  pruneopts = "UT"
+  revision = "2c703400301b46ab89350e7539834de03073527e"
 
 [[projects]]
   digest = "1:4ecc9eb4e64de90f1863fd4851b94f0c867b1f0f53ff0e037cd678c4b4028d0a"
@@ -364,6 +415,22 @@
   version = "v1.1.2"
 
 [[projects]]
+  digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
+  name = "github.com/modern-go/concurrent"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94"
+  version = "1.0.3"
+
+[[projects]]
+  digest = "1:e32bdbdb7c377a07a9a46378290059822efdce5c8d96fe71940d87cb4f918855"
+  name = "github.com/modern-go/reflect2"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
+  version = "1.0.1"
+
+[[projects]]
   digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
   name = "github.com/pborman/uuid"
   packages = ["."]
@@ -410,29 +477,32 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:61d81a42a82369e27160195f5c83e1d2c8ed4e5a7e4425525e7d2e2d55af166a"
+  digest = "1:83a70b54667b84a8255e41d96c1eef28fb985baaf7dcbd6cb958fbb1237c42fc"
   name = "golang.org/x/net"
   packages = [
     "bpf",
+    "context",
     "http/httpguts",
     "http2",
     "http2/hpack",
     "idna",
     "internal/iana",
     "internal/socket",
+    "internal/timeseries",
     "ipv4",
     "ipv6",
+    "trace",
   ]
   pruneopts = "UT"
-  revision = "45ffb0cd1ba084b73e26dee67e667e1be5acce83"
+  revision = "915654e7eabcea33ae277abbecf52f0d8b7a9fdc"
 
 [[projects]]
   branch = "master"
-  digest = "1:ab01052262e2ef935fdec4632b4029e56e7efbc96a569feebdcdc67fd84a9b5b"
+  digest = "1:91137b48dc3eb34409f731b49f63a5ebf73218168a065e1a93af24eb5b2f99e8"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "20be8e55dc7b4b7a1b1660728164a8509d8c9209"
+  revision = "48ac38b7c8cbedd50b1613c0fccacfc7d88dfcdf"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -456,6 +526,14 @@
   pruneopts = "UT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:077c1c599507b3b3e9156d17d36e1e61928ee9b53a5b420f10f28ebd4a0b275c"
+  name = "google.golang.org/genproto"
+  packages = ["googleapis/rpc/status"]
+  pruneopts = "UT"
+  revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"
 
 [[projects]]
   branch = "v2"
@@ -486,6 +564,7 @@
     "github.com/dgrijalva/jwt-go",
     "github.com/go-log/log",
     "github.com/golang/protobuf/proto",
+    "github.com/micro/cli",
     "github.com/micro/examples/template/api/client",
     "github.com/micro/examples/template/srv/proto/example",
     "github.com/micro/go-config",
@@ -498,6 +577,7 @@
     "github.com/micro/go-micro/selector",
     "github.com/micro/go-micro/server",
     "github.com/micro/go-plugins/broker/rabbitmq",
+    "github.com/micro/go-plugins/client/grpc",
     "github.com/micro/go-web",
     "github.com/pborman/uuid",
     "golang.org/x/crypto/bcrypt",

@@ -1,4 +1,4 @@
-.PHONY: proto build test run deploy clean
+.PHONY: proto build test run deploy clean local
 
 GOPATH:=$(shell go env GOPATH)
 
@@ -17,8 +17,12 @@ build: proto
 run: build
 	docker run -d \
 		-p 50051 \
-		-e DB_HOST="127.0.0.1" \
-		app_dccn_usermgr
+		$(MICRO_ENV) \
+		app_dccn_usermgr \
+		$(PROGRAM_ARGS)
+
+local: proto
+	$(MICRO_ENV) go run main.go $(PROGRAM_ARGS)
 
 clean:
 	rm app_dccn_usermgr
@@ -35,3 +39,20 @@ devtools:
 	@type "protoc" 2> /dev/null || echo 'Please install protoc'
 	@type "protoc-gen-micro" 2> /dev/null || echo 'Please install protoc-gen-micro'
 
+
+define MICRO_ENV
+	MICRO_SERVER_NAME="go.micro.srv.usermgr" \
+	MICRO_SERVER_VERSION="v1.0" \
+	MICRO_REGISTER_TTL=15 \
+	MICRO_REGISTER_INTERVAL=15
+endef
+
+define PROGRAM_ARGS
+	--DB_HOST="127.0.0.1:27017" 
+	--DB_NAME="dccn" \
+	--DB_COLLECTION="user" \
+	--DB_TIMEOUT=15 \
+	--DB_POOL_LIMIT=4096 \
+	--TOKEN_ACTIVE_TIME=20 \
+	--TOKEN_NOT_BEFORE=20
+endef
