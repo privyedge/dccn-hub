@@ -1,21 +1,30 @@
 syntax = "proto3";
 
-package go.micro.api.usermgr;
+package go.micro.srv.usermgr;
 
 // TODO: supports filter
 service UserMgr {
-    // Add Create a new user
-    rpc Add(User) returns (Response) {
+    // Create Create a new user
+    rpc Create(User) returns (Response) {
     }
     // Gets the specified user
     rpc Get(ID) returns (User) {
     }
+
+    // Gets user by email
+    rpc GetByEmail(Email) returns (User) {
+    }
+
     // Auth  validates user
     rpc NewToken(User) returns (TokenString) {
     }
     // VerifyToken Validated Token
     rpc VerifyToken(TokenString) returns (Response) {
     }
+}
+
+message Email {
+    string email = 1;
 }
 
 message ID {
@@ -29,7 +38,7 @@ message User {
     string name = 2;
     // nickname show on UI
     string nickname = 4;
-    // email user's email
+    // email user's email, unique.
     string email = 5;
     // password string
     string password = 6;
