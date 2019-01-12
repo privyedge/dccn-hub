@@ -20,8 +20,12 @@ func New(dbService dbservice.DBService, tokenService token.IToken) *UserHandler 
 }
 
 func (p *UserHandler) Get(ctx context.Context, email *pb.Email, user *pb.User) error {
-	var err error
-	user, err = p.db.Get(strings.ToLower(email.Email))
+	u, err := p.db.Get(strings.ToLower(email.Email))
+	if err != nil {
+		return err
+	}
+	*user = *u
+
 	return err
 }
 

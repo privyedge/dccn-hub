@@ -12,9 +12,11 @@ import (
 )
 
 func isEqual(origin, dbUser *pb.User) bool {
-	hashedPwd, _ := bcrypt.GenerateFromPassword([]byte(origin.Password), bcrypt.DefaultCost)
+	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(origin.Password)); err != nil {
+		log.Println(err.Error())
+		return false
+	}
 	return strings.ToLower(origin.Email) == dbUser.Email &&
-		string(hashedPwd) == dbUser.Password &&
 		origin.Name == dbUser.Name &&
 		origin.Nickname == dbUser.Nickname &&
 		origin.Id == dbUser.Id &&
@@ -33,16 +35,16 @@ func main() {
 		Name:     "user_test",
 		Nickname: "test",
 		Email:    `123@Gmail.com`,
-		Password: "123456",
+		Password: "1234567890",
 		Balance:  99,
 	}
 
 	cli := pb.NewUserMgrService("go.micro.srv.usermgr", client.DefaultClient)
-	// if _, err := cli.Create(context.Background(), user); err != nil {
-	// 	log.Fatal(err.Error())
-	// }
+	if _, err := cli.Create(context.Background(), user); err != nil {
+		log.Fatal(err.Error())
+	}
 
-	u, err := cli.Get(context.TODO(), &pb.Email{Email: user.Email})
+	u, err := cli.Get(context.Background(), &pb.Email{Email: user.Email})
 	if err != nil {
 		log.Fatal(err.Error())
 	}

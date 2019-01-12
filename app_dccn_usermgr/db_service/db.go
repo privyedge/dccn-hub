@@ -1,6 +1,8 @@
 package dbservice
 
 import (
+	"log"
+
 	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
 	dbcommon "github.com/Ankr-network/dccn-hub/common/db"
 
@@ -44,6 +46,7 @@ func New(conf dbcommon.Config) (*DB, error) {
 }
 
 func (p *DB) collection(session *mgo.Session) *mgo.Collection {
+	log.Println(p.dbName, ",", p.collectionName)
 	return session.DB(p.dbName).C(p.collectionName)
 }
 

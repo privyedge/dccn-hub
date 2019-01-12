@@ -3,25 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="d4a1b6b1-b4d7-4e55-8d5f-da6ce807cbdd" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_dccn_taskmgr/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_taskmgr/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_dccn_taskmgr/wrapper/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_taskmgr/wrapper/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_dccn_usermgr/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_usermgr/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_dccn_usermgr/db_service/bson.go" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app_dccn_usermgr/db_service/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_usermgr/db_service/db.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_dccn_usermgr/db_service/db_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_usermgr/db_service/db_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app_dccn_usermgr/examples/client.go" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_usermgr/examples/client.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app_dccn_usermgr/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_usermgr/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/handler/user_api.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/handler/user_api.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/dcmgr/dcmgr.micro.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/dcmgr/dcmgr.micro.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/dcmgr/dcmgr.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/dcmgr/dcmgr.pb.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/dcmgr/dcmgr.proto" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/dcmgr/dcmgr.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/taskmgr/taskmgr.micro.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/taskmgr/taskmgr.micro.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/taskmgr/taskmgr.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/taskmgr/taskmgr.pb.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/taskmgr/taskmgr.proto" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/taskmgr/taskmgr.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/usermgr/usermgr.micro.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/usermgr/usermgr.micro.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/usermgr/usermgr.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/usermgr/usermgr.pb.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/proto/usermgr/usermgr.proto" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/proto/usermgr/usermgr.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app_dccn_usermgr/handler/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/app_dccn_usermgr/handler/handler.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -33,7 +17,7 @@
     <session id="-831649963">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="5" />
+          <entry key="project.closed" value="6" />
           <entry key="project.open.time.0" value="3" />
           <entry key="project.open.time.5" value="2" />
           <entry key="project.open.time.6" value="2" />
@@ -71,7 +55,7 @@
           <entry key="Dockerfile" value="1839" />
           <entry key="Makefile" value="5053" />
           <entry key="dummy" value="2" />
-          <entry key="go" value="58739" />
+          <entry key="go" value="58865" />
           <entry key="json" value="1158" />
           <entry key="md" value="150" />
           <entry key="proto" value="6916" />
@@ -84,7 +68,7 @@
         <counts>
           <entry key="Bash" value="118" />
           <entry key="Dockerfile" value="1564" />
-          <entry key="Go" value="58739" />
+          <entry key="Go" value="58865" />
           <entry key="JSON" value="1158" />
           <entry key="Makefile" value="5053" />
           <entry key="Markdown" value="150" />
@@ -106,7 +90,7 @@
         <entry file="file://$PROJECT_DIR$/app_dccn_taskmgr/handler/handler.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="133">
-              <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
+              <caret line="17" selection-start-line="17" selection-end-line="17" />
             </state>
           </provider>
         </entry>
@@ -166,8 +150,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gateway/handler/user_api.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="818">
-              <caret line="45" column="11" selection-start-line="45" selection-start-column="11" selection-end-line="45" selection-end-column="11" />
+            <state relative-caret-position="317">
+              <caret line="47" column="13" selection-start-line="47" selection-start-column="13" selection-end-line="47" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -500,7 +484,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49815157" visible="true" weight="0.16094421" />
       <window_info id="Structure" order="1" sideWeight="0.5018484" side_tool="true" weight="0.18195413" />
@@ -845,7 +828,7 @@
     <entry file="file://$PROJECT_DIR$/app_dccn_taskmgr/handler/handler.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="133">
-          <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
         </state>
       </provider>
     </entry>
@@ -905,8 +888,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gateway/handler/user_api.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="818">
-          <caret line="45" column="11" selection-start-line="45" selection-start-column="11" selection-end-line="45" selection-end-column="11" />
+        <state relative-caret-position="317">
+          <caret line="47" column="13" selection-start-line="47" selection-start-column="13" selection-end-line="47" selection-end-column="13" />
         </state>
       </provider>
     </entry>
