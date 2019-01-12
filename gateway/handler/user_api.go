@@ -35,8 +35,8 @@ func userApiToSrv(u *pb.User) *usermgr.User {
 	return &user
 }
 
-func (p *UserApi) Add(ctx context.Context, user *pb.User, rsp *pb.Response) error {
-	if _, err := p.client.Add(ctx, userApiToSrv(user)); err != nil {
+func (p *UserApi) Create(ctx context.Context, user *pb.User, rsp *pb.Response) error {
+	if _, err := p.client.Create(ctx, userApiToSrv(user)); err != nil {
 		return err
 	}
 	return nil
@@ -44,6 +44,15 @@ func (p *UserApi) Add(ctx context.Context, user *pb.User, rsp *pb.Response) erro
 
 func (p *UserApi) Get(ctx context.Context, id *pb.ID, user *pb.User) error {
 	response, err := p.client.Get(ctx, &usermgr.ID{Id: id.Id})
+	if err != nil {
+		return err
+	}
+	user = userSrvToApi(response)
+	return nil
+}
+
+func (p *UserApi) GetByEmail(ctx context.Context, email *pb.Email, user *pb.User) error {
+	response, err := p.client.GetByEmail(ctx, &usermgr.Email{Email: email.Email})
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ var once sync.Once
 
 var (
 	DEFAULT_DB           = "dccn"
-	DEFAULTT_COLLECTIOIN = "datacenter"
+	DEFAULTT_COLLECTIOIN = "user"
 	DEFAULT_HOST         = "localhost:27017"
 	DEFAULT_POOL_LIMIT   = 4096
 	DEFAULT_TIMEOUT      = 30
