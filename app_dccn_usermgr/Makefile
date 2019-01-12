@@ -22,7 +22,7 @@ run: build
 		$(PROGRAM_ARGS)
 
 local: proto
-	$(MICRO_ENV) go run main.go $(PROGRAM_ARGS)
+	@$(MICRO_ENV) go run main.go $(PROGRAM_ARGS) --TEST_FLAG=true
 
 clean:
 	rm app_dccn_usermgr
@@ -48,7 +48,7 @@ define MICRO_ENV
 endef
 
 define PROGRAM_ARGS
-	--DB_HOST="127.0.0.1:27017" 
+	--DB_HOST="127.0.0.1:27017" \
 	--DB_NAME="dccn" \
 	--DB_COLLECTION="user" \
 	--DB_TIMEOUT=15 \

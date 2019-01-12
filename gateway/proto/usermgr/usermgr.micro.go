@@ -2,19 +2,19 @@
 // source: proto/usermgr/usermgr.proto
 
 /*
-Package go_micro_srv_usermgr is a generated protocol buffer package.
+Package go_micro_api_usermgr is a generated protocol buffer package.
 
 It is generated from these files:
 	proto/usermgr/usermgr.proto
 
 It has these top-level messages:
+	LoginRequest
 	Email
-	ID
 	User
 	Response
-	TokenString
+	Token
 */
-package go_micro_srv_usermgr
+package go_micro_api_usermgr
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -42,51 +42,41 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Client API for UserMgr service
+// Client API for UserApi service
 
-type UserMgrService interface {
+type UserApiService interface {
+	// Login login
+	Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*User, error)
 	// Create Create a new user
 	Create(ctx context.Context, in *User, opts ...client.CallOption) (*Response, error)
-	// Gets the specified user
-	Get(ctx context.Context, in *ID, opts ...client.CallOption) (*User, error)
-	// Gets user by email
-	GetByEmail(ctx context.Context, in *Email, opts ...client.CallOption) (*User, error)
+	// Gets the specified user by email
+	Get(ctx context.Context, in *Email, opts ...client.CallOption) (*User, error)
 	// Auth  validates user
-	NewToken(ctx context.Context, in *User, opts ...client.CallOption) (*TokenString, error)
+	NewToken(ctx context.Context, in *User, opts ...client.CallOption) (*Token, error)
 	// VerifyToken Validated Token
-	VerifyToken(ctx context.Context, in *TokenString, opts ...client.CallOption) (*Response, error)
+	VerifyToken(ctx context.Context, in *Token, opts ...client.CallOption) (*Response, error)
 }
 
-type userMgrService struct {
+type userApiService struct {
 	c    client.Client
 	name string
 }
 
-func NewUserMgrService(name string, c client.Client) UserMgrService {
+func NewUserApiService(name string, c client.Client) UserApiService {
 	if c == nil {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "go.micro.srv.usermgr"
+		name = "go.micro.api.usermgr"
 	}
-	return &userMgrService{
+	return &userApiService{
 		c:    c,
 		name: name,
 	}
 }
 
-func (c *userMgrService) Create(ctx context.Context, in *User, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "UserMgr.Create", in)
-	out := new(Response)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userMgrService) Get(ctx context.Context, in *ID, opts ...client.CallOption) (*User, error) {
-	req := c.c.NewRequest(c.name, "UserMgr.Get", in)
+func (c *userApiService) Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*User, error) {
+	req := c.c.NewRequest(c.name, "UserApi.Login", in)
 	out := new(User)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -95,28 +85,8 @@ func (c *userMgrService) Get(ctx context.Context, in *ID, opts ...client.CallOpt
 	return out, nil
 }
 
-func (c *userMgrService) GetByEmail(ctx context.Context, in *Email, opts ...client.CallOption) (*User, error) {
-	req := c.c.NewRequest(c.name, "UserMgr.GetByEmail", in)
-	out := new(User)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userMgrService) NewToken(ctx context.Context, in *User, opts ...client.CallOption) (*TokenString, error) {
-	req := c.c.NewRequest(c.name, "UserMgr.NewToken", in)
-	out := new(TokenString)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userMgrService) VerifyToken(ctx context.Context, in *TokenString, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "UserMgr.VerifyToken", in)
+func (c *userApiService) Create(ctx context.Context, in *User, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "UserApi.Create", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -125,56 +95,86 @@ func (c *userMgrService) VerifyToken(ctx context.Context, in *TokenString, opts 
 	return out, nil
 }
 
-// Server API for UserMgr service
+func (c *userApiService) Get(ctx context.Context, in *Email, opts ...client.CallOption) (*User, error) {
+	req := c.c.NewRequest(c.name, "UserApi.Get", in)
+	out := new(User)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
-type UserMgrHandler interface {
+func (c *userApiService) NewToken(ctx context.Context, in *User, opts ...client.CallOption) (*Token, error) {
+	req := c.c.NewRequest(c.name, "UserApi.NewToken", in)
+	out := new(Token)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userApiService) VerifyToken(ctx context.Context, in *Token, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "UserApi.VerifyToken", in)
+	out := new(Response)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for UserApi service
+
+type UserApiHandler interface {
+	// Login login
+	Login(context.Context, *LoginRequest, *User) error
 	// Create Create a new user
 	Create(context.Context, *User, *Response) error
-	// Gets the specified user
-	Get(context.Context, *ID, *User) error
-	// Gets user by email
-	GetByEmail(context.Context, *Email, *User) error
+	// Gets the specified user by email
+	Get(context.Context, *Email, *User) error
 	// Auth  validates user
-	NewToken(context.Context, *User, *TokenString) error
+	NewToken(context.Context, *User, *Token) error
 	// VerifyToken Validated Token
-	VerifyToken(context.Context, *TokenString, *Response) error
+	VerifyToken(context.Context, *Token, *Response) error
 }
 
-func RegisterUserMgrHandler(s server.Server, hdlr UserMgrHandler, opts ...server.HandlerOption) error {
-	type userMgr interface {
+func RegisterUserApiHandler(s server.Server, hdlr UserApiHandler, opts ...server.HandlerOption) error {
+	type userApi interface {
+		Login(ctx context.Context, in *LoginRequest, out *User) error
 		Create(ctx context.Context, in *User, out *Response) error
-		Get(ctx context.Context, in *ID, out *User) error
-		GetByEmail(ctx context.Context, in *Email, out *User) error
-		NewToken(ctx context.Context, in *User, out *TokenString) error
-		VerifyToken(ctx context.Context, in *TokenString, out *Response) error
+		Get(ctx context.Context, in *Email, out *User) error
+		NewToken(ctx context.Context, in *User, out *Token) error
+		VerifyToken(ctx context.Context, in *Token, out *Response) error
 	}
-	type UserMgr struct {
-		userMgr
+	type UserApi struct {
+		userApi
 	}
-	h := &userMgrHandler{hdlr}
-	return s.Handle(s.NewHandler(&UserMgr{h}, opts...))
+	h := &userApiHandler{hdlr}
+	return s.Handle(s.NewHandler(&UserApi{h}, opts...))
 }
 
-type userMgrHandler struct {
-	UserMgrHandler
+type userApiHandler struct {
+	UserApiHandler
 }
 
-func (h *userMgrHandler) Create(ctx context.Context, in *User, out *Response) error {
-	return h.UserMgrHandler.Create(ctx, in, out)
+func (h *userApiHandler) Login(ctx context.Context, in *LoginRequest, out *User) error {
+	return h.UserApiHandler.Login(ctx, in, out)
 }
 
-func (h *userMgrHandler) Get(ctx context.Context, in *ID, out *User) error {
-	return h.UserMgrHandler.Get(ctx, in, out)
+func (h *userApiHandler) Create(ctx context.Context, in *User, out *Response) error {
+	return h.UserApiHandler.Create(ctx, in, out)
 }
 
-func (h *userMgrHandler) GetByEmail(ctx context.Context, in *Email, out *User) error {
-	return h.UserMgrHandler.GetByEmail(ctx, in, out)
+func (h *userApiHandler) Get(ctx context.Context, in *Email, out *User) error {
+	return h.UserApiHandler.Get(ctx, in, out)
 }
 
-func (h *userMgrHandler) NewToken(ctx context.Context, in *User, out *TokenString) error {
-	return h.UserMgrHandler.NewToken(ctx, in, out)
+func (h *userApiHandler) NewToken(ctx context.Context, in *User, out *Token) error {
+	return h.UserApiHandler.NewToken(ctx, in, out)
 }
 
-func (h *userMgrHandler) VerifyToken(ctx context.Context, in *TokenString, out *Response) error {
-	return h.UserMgrHandler.VerifyToken(ctx, in, out)
+func (h *userApiHandler) VerifyToken(ctx context.Context, in *Token, out *Response) error {
+	return h.UserApiHandler.VerifyToken(ctx, in, out)
 }

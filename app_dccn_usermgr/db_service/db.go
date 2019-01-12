@@ -49,7 +49,7 @@ func (p *DB) collection(session *mgo.Session) *mgo.Collection {
 
 // Get gets user item by email.
 func (p *DB) Get(email string) (*pb.User, error) {
-	session := p.session.Copy()
+	session := p.session.Clone()
 	defer session.Close()
 
 	var user pb.User
@@ -60,14 +60,14 @@ func (p *DB) Get(email string) (*pb.User, error) {
 // Create creates a new user item if it not exists
 // TODO: batch operations through bulk
 func (p *DB) Create(user *pb.User) error {
-	session := p.session.Copy()
+	session := p.session.Clone()
 	defer session.Close()
 	return p.collection(session).Insert(user)
 }
 
 // Update updates user item.
 func (p *DB) Update(user *pb.User) error {
-	session := p.session.Copy()
+	session := p.session.Clone()
 	defer session.Close()
 	return p.collection(session).Update(bson.M{"email": user.Email}, user)
 }

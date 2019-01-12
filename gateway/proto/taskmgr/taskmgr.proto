@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package go.micro.api.taskmgr;
 
-service TaskMgr {
+service TaskApi {
     rpc Get(ID) returns (Task) {
     }
 

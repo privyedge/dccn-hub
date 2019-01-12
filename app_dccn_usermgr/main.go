@@ -93,8 +93,7 @@ func Init() micro.Service {
 
 	if testFlag {
 		// md5 -s "ankr_network_test_usermgr_db"
-		log.Println("TESTING")
-		conf.DB.DB = "172a654ae7ac2f8a1b5212638a8c4ba2"
+		conf.DB.DB = "114feb0961f8edfa8f514b67c6ef8af3"
 	}
 	return srv
 }
