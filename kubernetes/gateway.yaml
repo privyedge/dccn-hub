@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gateway
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: gateway
+    spec:
+      imagePullSecrets:
+      - name: dccn-ecr
+      containers:
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-gateway:feat
+        imagePullPolicy: "Always"
+        name: gateway

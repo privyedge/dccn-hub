@@ -37,16 +37,16 @@ jobs:
               BRANCH_NAME="feat"
             fi
 
-            declare -a component_arr=("dccn-hub-api-listener" "dccn-hub-task-manager" "dccn-hub-k8s-adapter")
-            declare -a dockerfile_arr=("API_Listener.dockerfile" "TaskManager.dockerfile" "K8s_Adapter.dockerfile")
-            if [[ (${#component_arr[@]} == ${#dockerfile_arr[@]}) ]]
+            declare -a component_arr=("dccn-hub-dcmgr" "dccn-hub-taskmgr" "dccn-hub-gateway" "dccn-hub-usermgr")
+            declare -a dockerfile_arr=("dcmgr" "taskmgr" "gateway" "usermgr")
+            if [[ (${#component_arr[@]} == ${#dockerfile_arr[@]}) ]] 
             then
               arrlen=${#component_arr[@]}
             else
               exit 1
             fi
             for((i=0; i<arrlen; i++)); do
-              docker build --no-cache -f ${dockerfile_arr[$i]} -t ${component_arr[$i]}:$BRANCH_NAME .
+              docker build -f ${dockerfile_arr[$i]}.Dockerfile -t ${component_arr[$i]}:$BRANCH_NAME .
               for TAG in $BRANCH_NAME $SHA1_SHORT $BRANCH_NAME$DATE; do
                 docker tag ${component_arr[$i]}:$BRANCH_NAME $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/${component_arr[$i]}:$TAG
                 docker push $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/${component_arr[$i]}:$TAG

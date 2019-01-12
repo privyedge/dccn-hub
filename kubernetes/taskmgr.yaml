@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-dccn-taskmgr
+  labels:
+    app: app-dccn-taskmgr
+spec:
+  ports:
+  - port: 50053
+    protocol: TCP
+  selector:
+    app: app-dccn-taskmgr
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: app-dccn-taskmgr
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: app-dccn-taskmgr
+    spec:
+      imagePullSecrets:
+      - name: dccn-ecr
+      containers:
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-taskmgr:feat
+        imagePullPolicy: "Always"
+        name: app-dccn-taskmgr
+        env:
+        - name: DB_HOST
+          value: "mongo:27017"
+        - name: "MICRO_ADRESS"
+          value: ":50053"
