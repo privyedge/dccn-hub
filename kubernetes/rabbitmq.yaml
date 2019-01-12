@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 16Gi
+  storageClassName: gp2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+    - port: 5672
+      targetPort: 5672
+  selector:
+    name: rabbitmq
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: rabbitmq
+    spec:
+      containers:
+      - image: rabbitmq:3-management
+        name: rabbitmq
+        ports:
+        - name: rabbitmq
+          containerPort: 5672
+          hostPort: 5672
+        - name: rabbitmq-ma
+          containerPort: 15672
+          hostPort: 15672
+        volumeMounts:
+          - name: rabbitmq-data
+            mountPath: /var/lib/rabbitmq
+      volumes:
+        - name: rabbitmq-data
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc
