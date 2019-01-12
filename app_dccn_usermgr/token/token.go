@@ -15,16 +15,16 @@ type IToken interface {
 }
 
 type Config struct {
-	Issuer     string `json:"issuer,omitempty"`
-	Audience   string `json:"audience,omitempty"`
-	Subject    string `json:"subject,omitempty"`
-	ActiveTime int    `json:"active_time,omitempty"`
-	NotBefore  int64  `json:"not_before,omitempty"`
+	Issuer string `json:"issuer,omitempty"`
+	// Audience   string `json:"audience,omitempty"`
+	// Subject    string `json:"subject,omitempty"`
+	ActiveTime int `json:"active_time,omitempty"`
+	// NotBefore  int64  `json:"not_before,omitempty"`
 	// Define a secure key string used
 	// as a salt when hashing our tokens.
 	// Please make your own way more secure than this,
 	// use a randomly generated md5 hash or something.
-	Secret string `json:"secret,omitempty"`
+	Secret []byte
 }
 
 type Token struct {
@@ -33,19 +33,19 @@ type Token struct {
 
 func DefaultTokenConfig() Config {
 	return Config{
-		Issuer:     "",
-		Audience:   "",
-		Subject:    "",
-		ActiveTime: 20,
-		NotBefore:  20,
-		Secret:     "14444749c1ecc982cd0f91113db98211",
+		Issuer: "app_dccn_usermgr",
+		// Audience:   "",
+		// Subject:    "",
+		// ActiveTime: 20,
+		// NotBefore:  20,
+		Secret: []byte("14444749c1ecc982cd0f91113db98211"),
 	}
 }
 
 // UserPayload is our custom metadata, which will be hashed
 // and sent as the second segment in our JWT
 type UserPayload struct {
-	*pb.User
+	user *pb.User
 	jwt.StandardClaims
 }
 
@@ -57,7 +57,7 @@ func New(conf *Config) *Token {
 // New returns JWT string.
 func (p *Token) New(user *pb.User) (string, error) {
 
-	expireTime := time.Now().Add(time.Hour * time.Duration(p.config.ActiveTime)).Unix()
+	expireTime := time.Now().Add(time.Minute * time.Duration(p.config.ActiveTime)).Unix()
 
 	// Create the Claims
 	payload := UserPayload{
@@ -65,9 +65,9 @@ func (p *Token) New(user *pb.User) (string, error) {
 		jwt.StandardClaims{
 			ExpiresAt: expireTime,
 			Issuer:    p.config.Issuer,
-			Subject:   p.config.Subject,
-			NotBefore: p.config.NotBefore,
-			Audience:  p.config.Audience,
+			// Subject:   p.config.Subject,
+			// NotBefore: p.config.NotBefore,
+			// Audience:  p.config.Audience,
 		},
 	}
 

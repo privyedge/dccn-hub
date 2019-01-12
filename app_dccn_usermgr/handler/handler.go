@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
@@ -40,20 +41,22 @@ func (p *UserHandler) Create(ctx context.Context, user *pb.User, rsp *pb.Respons
 }
 
 func (p *UserHandler) Login(ctx context.Context, req *pb.LoginRequest, user *pb.User) error {
-	user, err := p.db.Get(req.Email)
+	user, err := p.db.Get(strings.ToLower(req.Email))
 	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 	user.Token, err = p.token.New(user)
 	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 	return nil
 }
 
 func (p *UserHandler) NewToken(ctx context.Context, user *pb.User, rsp *pb.Token) error {
-	var err error
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(user.Password)); err != nil {
+	user, err := p.db.Get(strings.ToLower(user.Email))
+	if err != nil {
 		return err
 	}
 
