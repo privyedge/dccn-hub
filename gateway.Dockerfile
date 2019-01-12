@@ -8,4 +8,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-w' -i  -o
 FROM scratch
 
 COPY --from=builder /go/src/github.com/Ankr-network/dccn-hub/cmd/gateway /
-CMD ["gateway"]
+CMD ["/gateway"]
