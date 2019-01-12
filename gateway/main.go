@@ -29,13 +29,13 @@ func main() {
 	)
 
 	// Register Handlers
-	go_micro_api_usermgr.RegisterUserMgrHandler(service.Server(), handler.NewUserApi(
+	go_micro_api_usermgr.RegisterUserApiHandler(service.Server(), handler.NewUserApi(
 		go_micro_srv_usermgr.NewUserMgrService("go.micro.srv.usermgr", service.Client()),
 	))
-	go_micro_api_taskmgr.RegisterTaskMgrHandler(service.Server(), handler.NewTaskApi(
+	go_micro_api_taskmgr.RegisterTaskApiHandler(service.Server(), handler.NewTaskApi(
 		go_micro_srv_taskmgr.NewTaskMgrService("go.micro.srv.taskmgr", service.Client()),
 	))
-	go_micro_api_dcmgr.RegisterDcMgrHandler(service.Server(), handler.NewDataCenterApi(
+	go_micro_api_dcmgr.RegisterDcMgrApiHandler(service.Server(), handler.NewDataCenterApi(
 		go_micro_srv_dcmgr.NewDcMgrService("go.micro.srv.dcmgr", service.Client()),
 	))
 

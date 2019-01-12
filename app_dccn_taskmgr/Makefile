@@ -1,4 +1,4 @@
-.PHONY: proto build test run deploy
+.PHONY: proto build test run deploy local
 
 GOPATH:=$(shell go env GOPATH)
 
@@ -20,6 +20,9 @@ run: build
 		-e DB_HOST="127.0.0.1" \
 		-e DB=dccn \
 		app_dccn_taskmgr
+
+local: proto
+	go run main.go
 
 clean:
 	rm app_dccn_taskmgr

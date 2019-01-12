@@ -42,35 +42,35 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Client API for DcMgr service
+// Client API for DcMgrApi service
 
-type DcMgrService interface {
+type DcMgrApiService interface {
 	//    Get gets a DataCenter by ID
 	Get(ctx context.Context, in *ID, opts ...client.CallOption) (*DataCenter, error)
 	Add(ctx context.Context, in *DataCenter, opts ...client.CallOption) (*Response, error)
 	Update(ctx context.Context, in *DataCenter, opts ...client.CallOption) (*Response, error)
 }
 
-type dcMgrService struct {
+type dcMgrApiService struct {
 	c    client.Client
 	name string
 }
 
-func NewDcMgrService(name string, c client.Client) DcMgrService {
+func NewDcMgrApiService(name string, c client.Client) DcMgrApiService {
 	if c == nil {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
 		name = "go.micro.api.dcmgr"
 	}
-	return &dcMgrService{
+	return &dcMgrApiService{
 		c:    c,
 		name: name,
 	}
 }
 
-func (c *dcMgrService) Get(ctx context.Context, in *ID, opts ...client.CallOption) (*DataCenter, error) {
-	req := c.c.NewRequest(c.name, "DcMgr.Get", in)
+func (c *dcMgrApiService) Get(ctx context.Context, in *ID, opts ...client.CallOption) (*DataCenter, error) {
+	req := c.c.NewRequest(c.name, "DcMgrApi.Get", in)
 	out := new(DataCenter)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -79,8 +79,8 @@ func (c *dcMgrService) Get(ctx context.Context, in *ID, opts ...client.CallOptio
 	return out, nil
 }
 
-func (c *dcMgrService) Add(ctx context.Context, in *DataCenter, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "DcMgr.Add", in)
+func (c *dcMgrApiService) Add(ctx context.Context, in *DataCenter, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "DcMgrApi.Add", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -89,8 +89,8 @@ func (c *dcMgrService) Add(ctx context.Context, in *DataCenter, opts ...client.C
 	return out, nil
 }
 
-func (c *dcMgrService) Update(ctx context.Context, in *DataCenter, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "DcMgr.Update", in)
+func (c *dcMgrApiService) Update(ctx context.Context, in *DataCenter, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "DcMgrApi.Update", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -99,40 +99,40 @@ func (c *dcMgrService) Update(ctx context.Context, in *DataCenter, opts ...clien
 	return out, nil
 }
 
-// Server API for DcMgr service
+// Server API for DcMgrApi service
 
-type DcMgrHandler interface {
+type DcMgrApiHandler interface {
 	//    Get gets a DataCenter by ID
 	Get(context.Context, *ID, *DataCenter) error
 	Add(context.Context, *DataCenter, *Response) error
 	Update(context.Context, *DataCenter, *Response) error
 }
 
-func RegisterDcMgrHandler(s server.Server, hdlr DcMgrHandler, opts ...server.HandlerOption) error {
-	type dcMgr interface {
+func RegisterDcMgrApiHandler(s server.Server, hdlr DcMgrApiHandler, opts ...server.HandlerOption) error {
+	type dcMgrApi interface {
 		Get(ctx context.Context, in *ID, out *DataCenter) error
 		Add(ctx context.Context, in *DataCenter, out *Response) error
 		Update(ctx context.Context, in *DataCenter, out *Response) error
 	}
-	type DcMgr struct {
-		dcMgr
+	type DcMgrApi struct {
+		dcMgrApi
 	}
-	h := &dcMgrHandler{hdlr}
-	return s.Handle(s.NewHandler(&DcMgr{h}, opts...))
+	h := &dcMgrApiHandler{hdlr}
+	return s.Handle(s.NewHandler(&DcMgrApi{h}, opts...))
 }
 
-type dcMgrHandler struct {
-	DcMgrHandler
+type dcMgrApiHandler struct {
+	DcMgrApiHandler
 }
 
-func (h *dcMgrHandler) Get(ctx context.Context, in *ID, out *DataCenter) error {
-	return h.DcMgrHandler.Get(ctx, in, out)
+func (h *dcMgrApiHandler) Get(ctx context.Context, in *ID, out *DataCenter) error {
+	return h.DcMgrApiHandler.Get(ctx, in, out)
 }
 
-func (h *dcMgrHandler) Add(ctx context.Context, in *DataCenter, out *Response) error {
-	return h.DcMgrHandler.Add(ctx, in, out)
+func (h *dcMgrApiHandler) Add(ctx context.Context, in *DataCenter, out *Response) error {
+	return h.DcMgrApiHandler.Add(ctx, in, out)
 }
 
-func (h *dcMgrHandler) Update(ctx context.Context, in *DataCenter, out *Response) error {
-	return h.DcMgrHandler.Update(ctx, in, out)
+func (h *dcMgrApiHandler) Update(ctx context.Context, in *DataCenter, out *Response) error {
+	return h.DcMgrApiHandler.Update(ctx, in, out)
 }

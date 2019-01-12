@@ -1,16 +1,16 @@
 package wrapper
 
 import (
-	"os"
-	"log"
 	"context"
 	"errors"
+	"log"
+	"os"
 
-	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	go_micro_srv_usermgr "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
 
+	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
-	"github.com/micro/go-micro/client"
 )
 
 func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
@@ -31,7 +31,7 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		// Really shouldn't be using a global here, find a better way
 		// of doing this, since you can't pass it into a wrapper.
 		userMgrService := go_micro_srv_usermgr.NewUserMgrService("go.micro.srv.usermgr", client.DefaultClient)
-		_, err := userMgrService.VerifyToken(context.Background(), &go_micro_srv_usermgr.TokenString{TokenString: token})
+		_, err := userMgrService.VerifyToken(context.Background(), &go_micro_srv_usermgr.Token{Token: token})
 		if err != nil {
 			return err
 		}

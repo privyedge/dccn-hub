@@ -32,15 +32,15 @@ func main() {
 		Id:       1,
 		Name:     "user_test",
 		Nickname: "test",
-		Email:    "123@Gmail.com",
+		Email:    `123@Gmail.com`,
 		Password: "123456",
 		Balance:  99,
 	}
 
 	cli := pb.NewUserMgrService("go.micro.srv.usermgr", client.DefaultClient)
-	if _, err := cli.Create(context.TODO(), user); err != nil {
-		log.Fatal(err.Error())
-	}
+	// if _, err := cli.Create(context.Background(), user); err != nil {
+	// 	log.Fatal(err.Error())
+	// }
 
 	u, err := cli.Get(context.TODO(), &pb.Email{Email: user.Email})
 	if err != nil {
@@ -76,4 +76,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	log.Printf("+%v\n", loginUser)
+}
+
+func get() {
 }

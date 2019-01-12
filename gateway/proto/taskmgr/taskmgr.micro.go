@@ -41,35 +41,35 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Client API for TaskMgr service
+// Client API for TaskApi service
 
-type TaskMgrService interface {
+type TaskApiService interface {
 	Get(ctx context.Context, in *ID, opts ...client.CallOption) (*Task, error)
 	Create(ctx context.Context, in *Task, opts ...client.CallOption) (*Response, error)
 	Cancel(ctx context.Context, in *ID, opts ...client.CallOption) (*Response, error)
 	Update(ctx context.Context, in *Task, opts ...client.CallOption) (*Response, error)
 }
 
-type taskMgrService struct {
+type taskApiService struct {
 	c    client.Client
 	name string
 }
 
-func NewTaskMgrService(name string, c client.Client) TaskMgrService {
+func NewTaskApiService(name string, c client.Client) TaskApiService {
 	if c == nil {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
 		name = "go.micro.api.taskmgr"
 	}
-	return &taskMgrService{
+	return &taskApiService{
 		c:    c,
 		name: name,
 	}
 }
 
-func (c *taskMgrService) Get(ctx context.Context, in *ID, opts ...client.CallOption) (*Task, error) {
-	req := c.c.NewRequest(c.name, "TaskMgr.Get", in)
+func (c *taskApiService) Get(ctx context.Context, in *ID, opts ...client.CallOption) (*Task, error) {
+	req := c.c.NewRequest(c.name, "TaskApi.Get", in)
 	out := new(Task)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -78,8 +78,8 @@ func (c *taskMgrService) Get(ctx context.Context, in *ID, opts ...client.CallOpt
 	return out, nil
 }
 
-func (c *taskMgrService) Create(ctx context.Context, in *Task, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "TaskMgr.Create", in)
+func (c *taskApiService) Create(ctx context.Context, in *Task, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "TaskApi.Create", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -88,8 +88,8 @@ func (c *taskMgrService) Create(ctx context.Context, in *Task, opts ...client.Ca
 	return out, nil
 }
 
-func (c *taskMgrService) Cancel(ctx context.Context, in *ID, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "TaskMgr.Cancel", in)
+func (c *taskApiService) Cancel(ctx context.Context, in *ID, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "TaskApi.Cancel", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -98,8 +98,8 @@ func (c *taskMgrService) Cancel(ctx context.Context, in *ID, opts ...client.Call
 	return out, nil
 }
 
-func (c *taskMgrService) Update(ctx context.Context, in *Task, opts ...client.CallOption) (*Response, error) {
-	req := c.c.NewRequest(c.name, "TaskMgr.Update", in)
+func (c *taskApiService) Update(ctx context.Context, in *Task, opts ...client.CallOption) (*Response, error) {
+	req := c.c.NewRequest(c.name, "TaskApi.Update", in)
 	out := new(Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -108,45 +108,45 @@ func (c *taskMgrService) Update(ctx context.Context, in *Task, opts ...client.Ca
 	return out, nil
 }
 
-// Server API for TaskMgr service
+// Server API for TaskApi service
 
-type TaskMgrHandler interface {
+type TaskApiHandler interface {
 	Get(context.Context, *ID, *Task) error
 	Create(context.Context, *Task, *Response) error
 	Cancel(context.Context, *ID, *Response) error
 	Update(context.Context, *Task, *Response) error
 }
 
-func RegisterTaskMgrHandler(s server.Server, hdlr TaskMgrHandler, opts ...server.HandlerOption) error {
-	type taskMgr interface {
+func RegisterTaskApiHandler(s server.Server, hdlr TaskApiHandler, opts ...server.HandlerOption) error {
+	type taskApi interface {
 		Get(ctx context.Context, in *ID, out *Task) error
 		Create(ctx context.Context, in *Task, out *Response) error
 		Cancel(ctx context.Context, in *ID, out *Response) error
 		Update(ctx context.Context, in *Task, out *Response) error
 	}
-	type TaskMgr struct {
-		taskMgr
+	type TaskApi struct {
+		taskApi
 	}
-	h := &taskMgrHandler{hdlr}
-	return s.Handle(s.NewHandler(&TaskMgr{h}, opts...))
+	h := &taskApiHandler{hdlr}
+	return s.Handle(s.NewHandler(&TaskApi{h}, opts...))
 }
 
-type taskMgrHandler struct {
-	TaskMgrHandler
+type taskApiHandler struct {
+	TaskApiHandler
 }
 
-func (h *taskMgrHandler) Get(ctx context.Context, in *ID, out *Task) error {
-	return h.TaskMgrHandler.Get(ctx, in, out)
+func (h *taskApiHandler) Get(ctx context.Context, in *ID, out *Task) error {
+	return h.TaskApiHandler.Get(ctx, in, out)
 }
 
-func (h *taskMgrHandler) Create(ctx context.Context, in *Task, out *Response) error {
-	return h.TaskMgrHandler.Create(ctx, in, out)
+func (h *taskApiHandler) Create(ctx context.Context, in *Task, out *Response) error {
+	return h.TaskApiHandler.Create(ctx, in, out)
 }
 
-func (h *taskMgrHandler) Cancel(ctx context.Context, in *ID, out *Response) error {
-	return h.TaskMgrHandler.Cancel(ctx, in, out)
+func (h *taskApiHandler) Cancel(ctx context.Context, in *ID, out *Response) error {
+	return h.TaskApiHandler.Cancel(ctx, in, out)
 }
 
-func (h *taskMgrHandler) Update(ctx context.Context, in *Task, out *Response) error {
-	return h.TaskMgrHandler.Update(ctx, in, out)
+func (h *taskApiHandler) Update(ctx context.Context, in *Task, out *Response) error {
+	return h.TaskApiHandler.Update(ctx, in, out)
 }
