@@ -1,7 +1,7 @@
 package dbservice
 
 import (
-	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
 	dbcommon "github.com/Ankr-network/dccn-hub/common/db"
 
 	mgo "gopkg.in/mgo.v2"

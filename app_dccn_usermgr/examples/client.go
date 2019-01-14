@@ -5,9 +5,11 @@ import (
 	"log"
 	"strings"
 
-	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
-	micro "github.com/micro/go-micro"
-	"github.com/micro/go-micro/client"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
+	grpc "github.com/micro/go-grpc"
+
+	// grpc "github.com/micro/go-micro"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,7 +28,8 @@ func isEqual(origin, dbUser *pb.User) bool {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	srv := micro.NewService()
+	log.Println("app_dccn_usermgr client service start...")
+	srv := grpc.NewService()
 
 	srv.Init()
 
@@ -39,7 +42,7 @@ func main() {
 		Balance:  99,
 	}
 
-	cli := pb.NewUserMgrService("go.micro.srv.usermgr", client.DefaultClient)
+	cli := pb.NewUserMgrService("go.micro.srv.v1.usermgr", srv.Client())
 	if _, err := cli.Create(context.Background(), user); err != nil {
 		log.Fatal(err.Error())
 	}

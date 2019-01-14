@@ -2,55 +2,98 @@
 version: '3.1'
 
 services:
-  gateway:
-    build: ./gateway
 
-  app_dccn_usermgr:
-    build: ./app_dccn_usermgr
-    ports:
-    - 50051:50051
-    environment:
-      MICRO_ADRESS: ":50051"
-      DB_HOST: "datastore:27017"
-
-  app_dccn_dcmgr:
-    build: ./app_dccn_dcmgr
-    ports:
-    - 50052:50052
-    environment:
-      MICRO_SERVER_ADDRESS: ":50052"
-      DB: "dccn"
-      COLLECTION: "datacenter"
-      POOL_LIMIT: 4096
-      TIMEOUT: 15
-      MICRO_REGIxTER_TTL: 30
-      MICRO_REGISTER_INTERVAL: 30
-      MICRO_SERVER_NAME: "go.micro.srv.dcmgr"
-      MICRO_SERVER_VERSION: "v0.1"
-      DB_HOST: "datastore:27017"
-
-  app_dccn_taskmgr:
-    build: ./app_dccn_taskmgr
-    ports:
-    - 50053:50053
-    environment:
-      MICRO_ADRESS: ":50053"
-      DB_HOST: "datastore:27017"
-
-  datastore:
-    image: mongo
-    ports:
-    - 27017:27017
-
-  broker:
+  rabbitmq:
     image: rabbitmq
+    container_name: dccn-broker-rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
 
-  micro:
-    image: microhq/micro
+  datastore:
+    image: mongo
+    container_name: dccn-datastore-mongo
     ports:
-      - 8080:8080
+        - "27017:27017"
 
+  consul:
+    command: -server -bootstrap -rejoin
+    container_name: dccn-broker-register
+    image: progrium/consul:latest
+    ports:
+        - "8300:8300"
+        - "8400:8400"
+        - "8500:8500"
+        - "8600:53/udp"
 
+  micro:
+    command: --registry_address=consul:8500  --enable_stats --register_interval=5 --register_ttl=10 api --handler=rpc
+    image: microhq/micro:latest
+    links:
+        - consul
+        - usermgr
+    ports:
+        - "8080:8080"
+
+  usermgr:
+    image: app-dccn-v1-usermgr
+    container_name: app-dccn-v1-usermgr
+    build:
+        context: .
+        dockerfile: dockerfile/usermgr.Dockerfile
+    ports:
+        - "50051:50051"
+    environment:
+        MICRO_REGISTRY: "mdns"
+        MICRO_SERVER_NAME: "go.micro.srv.v1.usermgr"
+        # MICRO_REGISTRY_ADDRESS: "consul:8500"
+        MICRO_ADRESS: ":50051"
+        MICRO_SERVER_VERSION: "v1.0"
+        MICRO_REGISTER_TTL: 5
+        MICRO_REGISTER_INTERVAL: 5
+        DB_HOST: "datastore:27017"
+        DB_NAME: "dccn"
+        DB_COLLECTION: "user"
+        DB_TIMEOUT: 5
+        DB_POOL_LIMIT: 4096
+        TOKEN_ACTIVE_TIME: 20
+    depends_on:
+        - datastore
+        - consul
+
+  usermgr-client:
+    image: app-dccn-v1-client
+    container_name: app-dccn-v1-client
+    build:
+        context: .
+        dockerfile: dockerfile/usermgr_client.Dockerfile
+    environment:
+        MICRO_REGISTRY: "mdns"
+        # MICRO_REGISTRY_ADDRESS: "consul:8500"
+    depends_on:
+        - datastore
+        - consul
+
+  # app_dccn_dcmgr:
+  #   build: ./app_dccn_dcmgr
+  #   ports:
+  #   - 50052:50052
+  #   environment:
+  #     MICRO_SERVER_ADDRESS: ":50052"
+  #     DB: "dccn"
+  #     COLLECTION: "datacenter"
+  #     POOL_LIMIT: 4096
+  #     TIMEOUT: 15
+  #     MICRO_REGIxTER_TTL: 30
+  #     MICRO_REGISTER_INTERVAL: 30
+  #     MICRO_SERVER_NAME: "go.micro.srv.dcmgr"
+  #     MICRO_SERVER_VERSION: "v0.1"
+  #     DB_HOST: "datastore:27017"
+
+  # app_dccn_taskmgr:
+  #   build: ./app_dccn_taskmgr
+  #   ports:
+  #   - 50053:50053
+  #   environment:
+  #     MICRO_ADRESS: ":50053"
+  #     DB_HOST: "datastore:27017"

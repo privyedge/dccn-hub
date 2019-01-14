@@ -4,42 +4,20 @@ import (
 	"errors"
 	"time"
 
-	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
+
+var secret = []byte("14444749c1ecc982cd0f91113db98211")
 
 type IToken interface {
 	New(user *pb.User) (string, error)
 	Verify(tokenString string) error
 }
 
-type Config struct {
-	Issuer string `json:"issuer,omitempty"`
-	// Audience   string `json:"audience,omitempty"`
-	// Subject    string `json:"subject,omitempty"`
-	ActiveTime int `json:"active_time,omitempty"`
-	// NotBefore  int64  `json:"not_before,omitempty"`
-	// Define a secure key string used
-	// as a salt when hashing our tokens.
-	// Please make your own way more secure than this,
-	// use a randomly generated md5 hash or something.
-	Secret []byte
-}
-
 type Token struct {
-	config *Config
-}
-
-func DefaultTokenConfig() Config {
-	return Config{
-		Issuer: "app_dccn_usermgr",
-		// Audience:   "",
-		// Subject:    "",
-		// ActiveTime: 20,
-		// NotBefore:  20,
-		Secret: []byte("14444749c1ecc982cd0f91113db98211"),
-	}
+	activeTime int
 }
 
 // UserPayload is our custom metadata, which will be hashed
@@ -50,21 +28,21 @@ type UserPayload struct {
 }
 
 // New returns Token instance.
-func New(conf *Config) *Token {
-	return &Token{conf}
+func New(activeTime int) *Token {
+	return &Token{activeTime}
 }
 
 // New returns JWT string.
 func (p *Token) New(user *pb.User) (string, error) {
 
-	expireTime := time.Now().Add(time.Minute * time.Duration(p.config.ActiveTime)).Unix()
+	expireTime := time.Now().Add(time.Minute * time.Duration(p.activeTime)).Unix()
 
 	// Create the Claims
 	payload := UserPayload{
 		user,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime,
-			Issuer:    p.config.Issuer,
+			Issuer:    "ankr_network",
 			// Subject:   p.config.Subject,
 			// NotBefore: p.config.NotBefore,
 			// Audience:  p.config.Audience,
@@ -75,7 +53,7 @@ func (p *Token) New(user *pb.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
 	// Sign token and return
-	return token.SignedString(p.config.Secret)
+	return token.SignedString(secret)
 }
 
 // Verify a token string into a token object
@@ -83,7 +61,7 @@ func (p *Token) Verify(tokenString string) error {
 
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &UserPayload{}, func(token *jwt.Token) (interface{}, error) {
-		return p.config.Secret, nil
+		return secret, nil
 	})
 
 	if err != nil {

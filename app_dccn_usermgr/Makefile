@@ -9,20 +9,22 @@ proto:
 	    -I${GOPATH}/src:. \
 	    --micro_out=. \
 	    --go_out=. \
-	    proto/usermgr/usermgr.proto
+	    proto/v1/usermgr.proto
 
 build: proto
-	docker build . -t app_dccn_usermgr:latest
+	docker build . -t app_dccn_usermgr:v1.0
 
 run: build
 	docker run -d \
 		-p 50051 \
 		$(MICRO_ENV) \
-		app_dccn_usermgr \
-		$(PROGRAM_ARGS)
+		$(PROGRAM_ENV) \
+		app_dccn_usermgr
 
 local: proto
-	@$(MICRO_ENV) go run main.go $(PROGRAM_ARGS) --TEST_FLAG=true
+	@$(MICRO_ENV) \
+	$(PROGRAM_ENV) \
+	go run main.go
 
 clean:
 	rm app_dccn_usermgr
@@ -41,17 +43,18 @@ devtools:
 
 
 define MICRO_ENV
-	MICRO_SERVER_NAME="go.micro.srv.usermgr" \
+	MICRO_REGISTRY=mdns \
+	MICRO_SERVER_NAME="go.micro.srv.v1.usermgr" \
+	MICRO_REGISTRY_ADDRESS="localhost:8500" \
 	MICRO_SERVER_VERSION="v1.0" \
 	MICRO_REGISTER_TTL=15 \
 	MICRO_REGISTER_INTERVAL=15
 endef
 
-define PROGRAM_ARGS
-	--DB_HOST="127.0.0.1:27017" \
-	--DB_NAME="dccn" \
-	--DB_COLLECTION="user" \
-	--DB_TIMEOUT=15 \
-	--DB_POOL_LIMIT=4096 \
-	--TOKEN_ACTIVE_TIME=20
+define PROGRAM_ENV
+	DB_HOST="127.0.0.1:27017" \
+	DB_NAME="dccn" \
+	DB_COLLECTION="user" \
+	DB_TIMEOUT=5 \
+	DB_POOL_LIMIT=4096
 endef

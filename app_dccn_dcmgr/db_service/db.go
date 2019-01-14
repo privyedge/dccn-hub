@@ -31,7 +31,7 @@ type DB struct {
 
 // New returns DBService.
 func New(conf dbcommon.Config) (*DB, error) {
-	session, err := dbcommon.CreateDBConnection(conf)
+	session, err := dbcommon.Dial(conf)
 	if err != nil {
 		return nil, err
 	}

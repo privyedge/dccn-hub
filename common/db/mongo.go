@@ -16,15 +16,15 @@ var (
 	DEFAULTT_COLLECTIOIN = "user"
 	DEFAULT_HOST         = "localhost:27017"
 	DEFAULT_POOL_LIMIT   = 4096
-	DEFAULT_TIMEOUT      = 30
+	DEFAULT_TIMEOUT      = 5
 )
 
 // Config uses to init a db connect
 type Config struct {
 	// DB db name
-	DB string `json:"db"`
+	DB string `json:"db_name"`
 	// Collection db table
-	Collection string `json:"collection"`
+	Collection string `json:"collection_name"`
 	// Host holds the addresses for the seed servers.
 	Host string `json:"host"`
 	// PoolLimit defines the per-server socket pool limit. Defaults to 4096.
@@ -56,37 +56,29 @@ func CreateDBConnection(conf Config) (s *mgo.Session, err error) {
 func LoadFromEnv() (Config, error) {
 	var conf Config
 
-	if conf.Host = os.Getenv("DB_HOST"); conf.Host == "" {
-		conf.Host = DEFAULT_HOST
+	if host := os.Getenv("DB_HOST"); len(host) != 0 {
+		conf.Host = host
+	}
+	if dbName := os.Getenv("DB_NAME"); len(dbName) != 0 {
+		conf.DB = dbName
+	}
+	if collection := os.Getenv("DB_COLLECTION"); len(collection) != 0 {
+		conf.Collection = collection
 	}
 
-	if conf.DB = os.Getenv("DB"); conf.DB == "" {
-		conf.DB = DEFAULT_DB
-	}
-
-	if conf.Collection = os.Getenv("DB"); conf.Collection == "" {
-		conf.Collection = DEFAULTT_COLLECTIOIN
-	}
-
-	var err error
-
-	if poolLimit := os.Getenv("DB_POOL_LIMIT"); poolLimit == "" {
-		conf.PoolLimit = DEFAULT_POOL_LIMIT
-	} else {
-		conf.PoolLimit, err = strconv.Atoi(poolLimit)
-		if err != nil {
-			return Config{}, err
+	if timeout := os.Getenv("DB_TIMEOUT"); len(timeout) != 0 {
+		if t, err := strconv.Atoi(timeout); err != nil {
+			return conf, err
+		} else {
+			conf.Timeout = t
 		}
 	}
-
-	if timeout := os.Getenv("DB_TIMEOUT"); timeout == "" {
-		conf.Timeout = DEFAULT_TIMEOUT
-	} else {
-		conf.Timeout, err = strconv.Atoi(timeout)
+	if poolLimit := os.Getenv("DB_POOL_LIMIT"); len(poolLimit) != 0 {
+		if t, err := strconv.Atoi(poolLimit); err != nil {
+			return conf, err
+		} else {
+			conf.PoolLimit = t
+		}
 	}
-	if err != nil {
-		return Config{}, err
-	}
-
 	return conf, nil
 }

@@ -9,4 +9,4 @@ FROM scratch
 
 COPY --from=builder /go/src/github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/app_dccn_taskmgr /
 COPY --from=builder /go/src/github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/config.json /
-CMD ["/main"]
+CMD ["app_dccn_taskmgr"]

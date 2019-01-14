@@ -6,96 +6,47 @@ import (
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/handler"
-	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/token"
 
-	"github.com/micro/cli"
-	micro "github.com/micro/go-micro"
-	_ "github.com/micro/go-plugins/broker/rabbitmq"
+	grpc "github.com/micro/go-grpc"
 )
 
 var (
-	conf config.Config
+	conf       config.Config
+	configPath string = "config.json"
+	db         dbservice.DBService
+	err        error
 )
 
 func main() {
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	Init()
 
-	srv := Init()
-
-	db, err := dbservice.New(conf.DB)
-	if err != nil {
-		println(err.Error())
-		return
+	if db, err = dbservice.New(conf.DB); err != nil {
+		log.Fatal(err.Error())
 	}
 	defer db.Close()
 
-	startHandler(srv, db)
+	startHandler(db)
 }
 
-// startHandler starts handler to listen.
-func Init() micro.Service {
-	// New Service
-	srv := micro.NewService(
-		micro.Flags(
-			cli.BoolFlag{
-				Name:  "TEST_FLAG",
-				Usage: "for test usage",
-			},
-			cli.StringFlag{
-				Name:  "DB_HOST",
-				Usage: "DB URL",
-			},
-			cli.StringFlag{
-				Name:  "DB_NAME",
-				Usage: "Database name",
-			},
-			cli.StringFlag{
-				Name:  "DB_COLLECTION",
-				Usage: "Collection name",
-			},
-			cli.IntFlag{
-				Name:  "DB_TIMEOUT",
-				Usage: "Connect DB timeout value",
-			},
-			cli.IntFlag{
-				Name:  "DB_POOL_LIMIT",
-				Usage: "Max DB connections",
-			},
-			// JWT
-			cli.IntFlag{
-				Name:  "TOKEN_ACTIVE_TIME",
-				Usage: "JWT ActiveTie",
-			},
-		),
-	)
-	conf.Token = token.DefaultTokenConfig()
-	var testFlag bool
-	// Initialise service
-	srv.Init(
-		micro.Action(func(ctx *cli.Context) {
-			testFlag = ctx.Bool("TEST_FLAG")
-			// DB
-			conf.DB.Host = ctx.String("DB_HOST")
-			conf.DB.DB = ctx.String("DB_NAME")
-			conf.DB.Collection = ctx.String("DB_COLLECTION")
-			conf.DB.Timeout = ctx.Int("DB_TIMEOUT")
-			conf.DB.PoolLimit = ctx.Int("DB_POOL_LIMIT")
-			// TOKEN
-			conf.Token.ActiveTime = ctx.Int("TOKEN_ACTIVE_TIME")
-		}),
-	)
+// Init starts handler to listen.
+func Init() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	log.Println("app_dccn_usermgr service start...")
 
-	if testFlag {
-		// md5 -s "ankr_network_test_usermgr_db"
-		conf.DB.DB = "114feb0961f8edfa8f514b67c6ef8af3"
+	if conf, err = config.Load(configPath); err != nil {
+		log.Fatal(err.Error())
 	}
-	return srv
+	log.Printf("Load config %+v\n", conf)
 }
 
-func startHandler(srv micro.Service, db dbservice.DBService) {
+func startHandler(db dbservice.DBService) {
+	srv := grpc.NewService()
+	srv.Init()
+
 	// Register Handler
-	pb.RegisterUserMgrHandler(srv.Server(), handler.New(db, token.New(&conf.Token)))
+	pb.RegisterUserMgrHandler(srv.Server(), handler.New(db, token.New(conf.TokenActiveTime)))
 
 	// Run srv
 	if err := srv.Run(); err != nil {
