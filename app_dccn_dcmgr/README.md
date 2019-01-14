@@ -16,9 +16,9 @@ micro new github.com/Ankr-network/refactor/app_dccn_dcmgr --namespace=network.an
 
 ## Configuration
 
-- FQDN: network.ankr.srv.dcmgr
+- FQDN: network.ankr.srv.v1
 - Type: srv
-- Alias: dcmgr
+- Alias: v1
 
 ## Dependencies
 
@@ -51,3 +51,26 @@ Build a docker image
 ```
 make docker
 ```
+
+## Test
+### Postman
+    $http://192.168.0.102:8080/rpc
+```
+{
+    "service": "go.micro.srv.v1.dcmgr",
+	"method": "DcMgr.Create",
+	"request": {
+	    "name": "dc0",
+	    "id": 2,
+	    "status": 1
+	}
+}
+```
+
+### curl
+```
+curl -d 'service=go.micro.srv.v1.dcmgr' \
+	 -d 'method=DcMgr.Create' \
+	 -d 'request={"id": 1, "name": "dc01", "status": 1}' \
+	 http://localhost:8080/rpc
+	 ```

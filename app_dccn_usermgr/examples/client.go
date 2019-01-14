@@ -8,8 +8,6 @@ import (
 	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
 	grpc "github.com/micro/go-grpc"
 
-	// grpc "github.com/micro/go-micro"
-
 	"golang.org/x/crypto/bcrypt"
 )
 

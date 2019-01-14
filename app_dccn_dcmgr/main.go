@@ -1,61 +1,55 @@
 package main
 
 import (
-	"time"
+	"log"
 
+	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/handler"
-	go_micro_srv_dcmgr "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/dcmgr"
-	"github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/wrapper"
-	dbcommon "github.com/Ankr-network/dccn-hub/common/db"
-	microconfig "github.com/Ankr-network/dccn-hub/common/micro_config"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/v1"
 
-	log "github.com/micro/go-log"
-	micro "github.com/micro/go-micro"
+	grpc "github.com/micro/go-grpc"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
-func StartHandler(db dbservice.DBService, conf *microconfig.Config) {
-	// New Service
-	service := micro.NewService(
-		micro.Name(conf.ServerName),
-		micro.Version(conf.ServerVersion),
-		micro.RegisterTTL(time.Second*time.Duration(conf.RegisterTTL)),
-		micro.RegisterInterval(time.Second*time.Duration(conf.RegisterInterval)),
-		micro.WrapHandler(wrapper.AuthWrapper),
-	)
-
-	// Initialise service
-	service.Init()
-
-	// Register Handler
-	go_micro_srv_dcmgr.RegisterDcMgrHandler(service.Server(), handler.NewDcMgrHandler(db))
-
-	// Run service
-	if err := service.Run(); err != nil {
-		log.Fatal(err)
-	}
-}
+var (
+	conf       config.Config
+	configPath string = "config.json"
+	db         dbservice.DBService
+	err        error
+)
 
 func main() {
-	dbConfig, err := dbcommon.LoadFromEnv()
-	if err != nil {
-		println(err.Error())
-		return
-	}
+	Init()
 
-	microConfig, err := microconfig.LoadFromEnv()
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
-	db, err := dbservice.New(dbConfig)
-	if err != nil {
-		println(err.Error())
-		return
+	if db, err = dbservice.New(conf.DB); err != nil {
+		log.Fatal(err.Error())
 	}
 	defer db.Close()
 
-	StartHandler(db, microConfig)
+	startHandler(db)
+}
+
+// Init starts handler to listen.
+func Init() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	log.Println("app_dccn_usermgr service start...")
+
+	if conf, err = config.Load(configPath); err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Printf("Load config %+v\n", conf)
+}
+
+func startHandler(db dbservice.DBService) {
+	srv := grpc.NewService()
+	srv.Init()
+
+	// Register Handler
+	pb.RegisterDcMgrHandler(srv.Server(), handler.NewDcMgrHandler(db))
+
+	// Run srv
+	if err := srv.Run(); err != nil {
+		log.Println(err.Error())
+	}
 }

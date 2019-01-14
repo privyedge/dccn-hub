@@ -9,28 +9,22 @@ proto:
 	    -I${GOPATH}/src:. \
 	    --micro_out=. \
 	    --go_out=. \
-	    proto/dcmgr/dcmgr.proto
+	    proto/v1/dcmgr.proto
 
 build: proto
 	docker build . -t app_dccn_dcmgr:latest
 
 run: build
 	docker run -d \
-		-p 50051 \
+		-p 50052 \
+		$(MICRO_ENV) \
+		$(PROGRAM_ENV) \
 		app_dccn_dcmgr
 
-local:
-		DB_HOST="127.0.0.1" \
-		DB=dccn \
-		COLLECTION=datacenter \
-		POOL_LIMIT=4096 \
-		TIMEOUT=15 \
-		MICRO_REGISTER_TTL=30 \
-		MICRO_REGISTER_INTERVAL=30 \
-		MICRO_SERVER_NAME=go.micro.srv.dcmgr \
-		MICRO_SERVER_VERSION=v0.1 \
-		MICRO_SERVER_ADDRESS=:50051 \
-		go run main.go
+local: proto
+	@$(MICRO_ENV) \
+	$(PROGRAM_ENV) \
+	go run main.go
 
 clean:
 	rm app_dccn_dcmgr
@@ -47,3 +41,19 @@ devtools:
 	@type "protoc" 2> /dev/null || echo 'Please install protoc'
 	@type "protoc-gen-micro" 2> /dev/null || echo 'Please install protoc-gen-micro'
 
+
+define MICRO_ENV
+	MICRO_REGISTRY=mdns \
+	MICRO_SERVER_NAME="go.micro.srv.v1.dcmgr" \
+	MICRO_SERVER_VERSION="v1.0" \
+	MICRO_REGISTER_TTL=15 \
+	MICRO_REGISTER_INTERVAL=15
+endef
+
+define PROGRAM_ENV
+	DB_HOST="127.0.0.1:27017" \
+	DB_NAME="dccn" \
+	DB_COLLECTION="dc" \
+	DB_TIMEOUT=5 \
+	DB_POOL_LIMIT=4096
+endef

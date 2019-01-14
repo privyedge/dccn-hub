@@ -2,8 +2,9 @@ package handler
 
 import (
 	"context"
-	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/db_service"
-	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/dcmgr"
+
+	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/db_service"
+	dcmgr "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/v1"
 )
 
 type DcMgrHandler struct {
@@ -14,17 +15,16 @@ func NewDcMgrHandler(db dbservice.DBService) *DcMgrHandler {
 	return &DcMgrHandler{db}
 }
 
-func (p *DcMgrHandler) Get(ctx context.Context, id *go_micro_srv_dcmgr.ID, center *go_micro_srv_dcmgr.DataCenter) error {
-	var err error
-	center, err = p.db.Get(id.Id)
+func (p *DcMgrHandler) Get(ctx context.Context, id *dcmgr.ID, center *dcmgr.DataCenter) error {
+	c, err := p.db.Get(id.Id)
+	if err != nil {
+		return err
+	}
+
+	*center = *c
 	return err
 }
 
-func (p *DcMgrHandler) Add(ctx context.Context, center *go_micro_srv_dcmgr.DataCenter, rsp *go_micro_srv_dcmgr.Response) error {
-	return p.db.Add(*center)
+func (p *DcMgrHandler) Create(ctx context.Context, center *dcmgr.DataCenter, rsp *dcmgr.Response) error {
+	return p.db.Create(center)
 }
-
-func (p *DcMgrHandler) Update(ctx context.Context, center *go_micro_srv_dcmgr.DataCenter, rsp *go_micro_srv_dcmgr.Response) error {
-	return p.db.Update(center)
-}
-

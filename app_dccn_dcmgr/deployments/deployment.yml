@@ -1,23 +1,23 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dcmgr
+  name: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dcmgr
+      app: v1
   template:
     metadata:
       labels:
-        app: dcmgr
+        app: v1
     spec:
       containers:
-      - name: dcmgr-service
+      - name: v1-service
         image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/app_dccn_dmmgr:latest
         imagePullPolicy: Always
         command: [
-          "./shippy-dcmgr-service",
+          "./shippy-v1-service",
           "--selector=static",
           "--server_address=:8080"
         ]
@@ -26,4 +26,4 @@ spec:
           value: "mongo:27017"
         ports:
         - containerPort: 8080
-          name: dcmgr-port
+          name: v1-port

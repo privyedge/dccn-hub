@@ -1,9 +1,7 @@
 package dbservice
 
 import (
-	"sync/atomic"
-
-	go_micro_srv_dcmgr "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/dcmgr"
+	dcmgr "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/proto/v1"
 	dbcommon "github.com/Ankr-network/dccn-hub/common/db"
 
 	mgo "gopkg.in/mgo.v2"
@@ -12,31 +10,27 @@ import (
 
 type DBService interface {
 	// Get gets a dc item by pb's id.
-	Get(id int64) (*go_micro_srv_dcmgr.DataCenter, error)
+	Get(id int64) (*dcmgr.DataCenter, error)
 	// Create Creates a new dc item if not exits.
-	Add(center go_micro_srv_dcmgr.DataCenter) error
+	Create(center *dcmgr.DataCenter) error
 	// Update updates dc item
-	Update(center *go_micro_srv_dcmgr.DataCenter) error
+	Update(center *dcmgr.DataCenter) error
 	// Close closes db connection
 	Close()
+	// dropCollection for testing usage
+	dropCollection()
 }
 
 // UserDB implements DBService
 type DB struct {
 	dbName         string
 	collectionName string
-	count          int64
 	session        *mgo.Session
 }
 
 // New returns DBService.
 func New(conf dbcommon.Config) (*DB, error) {
-	session, err := dbcommon.Dial(conf)
-	if err != nil {
-		return nil, err
-	}
-
-	count, err := session.DB(conf.DB).C(conf.Collection).Count()
+	session, err := dbcommon.CreateDBConnection(conf)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +38,6 @@ func New(conf dbcommon.Config) (*DB, error) {
 	return &DB{
 		dbName:         conf.DB,
 		collectionName: conf.Collection,
-		count:          int64(count),
 		session:        session,
 	}, nil
 }
@@ -54,44 +47,34 @@ func (p *DB) collection(session *mgo.Session) *mgo.Collection {
 }
 
 // Get gets user item by id.
-func (p *DB) Get(id int64) (center *go_micro_srv_dcmgr.DataCenter, err error) {
+func (p *DB) Get(id int64) (*dcmgr.DataCenter, error) {
 	session := p.session.Clone()
 	defer session.Close()
 
-	var bcenter bsonDataCenter
-	if err = p.collection(session).FindId(id).One(&bcenter); err != nil {
-		return
-	}
-	err = bcenter.Decode(center)
-	return
+	var center dcmgr.DataCenter
+	err := p.collection(session).Find(bson.M{"id": id}).One(&center)
+	return &center, err
 }
 
 // Create creates a new data center item if it not exists
-func (p *DB) Add(center go_micro_srv_dcmgr.DataCenter) error {
-	center.Id = atomic.AddInt64(&p.count, int64(1))
-	var bcenter bsonDataCenter
-	if err := bcenter.Encode(&center); err != nil {
-		return err
-	}
-
+func (p *DB) Create(center *dcmgr.DataCenter) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Insert(&bcenter)
+	return p.collection(session).Insert(center)
 }
 
-// Update updates datacenter item.
-func (p *DB) Update(center *go_micro_srv_dcmgr.DataCenter) error {
-	var bcenter bsonDataCenter
-	if err := bcenter.Encode(center); err != nil {
-		return err
-	}
-
+// Update updates user item.
+func (p *DB) Update(datacenter *dcmgr.DataCenter) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"_id": bcenter.Id}, &bcenter)
+	return p.collection(session).Update(bson.M{"id": datacenter.Id}, datacenter)
 }
 
 // Close closes the db connection.
 func (p *DB) Close() {
 	p.session.Close()
+}
+
+func (p *DB) dropCollection() {
+	p.session.DB(p.dbName).C(p.collectionName).DropCollection()
 }

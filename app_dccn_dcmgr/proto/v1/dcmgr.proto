@@ -1,29 +1,18 @@
 syntax = "proto3";
 
-package go.micro.srv.dcmgr;
+package go.micro.srv.v1.dcmgr;
 
 service DcMgr {
 //    Get gets a DataCenter by ID
     rpc Get(ID) returns (DataCenter) {
     }
 
-    rpc Add(DataCenter) returns (Response) {
-    }
-
-    rpc Update(DataCenter) returns (Response) {
+    rpc Create(DataCenter) returns (Response) {
     }
 }
 
 message ID {
     int64 id = 1;
-}
-
-message All {
-}
-
-// DataCenterList request message
-message Request {
-    string user_token = 1; // List task for the account
 }
 
 message DataCenter {

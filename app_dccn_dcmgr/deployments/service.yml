@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: dcmgr
+  name: v1
   labels:
-    app: dcmgr
+    app: v1
 spec:
   ports:
   - port: 8080
     protocol: TCP
   selector:
-    app: dcmgr
+    app: v1
