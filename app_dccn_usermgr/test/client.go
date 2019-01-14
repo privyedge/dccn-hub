@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
-	micro "github.com/micro/go-micro"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
+	grpc "github.com/micro/go-grpc"
 )
 
 func createUser(cli pb.UserMgrService) error {
@@ -35,11 +35,11 @@ func newToken(cli pb.UserMgrService, user *pb.User) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return pbToken.TokenString, nil
+	return pbToken.Token, nil
 }
 
-func verifyToken(cli pb.UserMgrService, tokenString string) error {
-	if _, err := cli.VerifyToken(context.TODO(), &pb.TokenString{TokenString: tokenString}); err != nil {
+func verifyToken(cli pb.UserMgrService, token string) error {
+	if _, err := cli.VerifyToken(context.TODO(), &pb.Token{Token: token}); err != nil {
 		return err
 	}
 	log.Println("Verify Token OK.")
@@ -47,11 +47,11 @@ func verifyToken(cli pb.UserMgrService, tokenString string) error {
 }
 
 func main() {
-	srv := micro.NewService()
+	srv := grpc.NewService()
 
 	srv.Init()
 
-	cli := pb.NewUserMgrService("go.micro.srv.usermgr", srv.Client())
+	cli := pb.NewUserMgrService("go.micro.srv.v1", srv.Client())
 	if cli == nil {
 		panic("NIL")
 	}

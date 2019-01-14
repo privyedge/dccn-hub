@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
-	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	pb "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/token"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -31,8 +31,10 @@ func (p *UserHandler) Get(ctx context.Context, email *pb.Email, user *pb.User) e
 }
 
 func (p *UserHandler) Create(ctx context.Context, user *pb.User, rsp *pb.Response) error {
+	log.Println("Debug Create user")
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 	user.Password = string(hashedPwd)

@@ -3,7 +3,7 @@ package dbservice
 import (
 	"testing"
 
-	go_micro_srv_usermgr "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/usermgr"
+	go_micro_srv_usermgr "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/proto/v1"
 	dbcommon "github.com/Ankr-network/dccn-hub/common/db"
 )
 
