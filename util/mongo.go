@@ -1,7 +1,9 @@
 package util
 
 import (
+	"crypto/md5"
 	"fmt"
+	"github.com/Ankr-network/dccn-hub/util/jwt"
 	"log"
 	"math/rand"
 	"os"
@@ -11,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	ankr_const "github.com/Ankr-network/dccn-common"
-	mgo "gopkg.in/mgo.v2"
+	"github.com/Ankr-network/dccn-common"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -37,6 +39,8 @@ type User struct {
 	Name  string
 	Token string
 	Money int64
+	Password string
+	Erc20address string //ERC20 Address
 }
 
 type Counter struct {
@@ -250,10 +254,40 @@ func AddUser(user User) {
 	db := GetDBInstance()
 	c := db.C("user")
 	id := GetID("userid", db)
-	logStr := fmt.Sprintf("Id of user: %d", id)
+	logStr := fmt.Sprintf("AddUser  Id of user: %d ", id)
 	WriteLog(logStr)
-	c.Insert(bson.M{"_id": id, "id": id, "name": user.Name, "token": user.Token, "money": user.Money})
+	if len(user.Password) > 0 {
+		user.Password = MD5String(user.Password)  // save user password by md5
+	}
 
+	c.Insert(bson.M{"_id": id, "id": id, "name": user.Name, "token": user.Password, "money": user.Money, "erc20address" : user.Erc20address})
+
+}
+
+func CheckPassword(password string, user User) bool{
+	logStr := fmt.Sprintf("CheckPassword  user: %s  %s  == %s ", password, user.Token, MD5String(user.Password))
+	WriteLog(logStr)
+
+
+    if user.Token == MD5String(password){
+    	return true
+	}else{
+		return false
+	}
+}
+
+func UpdateUserToken(user User) string{
+	token := RandToken()
+	db := GetDBInstance()
+	c := db.C("user")
+	c.Update(bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"token": token}})
+	return token
+}
+
+func RemoveUserToken(user User){
+	db := GetDBInstance()
+	c := db.C("user")
+	c.Update(bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"token": ""}})
 }
 
 func SelectFreeDatacenter() int {
@@ -288,11 +322,35 @@ func GetDatacenterByID(id int) DataCenter {
 	return dc
 }
 
-func GetUser(token string) User {
+func GetUser(jwtToken string) User {
+	token := ""
+	if jwtToken == "ed1605e17374bde6c68864d072c9f5c9" {  // old token comptitable
+		token = "ed1605e17374bde6c68864d072c9f5c9"
+
+	}else{
+		token = jwt.ParseJwtToken(jwtToken)
+	}
+	return GetUserOld(token)
+}
+
+
+func GetUserOld(token string) User {
 	user := User{}
 	db := GetDBInstance()
 	c := db.C("user")
 	err := c.Find(bson.M{"token": token}).One(&user)
+	if err != nil {
+		WriteLog("DoReConnectMongodb")
+		DoReConnectMongodb()
+	}
+	return user
+}
+
+func GetUserByName(name string) User {
+	user := User{}
+	db := GetDBInstance()
+	c := db.C("user")
+	err := c.Find(bson.M{"name": name}).One(&user)
 	if err != nil {
 		WriteLog("DoReConnectMongodb")
 		DoReConnectMongodb()
@@ -355,4 +413,16 @@ func Contains(a []int64, x int64) bool {
 		}
 	}
 	return false
+}
+
+
+func RandToken() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
+
+func MD5String(value string) string {
+	data := []byte(value)
+	return fmt.Sprintf("%x", md5.Sum(data))
 }

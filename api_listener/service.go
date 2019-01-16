@@ -2,6 +2,7 @@ package api_listener
 
 import (
 	"fmt"
+	"github.com/Ankr-network/dccn-hub/util/jwt"
 	"log"
 	"os"
 
@@ -318,6 +319,65 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 	return &pb.UpdateTaskResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
 
 }
+
+
+// gRPC interface function
+func (s *server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
+	if len(in.Name) == 0 || len(in.Password) == 0 {
+		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusFailure,  Reason: ankr_const.CliErrorReasonNamePasswordEmpty}, nil
+	}
+
+
+	user := util.GetUserByName(in.Name)
+
+	if user.ID == 0 {
+		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonUserNotExist}, nil
+	}
+
+	if util.CheckPassword(in.Password, user) == false {
+		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonPasswordError}, nil
+	}else{
+        token := util.UpdateUserToken(user)
+        jwtToken := jwt.CreateJwtToken(token)
+		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusSuccess, Token: jwtToken}, nil
+	}
+
+}
+
+func (s *server) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutResponse, error) {
+	user := util.GetUser(in.Usertoken)
+	if user.ID == 0 {
+		util.WriteLog("cancel task fail for user token error")
+		return &pb.LogoutResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonUserNotExist}, nil
+	}else{
+		util.RemoveUserToken(user)
+		return &pb.LogoutResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
+	}
+
+}
+
+func (s *server) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	if len(in.Name) == 0 || len(in.Password) == 0 {
+		return &pb.RegisterResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonNamePasswordEmpty}, nil
+	}
+
+	user := util.GetUserByName(in.Name)
+
+	if user.ID != 0 {
+		return &pb.RegisterResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonUserExit}, nil
+	}
+	user.Name = in.Name
+	user.Password = in.Password
+	user.Erc20address = in.Erc20Address
+
+	util.AddUser(user)
+	logStr := fmt.Sprintf("Register user  successully  %s ", user.Name)
+	util.WriteLog(logStr)
+
+	return &pb.RegisterResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
+}
+
+
 
 func StartService() {
 	if len(os.Args) == 3 {
