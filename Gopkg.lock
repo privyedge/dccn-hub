@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:08c60d8fa05643b81c113301e21d98d4faa26877633f796e775f39c1569d80cf"
+  digest = "1:f717708731666a457d5ac305aa6ff3c0abe6d30abaa26c6ebea6e7b38385de4e"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     ".",
@@ -12,7 +12,15 @@
     "server_rpc",
   ]
   pruneopts = "UT"
-  revision = "bbf3e6f5f41109030acb1a761cf04824faa0669d"
+  revision = "9e5f86f5a2e8a7e789b41d87c39c787f592753b5"
+
+[[projects]]
+  branch = "master"
+  digest = "1:5771b86b64a5e64d8e3d70337813686586210131ac4fb4c6a97b43c8e25e2253"
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3af4c746e1c248ee8491a3e0c6f7a9cd831e95f8"
 
 [[projects]]
   digest = "1:5d1b5a25486fc7d4e133646d834f6fca7ba1cef9903d40e7aa786c41b89e9e91"
@@ -39,7 +47,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:89a0cb976397aa9157a45bb2b896d0bcd07ee095ac975e0f03c53250c402265e"
+  digest = "1:293d03d721a8bebb909ff16dad088981a995204f67df318456f92ffe13e8e8cd"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -51,15 +59,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "1e06a53dbb7e2ed46e91183f219db23c6943c532"
+  revision = "915654e7eabcea33ae277abbecf52f0d8b7a9fdc"
 
 [[projects]]
   branch = "master"
-  digest = "1:f106a08663d0031b576f61ab81ffd80124da17096eab36aceb25b1b0d847da9a"
+  digest = "1:fe2af5c0e6b4188bb1907e051cd086dae4f7ab3a2f4c1b62c03fefca848ab900"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "7fbe1cd0fcc20051e1fcb87fbabec4a1bacaaeba"
+  revision = "a457fd036447854c0c02e89ea439481bdcf941a2"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -90,10 +98,10 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "ae2f86662275e140f395167f1dab7081a5bd5fa8"
+  revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"
 
 [[projects]]
-  digest = "1:8c8ed249fa6a8db070bf2082f02052c697695fa5e1558b4e28dd0fb5f15f70a2"
+  digest = "1:468bc9b39a60a4ac6726976d60d32cb0fbcaf749fea4139be8cec53fdfbd82d5"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -131,8 +139,8 @@
     "tap",
   ]
   pruneopts = "UT"
-  revision = "df014850f6dee74ba2fc94874043a9f3f75fbfd8"
-  version = "v1.17.0"
+  revision = "a02b0774206b209466313a0b525d2c738fe407eb"
+  version = "v1.18.0"
 
 [[projects]]
   branch = "v2"
@@ -156,8 +164,10 @@
     "github.com/Ankr-network/dccn-common/protocol/cli",
     "github.com/Ankr-network/dccn-common/protocol/k8s",
     "github.com/Ankr-network/dccn-common/server_rpc",
+    "github.com/dgrijalva/jwt-go",
     "github.com/streadway/amqp",
     "golang.org/x/net/context",
+    "google.golang.org/grpc",
     "google.golang.org/grpc/peer",
     "google.golang.org/grpc/reflection",
     "gopkg.in/mgo.v2",

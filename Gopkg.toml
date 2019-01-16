@@ -10,6 +10,10 @@
 # UPGRADE: Protobuf
 
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/dgrijalva/jwt-go"
+
 # Required: Protobuf is required by gRPC
 [[constraint]]
   branch = "master"
