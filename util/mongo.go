@@ -260,7 +260,7 @@ func AddUser(user User) {
 		user.Password = MD5String(user.Password)  // save user password by md5
 	}
 
-	c.Insert(bson.M{"_id": id, "id": id, "name": user.Name, "token": user.Password, "money": user.Money, "erc20address" : user.Erc20address})
+	c.Insert(bson.M{"_id": id, "id": id, "name": user.Name, "password": user.Password, "money": user.Money, "erc20address" : user.Erc20address})
 
 }
 
@@ -269,7 +269,7 @@ func CheckPassword(password string, user User) bool{
 	WriteLog(logStr)
 
 
-    if user.Token == MD5String(password){
+    if user.Password == MD5String(password){
     	return true
 	}else{
 		return false
