@@ -15,7 +15,6 @@ type MyCustomClaims struct {
 
 var secret = "28iOiJiYXIiLCJleHAiOjE1MDAwLCJ"
 
-
 func CreateJwtToken(value string) string {
 	mySigningKey := []byte(secret)
 
@@ -31,7 +30,6 @@ func CreateJwtToken(value string) string {
 	//fmt.Printf("%v %v", ss, err)
 	return ss
 }
-
 
 func ParseJwtToken(tokenString string) string {
 	token, err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {

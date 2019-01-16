@@ -326,7 +326,6 @@ func GetUser(jwtToken string) User {
 	token := ""
 	if jwtToken == ankr_const.DefaultUserToken {  // old token comptitable
 		token = ankr_const.DefaultUserToken
-
 	}else{
 		token = jwt.ParseJwtToken(jwtToken)
 	}
