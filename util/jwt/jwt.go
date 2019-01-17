@@ -3,6 +3,7 @@ package jwt
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"time"
 )
 
 
@@ -31,7 +32,7 @@ func CreateJwtToken(value string, name string) string {
 	claims := JWTUserTokenInfo{
 		value,
 		name,
-		86400,
+		time.Now().Unix() + 86400,
 		[]string{"stratos.admin"},
 		jwt.StandardClaims{},
 	}
