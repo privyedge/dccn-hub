@@ -2,16 +2,15 @@ package api_listener
 
 import (
 	"fmt"
-	"github.com/Ankr-network/dccn-hub/util/jwt"
-	"log"
-	"os"
-
-	ankr_const "github.com/Ankr-network/dccn-common"
+	"github.com/Ankr-network/dccn-common"
 	pb "github.com/Ankr-network/dccn-common/protocol/cli"
 	"github.com/Ankr-network/dccn-common/server_rpc"
 	"github.com/Ankr-network/dccn-hub/util"
+	"github.com/Ankr-network/dccn-hub/util/jwt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/reflection"
+	"log"
+	"os"
 )
 
 var port = fmt.Sprintf(":%d", ankr_const.DefaultPort)
@@ -160,6 +159,7 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 			dcInfo.Status = dataCenter.Status
 			dcInfo.Lat = dataCenter.Lat
 			dcInfo.Lng = dataCenter.Lng
+			dcInfo.Sub.Name = "sub"
 			dcList = append(dcList, dcInfo)
 			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}
@@ -338,7 +338,7 @@ func (s *server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonPasswordError}, nil
 	}else{
         token := util.UpdateUserToken(user)
-        jwtToken := jwt.CreateJwtToken(token)
+        jwtToken := jwt.CreateJwtToken(token, user.Name)
 		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusSuccess, Token: jwtToken}, nil
 	}
 

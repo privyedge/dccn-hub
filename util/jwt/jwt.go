@@ -8,19 +8,23 @@ import (
 
 
 type MyCustomClaims struct {
-	Token string `json:"foo"`
+	Token string `json:"token"`
+	UserGUID string `json:"UserGUID"`
+	TokenExpiry int64 `json:"TokenExpiry"`
 	jwt.StandardClaims
 }
 
 
 var secret = "28iOiJiYXIiLCJleHAiOjE1MDAwLCJ"
 
-func CreateJwtToken(value string) string {
+func CreateJwtToken(value string, name string) string {
 	mySigningKey := []byte(secret)
 
 	// Create the Claims
 	claims := MyCustomClaims{
 		value,
+		name,
+		86400,
 		jwt.StandardClaims{
 		},
 	}
