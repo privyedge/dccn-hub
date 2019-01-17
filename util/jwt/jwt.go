@@ -13,6 +13,13 @@ type MyCustomClaims struct {
 	TokenExpiry int64 `json:"TokenExpiry"`
 	jwt.StandardClaims
 }
+type JWTUserTokenInfo struct {
+	UserGUID    string   `json:"user_id"`
+	UserName    string   `json:"user_name"`
+	TokenExpiry int64    `json:"exp"`
+	Scope       []string `json:"scope"`
+	jwt.StandardClaims
+}
 
 
 var secret = "28iOiJiYXIiLCJleHAiOjE1MDAwLCJ"
@@ -21,12 +28,12 @@ func CreateJwtToken(value string, name string) string {
 	mySigningKey := []byte(secret)
 
 	// Create the Claims
-	claims := MyCustomClaims{
+	claims := JWTUserTokenInfo{
 		value,
 		name,
 		86400,
-		jwt.StandardClaims{
-		},
+		[]string{"stratos.admin"},
+		jwt.StandardClaims{},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -40,9 +47,9 @@ func ParseJwtToken(tokenString string) string {
 		return []byte(secret), nil
 	})
 
-	if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(*JWTUserTokenInfo); ok && token.Valid {
 		//fmt.Printf("%v %v", claims.Token, claims.StandardClaims.ExpiresAt)
-		return claims.Token
+		return claims.UserGUID
 	} else {
 		fmt.Println(err)
 		return ""
