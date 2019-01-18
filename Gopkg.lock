@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:f717708731666a457d5ac305aa6ff3c0abe6d30abaa26c6ebea6e7b38385de4e"
+  digest = "1:d977a10ca0bdb9ff5fc7ccb0efb5178bc5a0e707d83c541f5d6991ff0986865f"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     ".",
@@ -12,7 +12,7 @@
     "server_rpc",
   ]
   pruneopts = "UT"
-  revision = "9e5f86f5a2e8a7e789b41d87c39c787f592753b5"
+  revision = "a27c203c3840cf0da9fb68b0d3cc76c8ae9133fd"
 
 [[projects]]
   branch = "master"
@@ -63,11 +63,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fe2af5c0e6b4188bb1907e051cd086dae4f7ab3a2f4c1b62c03fefca848ab900"
+  digest = "1:f6f6d9d6f80c9e32acc0f4f3b904e0b9f5b18a7757c2ef941121bd79a10e7bdf"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "a457fd036447854c0c02e89ea439481bdcf941a2"
+  revision = "11f53e03133963fb11ae0588e08b5e0b85be8be5"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
