@@ -1,6 +1,7 @@
 package api_listener
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Ankr-network/dccn-common"
 	pb "github.com/Ankr-network/dccn-common/protocol/cli"
@@ -43,6 +44,7 @@ func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.
 	taskInfo.Status = task.Status
 	taskInfo.Replica = int64(task.Replica)
 	taskInfo.Datacenter = dcs[task.Datacenterid]
+
 
 	return &pb.TaskDetailResponse{Body: task.URL, Taskinfo: taskInfo}, nil
 
@@ -138,6 +140,26 @@ func (s *server) TaskList(ctx context.Context, in *pb.TaskListRequest) (*pb.Task
 
 }
 
+func CreateMetrics(report string) string {
+	task := ankr_const.Metrics{}
+	task.TotalCPU = 100
+	task.UsedCPU = 80
+	task.TotalMemory = 100
+	task.UsedMemory = 79
+	task.TotalStorage = 100
+	task.UsedStorage = 50
+
+	task.ImageCount = 12
+	task.EndPointCount = 6
+	task.NetworkIO = 24
+
+	b, err := json.Marshal(task)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return string(b)
+}
+
 // gRPC interface function
 func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListRequest) (*pb.DataCenterListResponse, error) {
 	token := in.Usertoken
@@ -159,6 +181,7 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 			dcInfo.Status = dataCenter.Status
 			dcInfo.Lat = dataCenter.Lat
 			dcInfo.Lng = dataCenter.Lng
+			dcInfo.Metrics = CreateMetrics(dataCenter.Report)
 			dcList = append(dcList, dcInfo)
 			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}
