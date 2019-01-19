@@ -3,6 +3,9 @@ package api_listener
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/Ankr-network/dccn-common"
 	pb "github.com/Ankr-network/dccn-common/protocol/cli"
 	"github.com/Ankr-network/dccn-common/server_rpc"
@@ -10,8 +13,6 @@ import (
 	"github.com/Ankr-network/dccn-hub/util/jwt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"os"
 )
 
 var port = fmt.Sprintf(":%d", ankr_const.DefaultPort)
@@ -44,7 +45,6 @@ func (s *server) TaskDetail(ctx context.Context, in *pb.TaskDetailRequest) (*pb.
 	taskInfo.Status = task.Status
 	taskInfo.Replica = int64(task.Replica)
 	taskInfo.Datacenter = dcs[task.Datacenterid]
-
 
 	return &pb.TaskDetailResponse{Body: task.URL, Taskinfo: taskInfo}, nil
 
@@ -181,7 +181,7 @@ func (s *server) DataCenterList(ctx context.Context, in *pb.DataCenterListReques
 			dcInfo.Status = dataCenter.Status
 			dcInfo.Lat = dataCenter.Lat
 			dcInfo.Lng = dataCenter.Lng
-			dcInfo.Metrics = CreateMetrics(dataCenter.Report)
+			dcInfo.Metrics = dataCenter.Report
 			dcList = append(dcList, dcInfo)
 			//util.WriteLog("task id : %d %s status %s", task.ID,task.Name, task.Status)
 		}
@@ -342,13 +342,11 @@ func (s *server) UpdateTask(ctx context.Context, in *pb.UpdateTaskRequest) (*pb.
 
 }
 
-
 // gRPC interface function
 func (s *server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
 	if len(in.Name) == 0 || len(in.Password) == 0 {
-		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusFailure,  Reason: ankr_const.CliErrorReasonNamePasswordEmpty}, nil
+		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonNamePasswordEmpty}, nil
 	}
-
 
 	user := util.GetUserByName(in.Name)
 
@@ -358,9 +356,9 @@ func (s *server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 
 	if util.CheckPassword(in.Password, user) == false {
 		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonPasswordError}, nil
-	}else{
-        token := util.UpdateUserToken(user)
-        jwtToken := jwt.CreateJwtToken(token, user.Name)
+	} else {
+		token := util.UpdateUserToken(user)
+		jwtToken := jwt.CreateJwtToken(token, user.Name)
 		return &pb.LoginResponse{Status: ankr_const.CliReplyStatusSuccess, Token: jwtToken}, nil
 	}
 
@@ -371,7 +369,7 @@ func (s *server) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutRe
 	if user.ID == 0 {
 		util.WriteLog("cancel task fail for user token error")
 		return &pb.LogoutResponse{Status: ankr_const.CliReplyStatusFailure, Reason: ankr_const.CliErrorReasonUserNotExist}, nil
-	}else{
+	} else {
 		util.RemoveUserToken(user)
 		return &pb.LogoutResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
 	}
@@ -398,8 +396,6 @@ func (s *server) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.Regi
 
 	return &pb.RegisterResponse{Status: ankr_const.CliReplyStatusSuccess}, nil
 }
-
-
 
 func StartService() {
 	if len(os.Args) == 3 {
