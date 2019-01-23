@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package example.streamer;
+
+service Streamer {
+    rpc ServerStream(stream Task) returns (stream Task) {}
+}
+
+message Task {
+    int64 count = 1;
+    string name = 2;
+    int32 age = 3;
+    string flag = 4; // Server or Client
+}
+

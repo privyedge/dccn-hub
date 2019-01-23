@@ -5,7 +5,7 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 
-	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1"
+	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 
 	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/db_service"

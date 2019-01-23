@@ -9,7 +9,7 @@ import (
 
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 
-	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
+	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	db "github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/db_service"
 	micro "github.com/micro/go-micro"
 )
@@ -52,17 +52,9 @@ func (p *TaskMgrHandler) AddTask(ctx context.Context, req *taskmgr.AddTaskReques
 		return nil
 	}
 
-	taskEvent := common_proto.TaskEvent{
-		TaskType: req.Task.Type,
-		Image:    req.Task.Image,
-		Extra:    req.Task.Extra,
-		Name:     req.Task.Name,
-		Replica:  req.Task.Replica,
-	}
-
 	event := common_proto.Event{
 		EventType: common_proto.Operation_TASK_CREATE,
-		OpMessage: &common_proto.Event_TaskEvent{TaskEvent: &taskEvent},
+		OpMessage: &common_proto.Event_Task{Task: req.Task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
@@ -94,13 +86,9 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 		return nil
 	}
 
-	taskEvent := common_proto.TaskEvent{
-		TaskId: req.TaskId,
-	}
-
 	event := common_proto.Event{
 		EventType: common_proto.Operation_TASK_CANCEL,
-		OpMessage: &common_proto.Event_TaskEvent{TaskEvent: &taskEvent},
+		OpMessage: &common_proto.Event_Task{Task: task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
@@ -148,17 +136,9 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 		return nil
 	}
 
-	taskEvent := common_proto.TaskEvent{
-		TaskType: req.Task.Type,
-		Image:    req.Task.Image,
-		Extra:    req.Task.Extra,
-		Name:     req.Task.Name,
-		Replica:  req.Task.Replica,
-	}
-
 	event := common_proto.Event{
 		EventType: common_proto.Operation_TASK_UPDATE,
-		OpMessage: &common_proto.Event_TaskEvent{TaskEvent: &taskEvent},
+		OpMessage: &common_proto.Event_Task{Task: task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
@@ -183,7 +163,7 @@ func pbError(rsp *common_proto.Error, err error) {
 	*rsp = common_proto.Error{Code: 0, Details: err.Error()}
 }
 
-func (p *TaskMgrHandler) checkOwner(rsp *common_proto.Error, userId int64, taskId string) (*taskmgr.Task, bool) {
+func (p *TaskMgrHandler) checkOwner(rsp *common_proto.Error, userId int64, taskId string) (*common_proto.Task, bool) {
 	task, err := p.db.Get(taskId)
 	if err != nil {
 		*rsp = common_proto.Error{Code: 0, Details: err.Error()}

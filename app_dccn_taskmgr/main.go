@@ -5,7 +5,7 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 
-	pb "github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
+	pb "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/handler"

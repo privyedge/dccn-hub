@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"

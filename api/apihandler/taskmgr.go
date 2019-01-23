@@ -5,42 +5,53 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1"
 	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
 
 	"github.com/micro/go-micro/client"
 )
 
 type ApiTask struct {
-	api dcmgr.DCStreamerService
+	api taskmgr.TaskMgrService
 }
 
-func (*ApiTask) AddTask(context.Context, *taskmgr.AddTaskRequest, *taskmgr.AddTaskResponse) error {
-	panic("implement me")
+func (p *ApiTask) AddTask(ctx context.Context, req *taskmgr.AddTaskRequest, rsp *taskmgr.AddTaskResponse) error {
+	out, _ := p.api.AddTask(ctx, req)
+	*rsp = *out
+	return nil
 }
 
-func (*ApiTask) TaskList(context.Context, *taskmgr.ID, *taskmgr.TaskListResponse) error {
-	panic("implement me")
+func (p *ApiTask) TaskList(ctx context.Context, req *taskmgr.ID, rsp *taskmgr.TaskListResponse) error {
+	out, _ := p.api.TaskList(ctx, req)
+	*rsp = *out
+	return nil
 }
 
-func (*ApiTask) CancelTask(context.Context, *taskmgr.Request, *common_proto.Error) error {
-	panic("implement me")
+func (p *ApiTask) CancelTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
+	out, _ := p.api.CancelTask(ctx, req)
+	*rsp = *out
+	return nil
 }
 
-func (*ApiTask) PurgeTask(context.Context, *taskmgr.Request, *common_proto.Error) error {
-	panic("implement me")
+func (p *ApiTask) PurgeTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
+	out, _ := p.api.PurgeTask(ctx, req)
+	*rsp = *out
+	return nil
 }
 
-func (*ApiTask) TaskDetail(context.Context, *taskmgr.Request, *taskmgr.TaskDetailResponse) error {
-	panic("implement me")
+func (p *ApiTask) TaskDetail(ctx context.Context, req *taskmgr.Request, rsp *taskmgr.TaskDetailResponse) error {
+	out, _ := p.api.TaskDetail(ctx, req)
+	*rsp = *out
+	return nil
 }
 
-func (*ApiTask) UpdateTask(context.Context, *taskmgr.UpdateTaskRequest, *common_proto.Error) error {
-	panic("implement me")
+func (p *ApiTask) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest, rsp *common_proto.Error) error {
+	out, _ := p.api.UpdateTask(ctx, req)
+	*rsp = *out
+	return nil
 }
 
 func NewApiTask(c client.Client) *ApiTask {
 	return &ApiTask{
-		api: dcmgr.NewDCStreamerService(ankr_default.DcMgrRegistryServerName, c),
+		api: taskmgr.NewTaskMgrService(ankr_default.DcMgrRegistryServerName, c),
 	}
 }

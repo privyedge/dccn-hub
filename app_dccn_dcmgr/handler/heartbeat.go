@@ -8,7 +8,7 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1"
+	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 )
 
 func (p *DcMgrHandler) send(stream dcmgr.DCStreamer_ServerStreamStream, msg *common_proto.Event) bool {

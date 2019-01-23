@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	mail "github.com/Ankr-network/dccn-common/protos/email/v1"
+	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 
 	gomail "gopkg.in/gomail.v2"
 )

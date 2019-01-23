@@ -8,7 +8,7 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1"
+	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/db_service"
 
 	micro "github.com/micro/go-micro"

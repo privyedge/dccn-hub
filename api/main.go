@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1"
-	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
-	"github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
+	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/api/apihandler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
