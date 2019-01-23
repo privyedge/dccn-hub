@@ -3,11 +3,12 @@ package main
 import (
 	"log"
 
-	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1"
+	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
+	"github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	"github.com/Ankr-network/dccn-hub/api/apihandler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
-	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/handler"
-	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/token"
 
 	grpc "github.com/micro/go-grpc"
 )
@@ -46,8 +47,18 @@ func startHandler(db dbservice.DBService) {
 	// Initialise service
 	srv.Init()
 
-	// Register Handler
-	if err := pb.RegisterUserMgrHandler(srv.Server(), handler.New(srv.Client())); err != nil {
+	// Register User Handler
+	if err := usermgr.RegisterUserMgrHandler(srv.Server(), apihandler.NewApiUser(srv.Client())); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Register Task Handler
+	if err := taskmgr.RegisterTaskMgrHandler(srv.Server(), apihandler.NewApiTask(srv.Client())); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Register Data Center Handler
+	if err := dcmgr.RegisterDCStreamerHandler(srv.Server(), apihandler.NewApiDataCenter(srv.Client())); err != nil {
 		log.Fatal(err.Error())
 	}
 

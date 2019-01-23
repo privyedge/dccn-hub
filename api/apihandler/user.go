@@ -2,18 +2,20 @@ package apihandler
 
 import (
 	"context"
-	"github.com/Ankr-network/dccn-common/protos"
+
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	"github.com/Ankr-network/dccn-common/protos/usermgr/v1"
 	"github.com/micro/go-micro/client"
 )
 
 type ApiUser struct {
-	client client.Client
+	api usermgr.UserMgrService
 }
 
-func New(c client.Client) *ApiUser {
-	c := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, c)
-	return &ApiUser{client: c}
+func NewApiUser(c client.Client) *ApiUser {
+	return &ApiUser{
+		api: usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, c),
+	}
 }
 
 func (p *ApiUser) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.User) error {
@@ -32,8 +34,6 @@ func (p *ApiUser) NewToken(ctx context.Context, req *usermgr.User, rsp *usermgr.
 	return p.NewToken(ctx, req, rsp)
 }
 
-func (p *ApiUser) VerifyToken(ctx context.Context,req  *usermgr.Token, rsp *usermgr.Response) error {
+func (p *ApiUser) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *usermgr.Response) error {
 	return p.VerifyToken(ctx, req, rsp)
 }
-
-
