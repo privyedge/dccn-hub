@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
@@ -53,18 +54,32 @@ func main() {
 		log.Println("CreateTask Ok")
 	}
 
+	userTasks := []*common_proto.Task{}
+	if rsp, _ := cl.TaskList(context.TODO(), &taskmgr.ID{UserId: 1}); testCommon.IsSuccess("TaskList", rsp.Error) {
+		userTasks = append(userTasks, rsp.Tasks...)
+		log.Println("TaskList Ok")
+	}
+
+	if len(userTasks) == 0 {
+		log.Fatalf("no tasks belongs to %d\n", 1)
+	}
+
+	pubTask := userTasks[0]
+
 	// pub to topic 1
-	sendEv(task.Id, pub)
+	sendEv(pubTask.Id, pub)
+
+	// waits pub message arrive to mq
+	time.Sleep(2 * time.Second)
 
 	// Verify publish event
-	if rsp, _ := cl.TaskDetail(context.TODO(), &taskmgr.Request{UserId: task.UserId, TaskId: task.Id}); testCommon.IsSuccess("UpdateTask Verify", rsp.Error) {
+	if rsp, _ := cl.TaskDetail(context.TODO(), &taskmgr.Request{UserId: pubTask.UserId, TaskId: pubTask.Id}); testCommon.IsSuccess("UpdateTask Verify", rsp.Error) {
 		if rsp.Task.Status != common_proto.TaskStatus_CANCELL_FAILED {
-			log.Fatal("Publish Failed")
+			log.Fatal("UpdateTaskByFeedback do not task effect")
 		} else {
 			log.Println("TaskDetail Ok")
 		}
 	}
 
 	log.Println("Pub End")
-
 }

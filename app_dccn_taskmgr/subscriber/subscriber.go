@@ -2,11 +2,11 @@ package subscriber
 
 import (
 	"context"
-
-	"gopkg.in/mgo.v2/bson"
+	"log"
 
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	db "github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/db_service"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type TaskStatusFeedback struct {
@@ -22,6 +22,7 @@ func New(db db.DBService) *TaskStatusFeedback {
 // sets executor's id, updates task status.
 func (p *TaskStatusFeedback) UpdateTaskByFeedback(ctx context.Context, event *common_proto.Event) error {
 
+	log.Println("Debug into UpdateTaskByFeedback")
 	var update bson.M
 	switch event.EventType {
 	case common_proto.Operation_TASK_CREATE:
@@ -33,5 +34,6 @@ func (p *TaskStatusFeedback) UpdateTaskByFeedback(ctx context.Context, event *co
 		update = bson.M{"$set": bson.M{"status": event.GetTaskFeedback().Status}}
 	}
 
+	log.Println(event.GetTaskFeedback().TaskId)
 	return p.db.Update(event.GetTaskFeedback().TaskId, update)
 }
