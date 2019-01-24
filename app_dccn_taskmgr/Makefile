@@ -36,7 +36,7 @@ devtools:
 
 
 define MICRO_ENV
-	MICRO_SERVER_NAME="go.micro.srv.v1.taskmgr" \
+	MICRO_SERVER_ADDRESS=":50051" \
 	MICRO_REGISTRY="mdns" \
 	MICRO_SERVER_VERSION="v1.0" \
 	MICRO_REGISTER_TTL=15 \
@@ -44,10 +44,10 @@ define MICRO_ENV
 endef
 
 define PROGRAM_ENV
-	DB_HOST="127.0.0.1:27017" \
 	DB_NAME="dccn" \
 	DB_COLLECTION="task" \
 	DB_TIMEOUT=5 \
 	DB_POOL_LIMIT=4096
 endef
 
+#	DB_HOST="127.0.0.1:27017"

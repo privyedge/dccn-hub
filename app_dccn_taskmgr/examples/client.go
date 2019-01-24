@@ -3,83 +3,134 @@ package main
 import (
 	"context"
 	"log"
-	"strings"
+	"reflect"
 
-	pb "github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
 	grpc "github.com/micro/go-grpc"
+	"github.com/micro/go-micro/metadata"
 
-	"golang.org/x/crypto/bcrypt"
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 )
 
-func isEqual(origin, dbUser *pb.User) bool {
-	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(origin.Password)); err != nil {
-		log.Println(err.Error())
-		return false
+func isEqual(origin, dst *common_proto.Task) bool {
+	ok := origin.Id == dst.Id &&
+		origin.UserId == dst.UserId &&
+		origin.Type == dst.Type &&
+		origin.Name == dst.Name &&
+		origin.Image == dst.Image &&
+		origin.Replica == dst.Replica &&
+		origin.DataCenter == dst.DataCenter &&
+		origin.DataCenterId == dst.DataCenterId &&
+		origin.Status == dst.Status &&
+		origin.UniqueName == dst.UniqueName &&
+		origin.Url == dst.Url &&
+		origin.Hidden == dst.Hidden &&
+		origin.Uptime == dst.Uptime &&
+		origin.CreationDate == dst.CreationDate
+	if origin.Extra != nil && dst.Extra != nil {
+		ok = ok && reflect.DeepEqual(origin.Extra, dst.Extra)
 	}
-	return strings.ToLower(origin.Email) == dbUser.Email &&
-		origin.Name == dbUser.Name &&
-		origin.Nickname == dbUser.Nickname &&
-		origin.Id == dbUser.Id &&
-		origin.Balance == dbUser.Balance &&
-		origin.IsDeleted == dbUser.IsDeleted
+	return ok
 }
+
+func mockTasks() []common_proto.Task {
+	return []common_proto.Task{
+		common_proto.Task{
+			Id:           "001",
+			UserId:       1,
+			Name:         "task01",
+			Type:         "web",
+			Image:        "nginx",
+			Replica:      2,
+			DataCenter:   "dc01",
+			DataCenterId: 1,
+		},
+		common_proto.Task{
+			Id:           "002",
+			UserId:       1,
+			Name:         "task02",
+			Type:         "web",
+			Image:        "nginx",
+			Replica:      2,
+			DataCenter:   "dc02",
+			DataCenterId: 1,
+		},
+		common_proto.Task{
+			Id:           "003",
+			UserId:       2,
+			Name:         "task01",
+			Type:         "web",
+			Image:        "nginx",
+			Replica:      2,
+			DataCenter:   "dc01",
+			DataCenterId: 1,
+		},
+	}
+}
+
+var token = "token"
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("app_dccn_usermgr client service start...")
+	log.Println("client service start...")
 	srv := grpc.NewService()
 
 	srv.Init()
 
-	user := &pb.User{
-		Id:       1,
-		Name:     "user_test",
-		Nickname: "test",
-		Email:    `123@Gmail.com`,
-		Password: "1234567890",
-		Balance:  99,
+	cl := taskmgr.NewTaskMgrService(ankr_default.TaskMgrRegistryServerName, srv.Client())
+
+	tokenContext := metadata.NewContext(context.Background(), map[string]string{
+		"Token": token,
+	})
+
+	tasks := mockTasks()
+	for i := range tasks {
+		if rsp, _ := cl.CreateTask(tokenContext, &taskmgr.AddTaskRequest{UserId: tasks[i].UserId, Task: &tasks[i]}); rsp.Error != nil {
+			log.Fatalf(rsp.Error.Details)
+		} else {
+			log.Println("CreateTask Ok")
+		}
 	}
 
-	cli := pb.NewUserMgrService("go.micro.srv.v1.usermgr", srv.Client())
-	if _, err := cli.Create(context.Background(), user); err != nil {
-		log.Fatal(err.Error())
-	}
-
-	u, err := cli.Get(context.Background(), &pb.Email{Email: user.Email})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	if !isEqual(user, u) {
-		log.Fatalf("want: %#v\n, but %#v\n", user, u)
-	}
-
-	if u, err := cli.Login(context.TODO(), &pb.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
-		log.Fatal(err.Error())
+	if rsp, _ := cl.TaskList(tokenContext, &taskmgr.ID{UserId: 2}); rsp.Error != nil {
+		log.Fatalf("TaskList Error: ", rsp.Error.Details)
 	} else {
-		log.Printf("login feedback: %+v", u.Token)
+		log.Printf("TaskList Ok: %#v\n", rsp.Tasks)
 	}
 
-	token, err := cli.NewToken(context.TODO(), user)
-	if err != nil {
-		log.Fatal(err.Error())
+	cancelTask := tasks[0]
+	if rsp, _ := cl.CancelTask(tokenContext, &taskmgr.Request{UserId: cancelTask.UserId, TaskId: cancelTask.Id}); rsp != nil {
+		log.Fatalf("CancelTask Error: ", rsp.Details)
 	} else {
-		log.Println("Receive Token: ", token)
+		log.Println("CancelTask Ok")
 	}
 
-	// Verify same Password
-	_, err = cli.VerifyToken(context.TODO(), &pb.Token{Token: token.Token})
-	if err != nil {
-		log.Fatal(err.Error())
+	if rsp, _ := cl.TaskDetail(tokenContext, &taskmgr.Request{UserId: 1, TaskId: "001"}); rsp.Error != nil {
+		log.Fatalf("TaskDetail Error: ", rsp.Error.Details)
 	} else {
-		log.Println("VerifyToken OK")
+		if rsp.Task.Status != common_proto.TaskStatus_CANCELLED {
+			log.Fatal("CancelTask not changed")
+		} else {
+			log.Printf("TaskDetail Ok: %#v\n", rsp.Task)
+		}
 	}
 
-	// Verify different Password
-	_, err = cli.VerifyToken(context.TODO(), &pb.Token{Token: "fyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NDcyODA4NTIsImlzcyI6ImFwcF9kY2NuX3VzZXJtZ3IifQ.5k3bMjtryTPDZ_v_-_3tgUXEba6eqvN56fa2P7y3wj9"})
-	if err != nil {
-		log.Println("Invalid OK.")
+	task := tasks[0]
+	task.Name = "updateTask"
+	if rsp, _ := cl.UpdateTask(tokenContext, &taskmgr.UpdateTaskRequest{UserId: task.UserId, Task: &task}); rsp != nil {
+		log.Fatalf("TaskDetail Error: ", rsp.Details)
 	} else {
-		log.Fatal("VerifyToken Failed.")
+		log.Println("TaskDetail Ok")
+	}
+
+	if rsp, _ := cl.TaskDetail(tokenContext, &taskmgr.Request{UserId: 1, TaskId: "001"}); rsp.Error != nil {
+		log.Fatalf("TaskDetail Error: ", rsp.Error.Details)
+	} else {
+		if !isEqual(rsp.Task, &task) {
+			log.Fatal("Update Not Changed")
+		} else {
+			log.Printf("TaskDetail Ok: %#v\n", rsp.Task)
+		}
 	}
 }

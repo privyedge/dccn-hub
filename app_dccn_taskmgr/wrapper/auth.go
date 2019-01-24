@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	"github.com/micro/go-micro/client"
@@ -30,7 +31,7 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		// Auth here
 		// Really shouldn't be using a global here, find a better way
 		// of doing this, since you can't pass it into a wrapper.
-		userMgrService := usermgr.NewUserMgrService("go.micro.srv.v1.usermgr", client.DefaultClient)
+		userMgrService := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, client.DefaultClient)
 		_, err := userMgrService.VerifyToken(context.Background(), &usermgr.Token{Token: token})
 		if err != nil {
 			return err

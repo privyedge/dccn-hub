@@ -23,7 +23,7 @@ type DBService interface {
 	Create(task *common_proto.Task) error
 	// Update updates dc item
 	Update(taskId string, update bson.M) error
-	// Updatetask updates dc item
+	// UpdateTask updates dc item
 	UpdateTask(taskId string, task *common_proto.Task) error
 	// Close closes db connection
 	Close()
@@ -58,12 +58,13 @@ func (p *DB) collection(session *mgo.Session) *mgo.Collection {
 }
 
 // Get gets task item by id.
-func (p *DB) Get(taskId string) (task *common_proto.Task, err error) {
+func (p *DB) Get(taskId string) (*common_proto.Task, error) {
 	session := p.session.Clone()
 	defer session.Close()
 
-	err = p.collection(session).Find(bson.M{"id": taskId}).One(task)
-	return
+	var task common_proto.Task
+	err := p.collection(session).Find(bson.M{"id": taskId}).One(&task)
+	return &task, err
 }
 
 func (p *DB) GetAll(userId int64) (*[]*common_proto.Task, error) {
@@ -103,14 +104,14 @@ func (p *DB) Update(taskId string, update bson.M) error {
 	session := p.session.Copy()
 	defer session.Close()
 
-	return p.collection(session).Update(bson.M{"taskid": taskId}, update)
+	return p.collection(session).Update(bson.M{"id": taskId}, update)
 }
 
 func (p *DB) UpdateTask(taskId string, task *common_proto.Task) error {
 	session := p.session.Copy()
 	defer session.Close()
 
-	return p.collection(session).Update(bson.M{"taskid": taskId}, task)
+	return p.collection(session).Update(bson.M{"id": taskId}, task)
 }
 
 // Cancel cancel task, sets task status CANCEL

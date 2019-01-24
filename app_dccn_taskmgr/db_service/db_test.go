@@ -1,17 +1,18 @@
 package dbservice
 
 import (
+	"reflect"
 	"testing"
 
 	dbcommon "github.com/Ankr-network/dccn-common/db"
-	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
-	go_micro_srv_usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func mockDB() (DBService, error) {
 	conf := dbcommon.Config{
 		DB:         "test",
-		Collection: "user",
+		Collection: "task",
 		Host:       "127.0.0.1:27017",
 		Timeout:    15,
 		PoolLimit:  15,
@@ -28,12 +29,38 @@ func TestDB_New(t *testing.T) {
 	db.Close()
 }
 
-func mockUser() *taskmgr.Task {
-	return &taskmgr.Task{
-		Id:         5,
-		UserId:     0,
-		Replica:    1,
-		UniqueName: "tasktest",
+func mockTasks() []*common_proto.Task {
+	return []*common_proto.Task{
+		&common_proto.Task{
+			Id:           "001",
+			UserId:       1,
+			Name:         "task01",
+			Type:         "web",
+			Image:        "nginx",
+			Replica:      2,
+			DataCenter:   "dc01",
+			DataCenterId: 1,
+		},
+		&common_proto.Task{
+			Id:           "002",
+			UserId:       1,
+			Name:         "task02",
+			Type:         "web",
+			Image:        "nginx",
+			Replica:      2,
+			DataCenter:   "dc02",
+			DataCenterId: 1,
+		},
+		&common_proto.Task{
+			Id:           "003",
+			UserId:       2,
+			Name:         "task01",
+			Type:         "web",
+			Image:        "nginx",
+			Replica:      2,
+			DataCenter:   "dc01",
+			DataCenterId: 1,
+		},
 	}
 }
 
@@ -45,19 +72,33 @@ func TestDB_Create(t *testing.T) {
 	defer db.Close()
 	defer db.dropCollection()
 
-	if err = db.Create(mockUser()); err != nil {
-		t.Fatal(err.Error())
+	tasks := mockTasks()
+	for i, _ := range tasks {
+		if err = db.Create(tasks[i]); err != nil {
+			t.Fatal(err.Error())
+		}
 	}
 }
 
-func isEqual(origin, dbUser *go_micro_srv_usermgr.User) bool {
-	return origin.Email == dbUser.Email &&
-		origin.Password == dbUser.Password &&
-		origin.Name == dbUser.Name &&
-		origin.Nickname == dbUser.Nickname &&
-		origin.Id == dbUser.Id &&
-		origin.Balance == dbUser.Balance &&
-		origin.IsDeleted == dbUser.IsDeleted
+func isEqual(origin, dst *common_proto.Task) bool {
+	ok := origin.Id == dst.Id &&
+		origin.UserId == dst.UserId &&
+		origin.Type == dst.Type &&
+		origin.Name == dst.Name &&
+		origin.Image == dst.Image &&
+		origin.Replica == dst.Replica &&
+		origin.DataCenter == dst.DataCenter &&
+		origin.DataCenterId == dst.DataCenterId &&
+		origin.Status == dst.Status &&
+		origin.UniqueName == dst.UniqueName &&
+		origin.Url == dst.Url &&
+		origin.Hidden == dst.Hidden &&
+		origin.Uptime == dst.Uptime &&
+		origin.CreationDate == dst.CreationDate
+	if origin.Extra != nil && dst.Extra != nil {
+		ok = ok && reflect.DeepEqual(origin.Extra, dst.Extra)
+	}
+	return ok
 }
 
 func TestDB_Get(t *testing.T) {
@@ -68,21 +109,50 @@ func TestDB_Get(t *testing.T) {
 	defer db.Close()
 	defer db.dropCollection()
 
-	user := mockUser()
-	if err = db.Create(user); err != nil {
-		t.Fatal(err.Error())
+	tasks := mockTasks()
+	for i := range tasks {
+		if err = db.Create(tasks[i]); err != nil {
+			t.Fatal(err.Error())
+		}
 	}
 
-	var u *go_micro_srv_usermgr.User
-	u, err = db.Get(user.Email)
+	for _, task := range tasks {
+		dbTask, err := db.Get(task.Id)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		if !isEqual(dbTask, task) {
+			t.Fatalf("want %#v\nbut %#v\n", task, dbTask)
+		}
+	}
+
+	t.Logf("Get Ok\n")
+}
+
+func TestDB_GetAll(t *testing.T) {
+	db, err := mockDB()
 	if err != nil {
 		t.Fatal(err.Error())
 	}
+	defer db.Close()
+	defer db.dropCollection()
 
-	if !isEqual(user, u) {
-		t.Fatalf("want %+v, but %+v\n", *user, *u)
+	tasks := mockTasks()
+	for i := range tasks {
+		if err = db.Create(tasks[i]); err != nil {
+			t.Fatal(err.Error())
+		}
 	}
-	t.Logf("Get Ok: %#v\n", *u)
+
+	dbTasks, err := db.GetAll(tasks[0].UserId)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if len(*dbTasks) != 2 {
+		t.Fatal("Get All Error")
+	}
+
+	t.Logf("GetAll Ok\n")
 }
 
 func TestDB_Update(t *testing.T) {
@@ -93,23 +163,27 @@ func TestDB_Update(t *testing.T) {
 	defer db.Close()
 	defer db.dropCollection()
 
-	user := mockUser()
-	if err = db.Create(user); err != nil {
+	tasks := mockTasks()
+	for i := range tasks {
+		if err = db.Create(tasks[i]); err != nil {
+			t.Fatal(err.Error())
+		}
+	}
+
+	newTask := *tasks[0]
+	newTask.Name = "task003"
+	if err = db.Update(newTask.Id, bson.M{"$set": bson.M{"name": newTask.Name}}); err != nil {
 		t.Fatal(err.Error())
 	}
 
-	user.Nickname = "12345"
-	user.Id = 10
-	if err = db.Update(user); err != nil {
-		t.Fatal(err.Error())
-	}
-
-	u, err := db.Get(user.Email)
+	dbTask, err := db.Get(newTask.Id)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
-	if !isEqual(user, u) {
-		t.Fatalf("UPDATE DB ERROR")
+	if dbTask.Name != newTask.Name {
+		t.Fatal("Update not change")
 	}
+
+	t.Log("Update OK")
 }
