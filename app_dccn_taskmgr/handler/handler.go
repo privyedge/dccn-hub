@@ -2,10 +2,12 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	"github.com/pborman/uuid"
+	"gopkg.in/mgo.v2/bson"
 
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 
@@ -20,6 +22,7 @@ type TaskMgrHandler struct {
 }
 
 func New(db db.DBService, deployTask micro.Publisher) *TaskMgrHandler {
+
 	return &TaskMgrHandler{
 		db:         db,
 		deployTask: deployTask,
@@ -27,30 +30,35 @@ func New(db db.DBService, deployTask micro.Publisher) *TaskMgrHandler {
 }
 
 func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.Request, rsp *taskmgr.TaskDetailResponse) error {
+
 	log.Println("Debug into TaskDetail")
-	if !checkId(rsp.Error, req.UserId, req.TaskId) {
+
+	if !checkId(&rsp.Error, req.UserId, req.TaskId) {
+		log.Println(rsp.Error.Details)
 		return nil
 	}
-	task, ok := p.checkOwner(rsp.Error, req.UserId, req.TaskId)
+	task, ok := p.checkOwner(&rsp.Error, req.UserId, req.TaskId)
 	if !ok {
+		log.Println(rsp.Error.Details)
 		return nil
 	}
 
-	*rsp.Task = *task
+	rsp.Task = task
 
 	return nil
 }
 
-func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.AddTaskRequest, rsp *taskmgr.AddTaskResponse) error {
+func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTaskRequest, rsp *taskmgr.CreateTaskResponse) error {
+
 	if req.UserId == 0 {
-		rsp.Error = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: ankr_default.ErrUserNotExist.Error()}
-		log.Println(rsp.Error)
+		pbError(&rsp.Error, ankr_default.ErrUserNotExist)
+		log.Println(rsp.Error.Details)
 		return nil
 	}
 
 	if req.Task.Replica <= 0 || req.Task.Replica >= 100 {
-		rsp.Error = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: ankr_default.ErrReplicaTooMany.Error()}
-		log.Println(rsp.Error)
+		pbError(&rsp.Error, ankr_default.ErrReplicaTooMany)
+		log.Println(rsp.Error.Details)
 		return nil
 	}
 
@@ -60,43 +68,59 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.AddTaskReq
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
-		rsp.Error = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: "Publish: " + err.Error()}
-		log.Println(rsp.Error)
+		pbError(&rsp.Error, fmt.Errorf("%s: %s", ankr_default.ErrPublish, err.Error()))
+		log.Println(rsp.Error.Details)
 		return nil
 	}
 	req.Task.Status = common_proto.TaskStatus_START
 	req.Task.Id = uuid.New()
 	if err := p.db.Create(req.Task); err != nil {
-		pbError(rsp.Error, err)
+		pbError(&rsp.Error, err)
+		log.Println(rsp.Error.Details)
+		return nil
 	}
+
 	return nil
 }
 
 // Must return nil for gRPC handler
 func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
 	log.Println("Debug into CancelTask")
-	if !checkId(rsp, req.UserId, req.TaskId) {
+	if !checkId(&rsp, req.UserId, req.TaskId) {
+		log.Println(rsp.Details)
 		return nil
 	}
-	task, ok := p.checkOwner(rsp, req.UserId, req.TaskId)
+	log.Println("0")
+	task, ok := p.checkOwner(&rsp, req.UserId, req.TaskId)
 	if !ok {
+		log.Println(rsp.Details)
 		return nil
 	}
+	log.Println("1")
 
 	if task.Status != common_proto.TaskStatus_RUNNING &&
 		task.Status != common_proto.TaskStatus_START &&
 		task.Status != common_proto.TaskStatus_UPDATING {
-		pbError(rsp, ankr_default.ErrStatusNotSupportOperation)
+		pbError(&rsp, ankr_default.ErrStatusNotSupportOperation)
+		log.Println(rsp.Details)
 		return nil
 	}
 
+	log.Println("2")
 	event := common_proto.Event{
 		EventType: common_proto.Operation_TASK_CANCEL,
 		OpMessage: &common_proto.Event_Task{Task: task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
-		pbError(rsp, err)
+		pbError(&rsp, err)
+		log.Println(rsp.Details)
+		return nil
+	}
+
+	if err := p.db.Update(task.Id, bson.M{"$set": bson.M{"status": common_proto.TaskStatus_CANCELL}}); err != nil {
+		pbError(&rsp, err)
+		log.Println(rsp.Details)
 		return nil
 	}
 
@@ -105,15 +129,17 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 
 func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.ID, rsp *taskmgr.TaskListResponse) error {
 	log.Println("Debug into TaskList")
+
 	if req.UserId == 0 {
-		rsp.Error = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: ankr_default.ErrUserNotExist.Error()}
-		log.Println(rsp.Error)
+		pbError(&rsp.Error, ankr_default.ErrUserNotExist)
+		log.Println(rsp.Error.Details)
+		return nil
 	}
 
 	tasks, err := p.db.GetAll(req.UserId)
 	if err != nil {
-		rsp.Error = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: err.Error()}
-		log.Println(rsp.Error)
+		pbError(&rsp.Error, err)
+		log.Println(rsp.Error.Details)
 		return nil
 	}
 	rsp.Tasks = append(rsp.Tasks, *tasks...)
@@ -123,22 +149,27 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.ID, rsp *tas
 
 func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest, rsp *common_proto.Error) error {
 	log.Println("Debug into UpdateTask")
-	if !checkId(rsp, req.UserId, req.Task.Id) {
+
+	if !checkId(&rsp, req.UserId, req.Task.Id) {
+		log.Println(rsp.Details)
 		return nil
 	}
-	task, ok := p.checkOwner(rsp, req.UserId, req.Task.Id)
+	task, ok := p.checkOwner(&rsp, req.UserId, req.Task.Id)
 	if !ok {
+		log.Println(rsp.Details)
 		return nil
 	}
 
 	if req.Task.Replica <= 0 || req.Task.Replica >= 100 {
-		pbError(rsp, ankr_default.ErrReplicaTooMany)
+		pbError(&rsp, ankr_default.ErrReplicaTooMany)
+		log.Println(rsp.Details)
 		return nil
 	}
 
 	if task.Status == common_proto.TaskStatus_CANCELLED ||
 		task.Status == common_proto.TaskStatus_DONE {
-		pbError(rsp, ankr_default.ErrStatusNotSupportOperation)
+		pbError(&rsp, ankr_default.ErrStatusNotSupportOperation)
+		log.Println(rsp.Details)
 		return nil
 	}
 
@@ -148,50 +179,56 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
-		rsp = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: err.Error()}
-		log.Println(rsp)
+		pbError(&rsp, err)
+		log.Println(rsp.Details)
 		return nil
 	}
 	// TODO: wait deamon notify
 	req.Task.Status = common_proto.TaskStatus_UPDATING
 	if err := p.db.UpdateTask(req.Task.Id, req.Task); err != nil {
-		pbError(rsp, err)
+		pbError(&rsp, err)
+		log.Println(rsp.Details)
 		return nil
 	}
 	return nil
 }
 
 func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
+
 	return nil
 }
 
-func pbError(rsp *common_proto.Error, err error) {
-	log.Println(err.Error())
-	rsp = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: err.Error()}
+func pbError(rsp **common_proto.Error, err error) {
+
+	if *rsp == nil {
+		*rsp = &common_proto.Error{}
+	}
+	(*rsp).Status = common_proto.Status_FAILURE
+	(*rsp).Details = err.Error()
 }
 
-func (p *TaskMgrHandler) checkOwner(rsp *common_proto.Error, userId int64, taskId string) (*common_proto.Task, bool) {
+func (p *TaskMgrHandler) checkOwner(rsp **common_proto.Error, userId int64, taskId string) (*common_proto.Task, bool) {
 	task, err := p.db.Get(taskId)
 	if err != nil {
-		rsp = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: err.Error()}
+		pbError(rsp, err)
 		return nil, false
 	}
 
 	if task.UserId != userId {
-		rsp = &common_proto.Error{Status: common_proto.Status_FAILURE, Details: ankr_default.ErrUserNotOwn.Error()}
+		pbError(rsp, ankr_default.ErrUserNotOwn)
 		return nil, false
 	}
 	return task, true
 }
 
-func checkId(rsp *common_proto.Error, userId int64, taskId string) bool {
+func checkId(rsp **common_proto.Error, userId int64, taskId string) bool {
 	if userId == 0 {
-		*rsp = common_proto.Error{Status: common_proto.Status_FAILURE, Details: ankr_default.ErrUserNotExist.Error()}
+		pbError(rsp, ankr_default.ErrUserNotExist)
 		return false
 	}
 
 	if taskId == "" {
-		*rsp = common_proto.Error{Status: common_proto.Status_FAILURE, Details: ankr_default.ErrUserNotOwn.Error()}
+		pbError(rsp, ankr_default.ErrUserNotOwn)
 		return false
 	}
 

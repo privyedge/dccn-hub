@@ -13,8 +13,6 @@ micro new github.com/Ankr-network/refactor/app_dccn_taskmgr --namespace=go.micro
 - publisher: publish the v1's task info to "topic.task.new, topic.task.cancel, topic.task.update"
 - subscriber: subscribe tasks's result from "topic.task.result"
 - handler: request handler
-- config: all configuration
-- proto: serve's interface
 
 - [Configuration](#configuration)
 - [Dependencies](#dependencies)
@@ -28,33 +26,26 @@ micro new github.com/Ankr-network/refactor/app_dccn_taskmgr --namespace=go.micro
 
 ## Dependencies
 
-`go get -v go.etcd.io/etcd`
+`brew install consul`
+`brew install rabbitmq`
+`go get -u -v github.com/micro/micro`
+`go get -u -v github.com/micro/go-micro`
+`go get -u -v github.com/micro/examples`
 Micro services depend on service discovery. The default is consul.
-
-```bash
-# install etcd
-brew install etcd
-
-# run etcd
-```
 
 ## Usage
 
 A Makefile is included for convenience
 
-Build the binary
+* Build the binary
 
-```bash
-make build
-```
+    $ make build
 
-Run the service
+* Run the service in local
 
-```bash
-./taskmgr-srv
-```
+    $ make local
 
-Build a docker image
+* Build a docker image
 
 ```bash
 make docker

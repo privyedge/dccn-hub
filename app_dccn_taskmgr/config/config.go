@@ -9,23 +9,16 @@ import (
 
 type Config struct {
 	DB dbcommon.Config
-
-	AppDcMgrSrvName         string
-	TopicTaskDeploy         string
-	TopicTaskStatusFeedback string
 }
 
 var Default = Config{
 	DB: dbcommon.Config{
 		Host:       "127.0.0.1:27017",
 		DB:         "dccn",
-		Collection: "user",
+		Collection: "task",
 		Timeout:    5,
 		PoolLimit:  4096,
 	},
-	AppDcMgrSrvName:         "go.micro.srv.v1.dcmgr",
-	TopicTaskDeploy:         "topic.task.deploy",
-	TopicTaskStatusFeedback: "topic.task.status.feedback",
 }
 
 func Load() (Config, error) {
@@ -51,16 +44,5 @@ func Load() (Config, error) {
 		}
 	}
 
-	if appDcMgrSrvName := os.Getenv("APP_DCMGR_SRV_NAME"); len(appDcMgrSrvName) != 0 {
-		Default.AppDcMgrSrvName = appDcMgrSrvName
-	}
-
-	if topicTaskDeploy := os.Getenv("TOPIC_TASK_DEPLOY"); len(topicTaskDeploy) != 0 {
-		Default.TopicTaskDeploy = topicTaskDeploy
-	}
-
-	if topicTaskStatusFeedback := os.Getenv("TOPIC_TASK_STATUS_FEEDBACK"); len(topicTaskStatusFeedback) != 0 {
-		Default.TopicTaskStatusFeedback = topicTaskStatusFeedback
-	}
 	return Default, nil
 }
