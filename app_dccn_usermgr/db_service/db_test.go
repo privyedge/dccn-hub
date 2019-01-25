@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	dbcommon "github.com/Ankr-network/dccn-common/db"
-	go_micro_srv_usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	go_micro_srv_usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 )
 
 func mockDB() (DBService, error) {
@@ -29,7 +29,6 @@ func TestDB_New(t *testing.T) {
 
 func mockUser() *go_micro_srv_usermgr.User {
 	return &go_micro_srv_usermgr.User{
-		Id:       1,
 		Name:     "user_test",
 		Nickname: "test",
 		Email:    "123@Gmail.com",
@@ -100,7 +99,6 @@ func TestDB_Update(t *testing.T) {
 	}
 
 	user.Nickname = "12345"
-	user.Id = 10
 	if err = db.Update(user); err != nil {
 		t.Fatal(err.Error())
 	}

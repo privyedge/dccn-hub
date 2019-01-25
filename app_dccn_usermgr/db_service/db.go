@@ -2,7 +2,7 @@ package dbservice
 
 import (
 	dbcommon "github.com/Ankr-network/dccn-common/db"
-	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -10,7 +10,7 @@ import (
 
 // mysql or mongodb. who is better.
 type DBService interface {
-	// Get get a user item by go_micro_srv_usermgr's email
+	// Get get a user item by go_micro_srv_user mgr's email
 	Get(email string) (*pb.User, error)
 	// Create Creates a new user item if not exits
 	Create(user *pb.User) error

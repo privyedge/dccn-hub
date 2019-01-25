@@ -5,9 +5,12 @@ import (
 	"log"
 	"strings"
 
-	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	dccnwrapper "github.com/Ankr-network/dccn-common/wrapper"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/token"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,57 +23,76 @@ func New(dbService dbservice.DBService, tokenService token.IToken) *UserHandler 
 	return &UserHandler{db: dbService, token: tokenService}
 }
 
-func (p *UserHandler) Get(ctx context.Context, email *pb.Email, user *pb.User) error {
-	log.Println("Debug Get user")
-	u, err := p.db.Get(strings.ToLower(email.Email))
-	if err != nil {
-		return err
-	}
-	*user = *u
+func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *common_proto.Error) error {
 
-	return err
-}
-
-func (p *UserHandler) Create(ctx context.Context, user *pb.User, rsp *pb.Response) error {
-	log.Println("Debug Create user")
+	log.Println("Debug Register")
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(err.Error())
-		return err
+		dccnwrapper.PbError(&rsp, err)
+		log.Println(rsp.Details)
+		return nil
 	}
 	user.Password = string(hashedPwd)
 	user.Email = strings.ToLower(user.Email)
-	return p.db.Create(user)
-}
-
-func (p *UserHandler) Login(ctx context.Context, req *pb.LoginRequest, user *pb.User) error {
-	log.Println("Debug Login")
-	user, err := p.db.Get(strings.ToLower(req.Email))
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-	user.Token, err = p.token.New(user)
-	if err != nil {
-		log.Println(err.Error())
-		return err
+	user.Id = uuid.New().String()
+	if err := p.db.Create(user); err != nil {
+		dccnwrapper.PbError(&rsp, err)
+		log.Println(rsp.Details)
+		return nil
 	}
 	return nil
 }
 
-func (p *UserHandler) NewToken(ctx context.Context, user *pb.User, rsp *pb.Token) error {
-	log.Println("Debug into NewToken")
-	user, err := p.db.Get(strings.ToLower(user.Email))
+func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
+
+	log.Println("Debug Login")
+	user, err := p.db.Get(strings.ToLower(req.Email))
 	if err != nil {
-		return err
+		dccnwrapper.PbError(&rsp.Error, err)
+		log.Println(rsp.Error.Details)
+		return nil
 	}
-
 	rsp.Token, err = p.token.New(user)
-
-	return err
+	if err != nil {
+		dccnwrapper.PbError(&rsp.Error, err)
+		log.Println(rsp.Error.Details)
+		return nil
+	}
+	return nil
 }
 
-func (p *UserHandler) VerifyToken(ctx context.Context, token *pb.Token, rsp *pb.Response) error {
+func (p *UserHandler) Logout(ctx context.Context, in *usermgr.LogoutRequest, out *common_proto.Error) error {
+	log.Println("Debug into Logout")
+	return nil
+}
+
+func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *usermgr.NewTokenResponse) error {
+
+	log.Println("Debug into NewToken")
+	req, err := p.db.Get(strings.ToLower(req.Email))
+	if err != nil {
+		dccnwrapper.PbError(&rsp.Error, err)
+		log.Println(rsp.Error.Details)
+		return nil
+	}
+
+	rsp.Token, err = p.token.New(req)
+	if err != nil {
+		dccnwrapper.PbError(&rsp.Error, err)
+		log.Println(rsp.Error.Details)
+		return nil
+	}
+
+	return nil
+}
+
+func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
+
 	log.Println("Debug into VerifyToken")
-	return p.token.Verify(token.Token)
+	if err := p.token.Verify(req.Token); err != nil {
+		dccnwrapper.PbError(&rsp, err)
+		log.Println(rsp.Details)
+		return nil
+	}
+	return nil
 }

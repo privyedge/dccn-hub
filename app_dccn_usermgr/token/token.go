@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
@@ -12,7 +12,7 @@ import (
 var secret = []byte("14444749c1ecc982cd0f91113db98211")
 
 type IToken interface {
-	New(user *pb.User) (string, error)
+	New(user *usermgr.User) (string, error)
 	Verify(tokenString string) error
 }
 
@@ -23,7 +23,7 @@ type Token struct {
 // UserPayload is our custom metadata, which will be hashed
 // and sent as the second segment in our JWT
 type UserPayload struct {
-	user *pb.User
+	user *usermgr.User
 	jwt.StandardClaims
 }
 
@@ -33,7 +33,7 @@ func New(activeTime int) *Token {
 }
 
 // New returns JWT string.
-func (p *Token) New(user *pb.User) (string, error) {
+func (p *Token) New(user *usermgr.User) (string, error) {
 
 	expireTime := time.Now().Add(time.Minute * time.Duration(p.activeTime)).Unix()
 

@@ -34,6 +34,5 @@ func (p *TaskStatusFeedback) UpdateTaskByFeedback(ctx context.Context, event *co
 		update = bson.M{"$set": bson.M{"status": event.GetTaskFeedback().Status}}
 	}
 
-	log.Println(event.GetTaskFeedback().TaskId)
 	return p.db.Update(event.GetTaskFeedback().TaskId, update)
 }

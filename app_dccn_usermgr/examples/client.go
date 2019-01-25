@@ -3,36 +3,22 @@ package main
 import (
 	"context"
 	"log"
-	"strings"
 
-	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	dccnwrapper "github.com/Ankr-network/dccn-common/wrapper"
+
 	grpc "github.com/micro/go-grpc"
-
-	"golang.org/x/crypto/bcrypt"
 )
-
-func isEqual(origin, dbUser *pb.User) bool {
-	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(origin.Password)); err != nil {
-		log.Println(err.Error())
-		return false
-	}
-	return strings.ToLower(origin.Email) == dbUser.Email &&
-		origin.Name == dbUser.Name &&
-		origin.Nickname == dbUser.Nickname &&
-		origin.Id == dbUser.Id &&
-		origin.Balance == dbUser.Balance &&
-		origin.IsDeleted == dbUser.IsDeleted
-}
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("app.dccn.v1.usermgr client service start...")
 	srv := grpc.NewService()
 
 	srv.Init()
 
 	user := &pb.User{
-		Id:       1,
 		Name:     "user_test",
 		Nickname: "test",
 		Email:    `123@Gmail.com`,
@@ -40,46 +26,36 @@ func main() {
 		Balance:  99,
 	}
 
-	cli := pb.NewUserMgrService("go.micro.srv.v1.usermgr", srv.Client())
-	if _, err := cli.Create(context.Background(), user); err != nil {
-		log.Fatal(err.Error())
+	cli := pb.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
+	if rsp, _ := cli.Register(context.Background(), user); dccnwrapper.IsSuccess("Register", rsp) {
+		log.Println("Register Ok")
 	}
 
-	u, err := cli.Get(context.Background(), &pb.Email{Email: user.Email})
-	if err != nil {
-		log.Fatal(err.Error())
+	var token string
+	if rsp, _ := cli.Login(context.TODO(), &pb.LoginRequest{Email: user.Email, Password: user.Password}); dccnwrapper.IsSuccess("Login", rsp.Error) {
+		log.Printf("login Success: %s\n", rsp.Token)
+		token = rsp.Token
 	}
 
-	if !isEqual(user, u) {
-		log.Fatalf("want: %#v\n, but %#v\n", user, u)
+	// Verify Login Token
+	if rsp, _ := cli.VerifyToken(context.TODO(), &pb.Token{Token: token}); dccnwrapper.IsSuccess("VerifyToken", rsp) {
+		log.Println("Verify Login Token Success")
 	}
 
-	if u, err := cli.Login(context.TODO(), &pb.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Printf("login feedback: %+v", u.Token)
+	if rsp, _ := cli.NewToken(context.TODO(), user); dccnwrapper.IsSuccess("NewToken", rsp.Error) {
+		log.Println("NewToken Success: ", rsp.Token)
+		token = rsp.Token
 	}
 
-	token, err := cli.NewToken(context.TODO(), user)
-	if err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Println("Receive Token: ", token)
-	}
-
-	// Verify same Password
-	_, err = cli.VerifyToken(context.TODO(), &pb.Token{Token: token.Token})
-	if err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Println("VerifyToken OK")
+	// Verify NewToken
+	if rsp, _ := cli.VerifyToken(context.TODO(), &pb.Token{Token: token}); dccnwrapper.IsSuccess("VerifyToken", rsp) {
+		log.Println("Verify Login Token Success")
 	}
 
 	// Verify different Password
-	_, err = cli.VerifyToken(context.TODO(), &pb.Token{Token: "fyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NDcyODA4NTIsImlzcyI6ImFwcF9kY2NuX3VzZXJtZ3IifQ.5k3bMjtryTPDZ_v_-_3tgUXEba6eqvN56fa2P7y3wj9"})
-	if err != nil {
-		log.Println("Invalid OK.")
-	} else {
-		log.Fatal("VerifyToken Failed.")
+	if rsp, _ := cli.VerifyToken(context.TODO(), &pb.Token{Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fyJleHAiOjE1NDgzNzQ5MTksImlzcyI6ImFua3JfbmV0d29yayJ9.crx45JXV6nXiWZtIWLfsMLjA24B2D0_8NYTpujBKilA"}); rsp.Status == common_proto.Status_FAILURE {
+		log.Println("Token invalid")
 	}
+
+	log.Println("END")
 }

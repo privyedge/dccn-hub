@@ -5,7 +5,7 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1"
+	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 
 	"github.com/micro/go-micro/client"
 )
@@ -14,8 +14,8 @@ type ApiTask struct {
 	api taskmgr.TaskMgrService
 }
 
-func (p *ApiTask) AddTask(ctx context.Context, req *taskmgr.AddTaskRequest, rsp *taskmgr.AddTaskResponse) error {
-	out, _ := p.api.AddTask(ctx, req)
+func (p *ApiTask) CreateTask(ctx context.Context, req *taskmgr.CreateTaskRequest, rsp *taskmgr.CreateTaskResponse) error {
+	out, _ := p.api.CreateTask(ctx, req)
 	*rsp = *out
 	return nil
 }
@@ -23,6 +23,7 @@ func (p *ApiTask) AddTask(ctx context.Context, req *taskmgr.AddTaskRequest, rsp 
 func (p *ApiTask) TaskList(ctx context.Context, req *taskmgr.ID, rsp *taskmgr.TaskListResponse) error {
 	out, _ := p.api.TaskList(ctx, req)
 	*rsp = *out
+	rsp.Tasks = append(rsp.Tasks, out.Tasks...)
 	return nil
 }
 
@@ -52,6 +53,6 @@ func (p *ApiTask) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest
 
 func NewApiTask(c client.Client) *ApiTask {
 	return &ApiTask{
-		api: taskmgr.NewTaskMgrService(ankr_default.DcMgrRegistryServerName, c),
+		api: taskmgr.NewTaskMgrService(ankr_default.TaskMgrRegistryServerName, c),
 	}
 }

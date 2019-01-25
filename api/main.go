@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/api/apihandler"
@@ -57,10 +56,10 @@ func startHandler(db dbservice.DBService) {
 		log.Fatal(err.Error())
 	}
 
-	// Register Data Center Handler
-	if err := dcmgr.RegisterDCStreamerHandler(srv.Server(), apihandler.NewApiDataCenter(srv.Client())); err != nil {
-		log.Fatal(err.Error())
-	}
+	// // Register Data Center Handler
+	// if err := dcmgr.RegisterDCStreamerHandler(srv.Server(), apihandler.NewApiDataCenter(srv.Client())); err != nil {
+	// 	log.Fatal(err.Error())
+	// }
 
 	// Run srv
 	if err := srv.Run(); err != nil {

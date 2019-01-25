@@ -12,7 +12,7 @@ type Config struct {
 	TokenActiveTime int             `json:"token_active_time"`
 }
 
-var Default Config = Config{
+var Default = Config{
 	DB: dbcommon.Config{
 		Host:       "127.0.0.1:27017",
 		DB:         "dccn",

@@ -9,7 +9,6 @@ build:
 
 run: build
 	docker run -d \
-		-p 50052 \
 		$(MICRO_ENV) \
 		$(PROGRAM_ENV) \
 		app_dccn_dcmgr
@@ -37,7 +36,7 @@ devtools:
 
 define MICRO_ENV
 	MICRO_REGISTRY="mdns" \
-	MICRO_SERVER_ADDRESS="127.0.0.1:50052" \
+	MICRO_BROKER="rabbitmq" \
 	MICRO_SERVER_VERSION="v1.0" \
 	MICRO_REGISTER_TTL=15 \
 	MICRO_REGISTER_INTERVAL=15

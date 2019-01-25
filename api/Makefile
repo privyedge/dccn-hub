@@ -5,22 +5,20 @@ GOPATH:=$(shell go env GOPATH)
 all: run test deploy devtools
 
 build:
-	docker build . -t app_dccn_dcmgr:latest
+	docker build . -t dccn-api:latest
 
 run: build
 	docker run -d \
-		-p 50052 \
+		-p 50051 \
 		$(MICRO_ENV) \
-		$(PROGRAM_ENV) \
 		app_dccn_dcmgr
 
 local:
 	$(MICRO_ENV) \
-	$(PROGRAM_ENV) \
 	go run main.go
 
 clean:
-	rm app_dccn_dcmgr
+	rm api
 
 test:
 	go test -v ./... -cover -race
@@ -34,20 +32,11 @@ devtools:
 	@type "protoc" 2> /dev/null || echo 'Please install protoc'
 	@type "protoc-gen-micro" 2> /dev/null || echo 'Please install protoc-gen-micro'
 
-
 define MICRO_ENV
 	MICRO_REGISTRY="mdns" \
-	MICRO_SERVER_ADDRESS="127.0.0.1:50052" \
+	MICRO_SERVER_ADDRESS="127.0.0.1:50051" \
 	MICRO_SERVER_VERSION="v1.0" \
 	MICRO_REGISTER_TTL=15 \
 	MICRO_REGISTER_INTERVAL=15
-endef
-
-define PROGRAM_ENV
-	DB_HOST="127.0.0.1:27017" \
-	DB_NAME="dccn" \
-	DB_COLLECTION="dc" \
-	DB_TIMEOUT=5 \
-	DB_POOL_LIMIT=4096
 endef
 

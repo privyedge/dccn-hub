@@ -74,6 +74,7 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 	}
 	req.Task.Status = common_proto.TaskStatus_START
 	req.Task.Id = uuid.New()
+	rsp.TaskId = req.Task.Id
 	if err := p.db.Create(req.Task); err != nil {
 		pbError(&rsp.Error, err)
 		log.Println(rsp.Error.Details)
@@ -90,23 +91,20 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 		log.Println(rsp.Details)
 		return nil
 	}
-	log.Println("0")
 	task, ok := p.checkOwner(&rsp, req.UserId, req.TaskId)
 	if !ok {
 		log.Println(rsp.Details)
 		return nil
 	}
-	log.Println("1")
 
 	if task.Status != common_proto.TaskStatus_RUNNING &&
 		task.Status != common_proto.TaskStatus_START &&
 		task.Status != common_proto.TaskStatus_UPDATING {
-		pbError(&rsp, ankr_default.ErrStatusNotSupportOperation)
+		pbError(&rsp, fmt.Errorf("%s: %s", ankr_default.ErrStatusNotSupportOperation, task.Status))
 		log.Println(rsp.Details)
 		return nil
 	}
 
-	log.Println("2")
 	event := common_proto.Event{
 		EventType: common_proto.Operation_TASK_CANCEL,
 		OpMessage: &common_proto.Event_Task{Task: task},

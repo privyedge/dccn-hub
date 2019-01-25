@@ -24,7 +24,9 @@ func (p *DcMgrHandler) checkHealth() {
 	for {
 		for dc, stream := range p.dcStreams {
 			if p.send(stream, &common_proto.Event{EventType: common_proto.Operation_HEARTBEAT}) == false {
+				log.Printf("%s %s\n", dc, ankr_default.ErrConnection)
 				delete(p.dcStreams, dc)
+				log.Println(stream.Close())
 				log.Println(p.db.UpdateStatus(dc, common_proto.Status_UNAVALIABLE))
 			}
 		}
@@ -34,6 +36,7 @@ func (p *DcMgrHandler) checkHealth() {
 
 func (p *DcMgrHandler) updateDataCenter(dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) error {
 	if dc.Id == "" {
+		// data center dose not exist, register it
 		dc.Id = uuid.New().String()
 		if err := p.db.Create(dc); err != nil {
 			return err

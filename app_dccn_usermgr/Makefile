@@ -4,13 +4,6 @@ GOPATH:=$(shell go env GOPATH)
 
 all: run test deploy devtools
 
-proto:
-	@protoc -I. \
-	    -I${GOPATH}/src:. \
-	    --micro_out=. \
-	    --go_out=. \
-	    proto/v1/usermgr.proto
-
 build: proto
 	docker build . -t app_dccn_usermgr:v1.0
 
@@ -44,7 +37,6 @@ devtools:
 
 define MICRO_ENV
 	MICRO_REGISTRY=mdns \
-	MICRO_SERVER_NAME="go.micro.srv.v1.usermgr" \
 	MICRO_SERVER_VERSION="v1.0" \
 	MICRO_REGISTER_TTL=15 \
 	MICRO_REGISTER_INTERVAL=15
@@ -55,5 +47,6 @@ define PROGRAM_ENV
 	DB_NAME="dccn" \
 	DB_COLLECTION="user" \
 	DB_TIMEOUT=5 \
-	DB_POOL_LIMIT=4096
+	DB_POOL_LIMIT=4096 \
+	TOKEN_ACTIVE_TIME=20
 endef

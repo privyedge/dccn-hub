@@ -3,7 +3,10 @@ package main
 import (
 	"log"
 
-	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	micro "github.com/micro/go-micro"
+
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/handler"
@@ -41,13 +44,15 @@ func Init() {
 
 func startHandler(db dbservice.DBService) {
 	// New Service
-	srv := grpc.NewService()
+	srv := grpc.NewService(
+		micro.Name(ankr_default.UserMgrRegistryServerName),
+	)
 
 	// Initialise service
 	srv.Init()
 
 	// Register Handler
-	if err := pb.RegisterUserMgrHandler(srv.Server(), handler.New(db, token.New(conf.TokenActiveTime))); err != nil {
+	if err := usermgr.RegisterUserMgrHandler(srv.Server(), handler.New(db, token.New(conf.TokenActiveTime))); err != nil {
 		log.Fatal(err.Error())
 	}
 

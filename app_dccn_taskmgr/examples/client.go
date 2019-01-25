@@ -58,6 +58,7 @@ func main() {
 			log.Println(rsp.Task.Status)
 			log.Fatalf("CancelTask %s operation does not take effect", cancelTask.Id)
 		}
+		log.Println("CancelTask takes effect")
 	}
 
 	// UpdateTask
@@ -68,10 +69,11 @@ func main() {
 
 	// Verify updated task
 	if rsp, _ := cl.TaskDetail(tokenContext, &taskmgr.Request{UserId: cancelTask.UserId, TaskId: cancelTask.Id}); testCommon.IsSuccess("UpdateTask Verify", rsp.Error) {
-		if !testCommon.IsEqual(rsp.Task, cancelTask) {
+		if !testCommon.IsEqual(rsp.Task, cancelTask) || rsp.Task.Status != common_proto.TaskStatus_UPDATING {
+			log.Println(rsp.Task)
+			log.Println(cancelTask)
 			log.Fatal("UpdateTask operation does not take effect")
-		} else {
-			log.Println("TaskDetail Ok")
 		}
+		log.Println("UpdateTask takes effect")
 	}
 }

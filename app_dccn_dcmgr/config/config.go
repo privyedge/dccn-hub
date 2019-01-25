@@ -9,8 +9,6 @@ import (
 
 type Config struct {
 	DB dbcommon.Config
-
-	AppTaskMgrSrvName string
 }
 
 var Default = Config{

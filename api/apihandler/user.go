@@ -6,39 +6,40 @@ import (
 	"github.com/micro/go-micro/client"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
-	"github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 )
 
 type ApiUser struct {
 	api usermgr.UserMgrService
 }
 
-func (p *ApiUser) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.User) error {
+func (p *ApiUser) Register(ctx context.Context, req *usermgr.User, rsp *common_proto.Error) error {
+	out, _ := p.api.Register(ctx, req)
+	*rsp = *out
+	return nil
+}
+
+func (p *ApiUser) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
 	out, _ := p.api.Login(ctx, req)
 	*rsp = *out
 	return nil
 }
 
-func (p *ApiUser) Create(ctx context.Context, req *usermgr.User, rsp *usermgr.Response) error {
-	out, _ := p.api.Login(ctx, req)
+func (p *ApiUser) Logout(ctx context.Context, req *usermgr.LogoutRequest, rsp *common_proto.Error) error {
+	out, _ := p.api.Logout(ctx, req)
 	*rsp = *out
 	return nil
 }
 
-func (p *ApiUser) Get(ctx context.Context, req *usermgr.Email, rsp *usermgr.User) error {
-	out, _ := p.api.Login(ctx, req)
+func (p *ApiUser) NewToken(ctx context.Context, req *usermgr.User, rsp *usermgr.NewTokenResponse) error {
+	out, _ := p.api.NewToken(ctx, req)
 	*rsp = *out
 	return nil
 }
 
-func (p *ApiUser) NewToken(ctx context.Context, req *usermgr.User, rsp *usermgr.Token) error {
-	out, _ := p.api.Login(ctx, req)
-	*rsp = *out
-	return nil
-}
-
-func (p *ApiUser) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *usermgr.Response) error {
-	out, _ := p.api.Login(ctx, req)
+func (p *ApiUser) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
+	out, _ := p.api.VerifyToken(ctx, req)
 	*rsp = *out
 	return nil
 }

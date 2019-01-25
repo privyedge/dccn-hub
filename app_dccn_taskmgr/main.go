@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
-
 	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
+
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
 
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 
