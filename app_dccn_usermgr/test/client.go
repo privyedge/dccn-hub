@@ -4,30 +4,24 @@ import (
 	"context"
 	"log"
 
-	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1"
+	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	grpc "github.com/micro/go-grpc"
 )
 
-func createUser(cli pb.UserMgrService) error {
-	if _, err := cli.Create(context.Background(), &pb.User{
+func mockUser() *pb.User {
+	return &pb.User{
 		Nickname: "xiaoming",
 		Password: "1234567",
 		Email:    "123@gmail.com",
-	}); err != nil {
+	}
+}
+
+func createUser(cli pb.UserMgrService) error {
+	if _, err := cli.Register(context.Background(), mockUser()); err != nil {
 		return err
 	}
 	log.Println("Create User success")
 	return nil
-}
-
-func getUser(cli pb.UserMgrService) (*pb.User, error) {
-	user, err := cli.GetByEmail(context.Background(), &pb.Email{Email: "123@gmail.com"})
-	if err != nil {
-		return nil, err
-	}
-
-	log.Printf("Get User By Email: %+v", user)
-	return user, nil
 }
 
 func newToken(cli pb.UserMgrService, user *pb.User) (string, error) {
@@ -60,13 +54,8 @@ func main() {
 		log.Println(err.Error())
 		return
 	}
-	user, err := getUser(cli)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
 
-	tokenString, err := newToken(cli, user)
+	tokenString, err := newToken(cli, mockUser())
 	if err != nil {
 		log.Println(err.Error())
 		return

@@ -15,6 +15,7 @@ run: build
 
 local:
 	$(MICRO_ENV) \
+	$(PROGRAM_ENV) \
 	go run main.go
 
 clean:
@@ -38,5 +39,13 @@ define MICRO_ENV
 	MICRO_SERVER_VERSION="v1.0" \
 	MICRO_REGISTER_TTL=15 \
 	MICRO_REGISTER_INTERVAL=15
+endef
+
+define PROGRAM_ENV
+	DB_HOST="127.0.0.1:27017" \
+	DB_NAME="dccn" \
+	DB_COLLECTION="dc" \
+	DB_TIMEOUT=5 \
+	DB_POOL_LIMIT=4096
 endef
 

@@ -1,0 +1,77 @@
+# docker-compose.yaml
+version: '3.7'
+
+services:
+
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:management
+    container_name: dccn-broker-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  datastore:
+    image: mongo:latest
+    container_name: dccn-mongo
+    ports:
+      - "27017:27017"
+
+  consul:
+    image: consul:latest
+    container_name: dccn-registry-consul
+    command: consul agent -dev -log-level=warn -ui -client=0.0.0.0
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+
+  micro:
+    image: microhq/micro:latest
+    command: --enable_stats --register_interval=5 --register_ttl=10 --register_interval=10 api --handler=rpc
+    links:
+      - consul
+    ports:
+      - "8080:8080"
+
+  taskmgr:
+    image: app_dccn_taskmgr
+    container_name: app_dccn_taskmgr
+    build:
+      context: .
+      dockerfile: ./dockerfile/task.Dockerfile
+    ports:
+      - 50053:50053
+    environment:
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      MICRO_SERVER_ADDRESS: :50053
+      MICRO_BROKER: rabbitmq
+      MICRO_BROKER_ADDRESS: amqp://guest:guest@rabbit:5672
+      MICRO_SERVER_VERSION: v1.0
+      MICRO_REGISTER_TTL: 15
+      MICRO_REGISTER_INTERVAL: 15
+      DB_HOST: datastore:27017
+      DB_NAME: dccn
+      DB_COLLECTION: task
+      DB_TIMEOUT: 5
+      DB_POOL_LIMIT: 4096
+    links:
+      - rabbit
+      - datastore
+      - consul
+
+  taskmgr-client:
+    image: app_dccn_taskmgr_client
+    container_name: app_dccn_taskmgr_client
+    build:
+      context: .
+      dockerfile: ./dockerfile/task_client.Dockerfile
+    environment:
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+    links:
+      - taskmgr
+      - consul
+

@@ -7,14 +7,13 @@ import (
 	micro "github.com/micro/go-micro"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
-
-	_ "github.com/micro/go-plugins/broker/rabbitmq"
-
 	pb "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_taskmgr/subscriber"
+
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 var (
