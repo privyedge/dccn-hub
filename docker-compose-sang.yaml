@@ -63,7 +63,7 @@ services:
     container_name: app-dccn-usermgr
     build:
       context: .
-      dockerfile: ./dockerfile/user.Dockerfile
+      dockerfile: ./dockerfile/task.Dockerfile
     environment:
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul:8500
@@ -79,28 +79,17 @@ services:
       - datastore
       - consul
 
-  email:
-    image: app-dccn-email
-    container_name: app-dccn-email
+  taskmgr-client:
+    image: app-dccn-taskmgr-client
+    container_name: app-dccn-taskmgr-client
     build:
       context: .
-      dockerfile: ./dockerfile/email.Dockerfile
+      dockerfile: ./dockerfile/task_client.Dockerfile
     environment:
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul:8500
-      MICRO_BROKER: rabbitmq
-      MICRO_BROKER_ADDRESS: amqp://guest:guest@broker:5672
-      MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
-      MICRO_REGISTER_INTERVAL: 15
-      DB_HOST: datastore:27017
-      DB_NAME: dccn
-      DB_COLLECTION: user
-      DB_TIMEOUT: 5
-      DB_POOL_LIMIT: 4096
     links:
-      - broker
-      - datastore
+      - taskmgr
       - consul
 
   api:
@@ -131,3 +120,17 @@ services:
       - consul
       - taskmgr
 
+  api-taskmgr-client:
+    image: api-taskmgr-client
+    container_name: api-taskmgr-client
+    build:
+      context: .
+      dockerfile: ./dockerfile/api_task_client.Dockerfile
+    environment:
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      API_ADDRESS: "api:50051"
+    links:
+      - api
+      - taskmgr
+      - consul

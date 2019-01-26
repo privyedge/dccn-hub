@@ -10,6 +10,7 @@ import (
 
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 
+	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	"github.com/Ankr-network/dccn-hub/api/apihandler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/config"
@@ -76,8 +77,13 @@ func startHandler() {
 		log.Fatal(err.Error())
 	}
 
-	// Register Handler
+	// Register Dc Manager Handler
 	if err := dcmgr.RegisterDCStreamerHandler(srv.Server(), dcHandler); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Register Email Handler
+	if err := mail.RegisterMailHandler(srv.Server(), apihandler.NewApiEmail(srv.Client())); err != nil {
 		log.Fatal(err.Error())
 	}
 

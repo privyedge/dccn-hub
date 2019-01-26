@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
-
 	gomail "gopkg.in/gomail.v2"
+
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 	passwd = "espgstzviouubfjh"
 )
 
-func SendMail(e *mail.MailEvent) error {
+func SendMail(e *common_proto.MailEvent) error {
 	m := gomail.NewMessage()
 	m.SetAddressHeader("From", sender, "Ankr Network")
 	m.SetHeader("To",
@@ -31,7 +31,7 @@ func SendMail(e *mail.MailEvent) error {
 	return nil
 }
 
-func Handler(ctx context.Context, e *mail.MailEvent) error {
+func Handler(ctx context.Context, e *common_proto.MailEvent) error {
 	log.Println("Function Received message: ", e)
 
 	return SendMail(e)

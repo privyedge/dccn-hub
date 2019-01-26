@@ -10,6 +10,8 @@ import (
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app_dccn_email/handler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_email/subscriber"
+
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 func main() {
