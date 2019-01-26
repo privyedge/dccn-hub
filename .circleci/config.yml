@@ -37,8 +37,8 @@ jobs:
               BRANCH_NAME="feat"
             fi
 
-            declare -a component_arr=("dccn-hub-api-listener" "dccn-hub-task-manager" "dccn-hub-k8s-adapter")
-            declare -a dockerfile_arr=("API_Listener.dockerfile" "TaskManager.dockerfile" "K8s_Adapter.dockerfile")
+            declare -a component_arr=("dccn-hub-taskmgr" "dccn-hub-api" "dccn-hub-usermgr")
+            declare -a dockerfile_arr=("task" "api" "user")
             if [[ (${#component_arr[@]} == ${#dockerfile_arr[@]}) ]]
             then
               arrlen=${#component_arr[@]}
