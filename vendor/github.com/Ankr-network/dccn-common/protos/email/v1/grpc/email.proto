@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package mail;
+
+import "common/event.proto";
+import "common/error.proto";
+
+service Mail {
+	rpc Send(common.proto.MailEvent) returns (common.proto.Error) {}
+}
