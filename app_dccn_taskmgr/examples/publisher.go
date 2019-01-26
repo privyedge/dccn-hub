@@ -24,7 +24,7 @@ func sendEv(taskId string, p micro.Publisher) {
 		EventType: common_proto.Operation_TASK_CANCEL,
 		OpMessage: &common_proto.Event_TaskFeedback{TaskFeedback: &common_proto.TaskFeedback{
 			TaskId: taskId,
-			Status: common_proto.TaskStatus_CANCELL_FAILED,
+			Status: common_proto.TaskStatus_CANCEL_FAILED,
 		}},
 	}
 
@@ -54,8 +54,8 @@ func main() {
 		log.Println("CreateTask Ok")
 	}
 
-	userTasks := []*common_proto.Task{}
-	if rsp, _ := cl.TaskList(context.TODO(), &taskmgr.ID{UserId: 1}); testCommon.IsSuccess("TaskList", rsp.Error) {
+	var userTasks []*common_proto.Task
+	if rsp, _ := cl.TaskList(context.TODO(), &taskmgr.ID{UserId: "1"}); testCommon.IsSuccess("TaskList", rsp.Error) {
 		userTasks = append(userTasks, rsp.Tasks...)
 		log.Println("TaskList Ok")
 	}
@@ -74,7 +74,7 @@ func main() {
 
 	// Verify publish event
 	if rsp, _ := cl.TaskDetail(context.TODO(), &taskmgr.Request{UserId: pubTask.UserId, TaskId: pubTask.Id}); testCommon.IsSuccess("UpdateTask Verify", rsp.Error) {
-		if rsp.Task.Status != common_proto.TaskStatus_CANCELL_FAILED {
+		if rsp.Task.Status != common_proto.TaskStatus_CANCEL_FAILED {
 			log.Fatal("UpdateTaskByFeedback do not task effect")
 		} else {
 			log.Println("TaskDetail Ok")

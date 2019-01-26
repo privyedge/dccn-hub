@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"google.golang.org/grpc"
 
@@ -13,8 +14,13 @@ import (
 	apiCommon "github.com/Ankr-network/dccn-hub/api/examples/common"
 )
 
-var addr = ":50051"
+var addr string
 var token = "token"
+
+func init() {
+	addr = os.Getenv("API_ADDRESS")
+	log.Println("API ADDRESS: ", addr)
+}
 
 func main() {
 
@@ -36,14 +42,18 @@ func main() {
 	})
 
 	tasks := apiCommon.MockTasks()
+	log.Println("Test CreateTask")
 	for i := range tasks {
+		log.Println("Debug CreateTask ", i)
 		if rsp, _ := cl.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: tasks[i].UserId, Task: &tasks[i]}); apiCommon.IsSuccess("CreateTask", rsp.Error) {
 			log.Println("CreateTask Ok")
 		}
+		return
 	}
 
-	userTasks := []*common_proto.Task{}
-	if rsp, _ := cl.TaskList(tokenContext, &taskmgr.ID{UserId: 1}); apiCommon.IsSuccess("TaskList", rsp.Error) {
+	log.Println("Test TaskList")
+	var userTasks []*common_proto.Task
+	if rsp, _ := cl.TaskList(tokenContext, &taskmgr.ID{UserId: "1"}); apiCommon.IsSuccess("TaskList", rsp.Error) {
 		userTasks = append(userTasks, rsp.Tasks...)
 		log.Println("TaskList Ok")
 	}
@@ -54,14 +64,16 @@ func main() {
 
 	// CancelTask
 	cancelTask := userTasks[0]
+	log.Println("Test CancelTask")
 	if rsp, _ := cl.CancelTask(tokenContext, &taskmgr.Request{UserId: cancelTask.UserId, TaskId: cancelTask.Id}); apiCommon.IsSuccess("CancelTask", rsp) {
 		log.Println("CancelTask Ok")
 	}
 
 	// Verify Canceled task
+	log.Println("Test TaskDetail")
 	if rsp, _ := cl.TaskDetail(tokenContext, &taskmgr.Request{UserId: cancelTask.UserId, TaskId: cancelTask.Id}); apiCommon.IsSuccess("CancelTask Verify", rsp.Error) {
 		log.Println("TaskDetail Ok")
-		if rsp.Task.Status != common_proto.TaskStatus_CANCELL {
+		if rsp.Task.Status != common_proto.TaskStatus_CANCEL {
 			log.Println(rsp.Task.Status)
 			log.Fatalf("CancelTask %s operation does not take effect", cancelTask.Id)
 		}

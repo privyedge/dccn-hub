@@ -7,14 +7,15 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
+
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+
 	"github.com/Ankr-network/dccn-hub/api/apihandler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_dcmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app_dccn_usermgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app_dccn_usermgr/db_service"
 
-	grpc "github.com/micro/go-grpc"
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 var (
@@ -31,7 +32,7 @@ func main() {
 	}
 	defer db.Close()
 
-	startHandler(db)
+	startHandler()
 }
 
 // Init starts handler to listen.
@@ -44,17 +45,20 @@ func Init() {
 	log.Printf("Load config %+v\n", conf)
 }
 
-func startHandler(db dbservice.DBService) {
+func startHandler() {
 	// New Service
-	srv := grpc.NewService()
+	// srv := grpc.NewService()
+	srv := micro.NewService()
+
+	// reflection.Register()
 
 	// Initialise service
 	srv.Init()
 
 	// Register User Handler
-	if err := usermgr.RegisterUserMgrHandler(srv.Server(), apihandler.NewApiUser(srv.Client())); err != nil {
-		log.Fatal(err.Error())
-	}
+	// if err := usermgr.RegisterUserMgrHandler(srv.Server(), apihandler.NewApiUser(srv.Client())); err != nil {
+	// 	log.Fatal(err.Error())
+	// }
 
 	// Register Task Handler
 	if err := taskmgr.RegisterTaskMgrHandler(srv.Server(), apihandler.NewApiTask(srv.Client())); err != nil {

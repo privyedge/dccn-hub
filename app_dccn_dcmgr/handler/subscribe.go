@@ -10,7 +10,7 @@ import (
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 )
 
-func (p *DcMgrHandler) selectFreeDataCenter() dcmgr.DCStreamer_ServerStreamStream {
+func (p *DcMgrHandler) selectFreeDataCenter() (dcmgr.DCStreamer_ServerStreamStream, error) {
 	dcs := make([]string, 0, len(p.dcStreams))
 	var i = 0
 	for dc := range p.dcStreams {
@@ -18,8 +18,11 @@ func (p *DcMgrHandler) selectFreeDataCenter() dcmgr.DCStreamer_ServerStreamStrea
 		i++
 	}
 
+	if len(dcs) <= 0 {
+		return nil, ankr_default.ErrNoAvailableDataCenter
+	}
 	randIndex := rand.Intn(len(dcs))
-	return p.dcStreams[dcs[randIndex]]
+	return p.dcStreams[dcs[randIndex]], nil
 }
 
 // UpdateTaskByFeedback receives task result from data center, returns to v1
@@ -28,7 +31,10 @@ func (p *DcMgrHandler) selectFreeDataCenter() dcmgr.DCStreamer_ServerStreamStrea
 func (p *DcMgrHandler) UpdateTaskByFeedback(ctx context.Context, event *common_proto.Event) error {
 	switch event.EventType {
 	case common_proto.Operation_TASK_CREATE, common_proto.Operation_TASK_CANCEL, common_proto.Operation_TASK_UPDATE:
-		stream := p.selectFreeDataCenter()
+		stream, err := p.selectFreeDataCenter()
+		if err != nil {
+			return err
+		}
 		if !p.send(stream, event) {
 			log.Printf("%s: %v", ankr_default.ErrSyncTaskInfo.Error(), *event)
 			return ankr_default.ErrSyncTaskInfo

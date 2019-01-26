@@ -14,7 +14,7 @@ type DBService interface {
 	// Get gets a task item by taskmgr's id.
 	Get(id string) (*common_proto.Task, error)
 	// GetAll gets all task related to user id.
-	GetAll(userId int64) (*[]*common_proto.Task, error)
+	GetAll(userId string) (*[]*common_proto.Task, error)
 	// GetByEventId gets task by event id.
 	GetByEventId(eventId string) (task *[]*common_proto.Task, err error)
 	// Cancel sets task status CANCEL
@@ -67,7 +67,7 @@ func (p *DB) Get(taskId string) (*common_proto.Task, error) {
 	return &task, err
 }
 
-func (p *DB) GetAll(userId int64) (*[]*common_proto.Task, error) {
+func (p *DB) GetAll(userId string) (*[]*common_proto.Task, error) {
 	session := p.session.Clone()
 	defer session.Close()
 

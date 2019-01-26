@@ -27,7 +27,7 @@ func (p *DcMgrHandler) checkHealth() {
 				log.Printf("%s %s\n", dc, ankr_default.ErrConnection)
 				delete(p.dcStreams, dc)
 				log.Println(stream.Close())
-				log.Println(p.db.UpdateStatus(dc, common_proto.Status_UNAVALIABLE))
+				log.Println(p.db.UpdateStatus(dc, common_proto.Status_UNAVAILABLE))
 			}
 		}
 		time.Sleep(time.Second * time.Duration(ankr_default.HeartBeatInterval))

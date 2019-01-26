@@ -50,13 +50,14 @@ func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.Request, r
 
 func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTaskRequest, rsp *taskmgr.CreateTaskResponse) error {
 
-	if req.UserId == 0 {
+	log.Println("Debug into CreateTask")
+	if req.UserId == "" {
 		pbError(&rsp.Error, ankr_default.ErrUserNotExist)
 		log.Println(rsp.Error.Details)
 		return nil
 	}
 
-	if req.Task.Replica <= 0 || req.Task.Replica >= 100 {
+	if req.Task.Replica < 0 || req.Task.Replica >= 100 {
 		pbError(&rsp.Error, ankr_default.ErrReplicaTooMany)
 		log.Println(rsp.Error.Details)
 		return nil
@@ -81,11 +82,14 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		return nil
 	}
 
+	rsp.Error = &common_proto.Error{}
+
 	return nil
 }
 
 // Must return nil for gRPC handler
 func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
+
 	log.Println("Debug into CancelTask")
 	if !checkId(&rsp, req.UserId, req.TaskId) {
 		log.Println(rsp.Details)
@@ -116,7 +120,7 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 		return nil
 	}
 
-	if err := p.db.Update(task.Id, bson.M{"$set": bson.M{"status": common_proto.TaskStatus_CANCELL}}); err != nil {
+	if err := p.db.Update(task.Id, bson.M{"$set": bson.M{"status": common_proto.TaskStatus_CANCEL}}); err != nil {
 		pbError(&rsp, err)
 		log.Println(rsp.Details)
 		return nil
@@ -126,9 +130,10 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 }
 
 func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.ID, rsp *taskmgr.TaskListResponse) error {
+
 	log.Println("Debug into TaskList")
 
-	if req.UserId == 0 {
+	if req.UserId == "" {
 		pbError(&rsp.Error, ankr_default.ErrUserNotExist)
 		log.Println(rsp.Error.Details)
 		return nil
@@ -146,6 +151,7 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.ID, rsp *tas
 }
 
 func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest, rsp *common_proto.Error) error {
+
 	log.Println("Debug into UpdateTask")
 
 	if !checkId(&rsp, req.UserId, req.Task.Id) {
@@ -193,6 +199,7 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 
 func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
 
+	log.Println("Debug into PurgeTask")
 	return nil
 }
 
@@ -205,7 +212,7 @@ func pbError(rsp **common_proto.Error, err error) {
 	(*rsp).Details = err.Error()
 }
 
-func (p *TaskMgrHandler) checkOwner(rsp **common_proto.Error, userId int64, taskId string) (*common_proto.Task, bool) {
+func (p *TaskMgrHandler) checkOwner(rsp **common_proto.Error, userId, taskId string) (*common_proto.Task, bool) {
 	task, err := p.db.Get(taskId)
 	if err != nil {
 		pbError(rsp, err)
@@ -219,8 +226,8 @@ func (p *TaskMgrHandler) checkOwner(rsp **common_proto.Error, userId int64, task
 	return task, true
 }
 
-func checkId(rsp **common_proto.Error, userId int64, taskId string) bool {
-	if userId == 0 {
+func checkId(rsp **common_proto.Error, userId, taskId string) bool {
+	if userId == "" {
 		pbError(rsp, ankr_default.ErrUserNotExist)
 		return false
 	}

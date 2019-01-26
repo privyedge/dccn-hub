@@ -36,7 +36,7 @@ func main() {
 	}
 
 	userTasks := []*common_proto.Task{}
-	if rsp, _ := cl.TaskList(tokenContext, &taskmgr.ID{UserId: 1}); testCommon.IsSuccess("TaskList", rsp.Error) {
+	if rsp, _ := cl.TaskList(tokenContext, &taskmgr.ID{UserId: "1"}); testCommon.IsSuccess("TaskList", rsp.Error) {
 		userTasks = append(userTasks, rsp.Tasks...)
 		log.Println("TaskList Ok")
 	}
@@ -54,7 +54,7 @@ func main() {
 	// Verify Canceled task
 	if rsp, _ := cl.TaskDetail(tokenContext, &taskmgr.Request{UserId: cancelTask.UserId, TaskId: cancelTask.Id}); testCommon.IsSuccess("CancelTask Verify", rsp.Error) {
 		log.Println("TaskDetail Ok")
-		if rsp.Task.Status != common_proto.TaskStatus_CANCELL {
+		if rsp.Task.Status != common_proto.TaskStatus_CANCEL {
 			log.Println(rsp.Task.Status)
 			log.Fatalf("CancelTask %s operation does not take effect", cancelTask.Id)
 		}
