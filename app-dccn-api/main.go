@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
@@ -11,6 +12,7 @@ import (
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app-dccn-api/apihandler"
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/config"
@@ -48,8 +50,7 @@ func Init() {
 
 func startHandler() {
 	// New Service
-	// srv := grpc.NewService()
-	srv := micro.NewService()
+	srv := grpc.NewService()
 
 	// reflection.Register()
 
@@ -57,9 +58,9 @@ func startHandler() {
 	srv.Init()
 
 	// Register User Handler
-	// if err := usermgr.RegisterUserMgrHandler(srv.Server(), apihandler.NewApiUser(srv.Client())); err != nil {
-	// 	log.Fatal(err.Error())
-	// }
+	if err := usermgr.RegisterUserMgrHandler(srv.Server(), apihandler.NewApiUser(srv.Client())); err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// Register Task Handler
 	if err := taskmgr.RegisterTaskMgrHandler(srv.Server(), apihandler.NewApiTask(srv.Client())); err != nil {
