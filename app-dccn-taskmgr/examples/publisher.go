@@ -8,12 +8,12 @@ import (
 	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
 
-	_ "github.com/micro/go-plugins/broker/rabbitmq"
-
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	testCommon "github.com/Ankr-network/dccn-hub/app-dccn-taskmgr/examples/common"
+
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 // send events using the publisher

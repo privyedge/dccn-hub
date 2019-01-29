@@ -7,11 +7,11 @@ import (
 
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-	dccnwrapper "github.com/Ankr-network/dccn-common/wrapper"
-	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
-	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/token"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+
+	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
+	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/token"
 )
 
 type UserHandler struct {
@@ -28,17 +28,15 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	log.Println("Debug Register")
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		dccnwrapper.PbError(&rsp, err)
 		log.Println(rsp.Details)
-		return nil
+		return err
 	}
 	user.Password = string(hashedPwd)
 	user.Email = strings.ToLower(user.Email)
 	user.Id = uuid.New().String()
 	if err := p.db.Create(user); err != nil {
-		dccnwrapper.PbError(&rsp, err)
 		log.Println(rsp.Details)
-		return nil
+		return err
 	}
 	return nil
 }
@@ -48,15 +46,13 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	log.Println("Debug Login")
 	user, err := p.db.Get(strings.ToLower(req.Email))
 	if err != nil {
-		dccnwrapper.PbError(&rsp.Error, err)
 		log.Println(rsp.Error.Details)
-		return nil
+		return err
 	}
 	rsp.Token, err = p.token.New(user)
 	if err != nil {
-		dccnwrapper.PbError(&rsp.Error, err)
 		log.Println(rsp.Error.Details)
-		return nil
+		return err
 	}
 	return nil
 }
@@ -71,16 +67,14 @@ func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *user
 	log.Println("Debug into NewToken")
 	req, err := p.db.Get(strings.ToLower(req.Email))
 	if err != nil {
-		dccnwrapper.PbError(&rsp.Error, err)
 		log.Println(rsp.Error.Details)
-		return nil
+		return err
 	}
 
 	rsp.Token, err = p.token.New(req)
 	if err != nil {
-		dccnwrapper.PbError(&rsp.Error, err)
 		log.Println(rsp.Error.Details)
-		return nil
+		return err
 	}
 
 	return nil
@@ -88,11 +82,10 @@ func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *user
 
 func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
 
-	log.Println("Debug into VerifyToken")
+	log.Println("Debug into VerifyToken: ", req.Token)
 	if err := p.token.Verify(req.Token); err != nil {
-		dccnwrapper.PbError(&rsp, err)
 		log.Println(rsp.Details)
-		return nil
+		return err
 	}
 	return nil
 }

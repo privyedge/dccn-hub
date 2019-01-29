@@ -26,7 +26,7 @@
 
 
 [[constraint]]
-  branch = "feature/SWDEV-135-micro-service"
+  branch = "develop"
   name = "github.com/Ankr-network/dccn-common"
 
 [[constraint]]
@@ -46,10 +46,6 @@
   version = "0.7.0"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/micro/go-log"
-
-[[constraint]]
   name = "github.com/micro/go-micro"
   version = "0.22.1"
 
@@ -64,10 +60,6 @@
 [[constraint]]
   branch = "master"
   name = "golang.org/x/crypto"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/net"
 
 [[constraint]]
   name = "google.golang.org/grpc"

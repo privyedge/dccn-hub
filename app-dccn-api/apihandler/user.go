@@ -2,6 +2,7 @@ package apihandler
 
 import (
 	"context"
+	"log"
 
 	"github.com/micro/go-micro/client"
 
@@ -15,32 +16,62 @@ type ApiUser struct {
 }
 
 func (p *ApiUser) Register(ctx context.Context, req *usermgr.User, rsp *common_proto.Error) error {
-	out, _ := p.api.Register(ctx, req)
-	*rsp = *out
+
+	log.Println("Debug into Register")
+	if out, err := p.api.Register(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
 	return nil
 }
 
 func (p *ApiUser) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
-	out, _ := p.api.Login(ctx, req)
-	*rsp = *out
+
+	log.Println("Debug into Login")
+	if out, err := p.api.Login(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
 	return nil
 }
 
 func (p *ApiUser) Logout(ctx context.Context, req *usermgr.LogoutRequest, rsp *common_proto.Error) error {
-	out, _ := p.api.Logout(ctx, req)
-	*rsp = *out
+
+	log.Println("Debug into Logout")
+	if out, err := p.api.Logout(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
 	return nil
 }
 
 func (p *ApiUser) NewToken(ctx context.Context, req *usermgr.User, rsp *usermgr.NewTokenResponse) error {
-	out, _ := p.api.NewToken(ctx, req)
-	*rsp = *out
+
+	log.Println("Debug into NewToken")
+	if out, err := p.api.NewToken(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
 	return nil
 }
 
 func (p *ApiUser) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
-	out, _ := p.api.VerifyToken(ctx, req)
-	*rsp = *out
+
+	log.Println("Debug into VerifyToken")
+	if out, err := p.api.VerifyToken(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
 	return nil
 }
 
