@@ -2,6 +2,7 @@ package token
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
@@ -59,6 +60,7 @@ func (p *Token) New(user *usermgr.User) (string, error) {
 // Verify a token string into a token object
 func (p *Token) Verify(tokenString string) error {
 
+	log.Println("Debug into Verify: ", tokenString)
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &UserPayload{}, func(token *jwt.Token) (interface{}, error) {
 		return secret, nil

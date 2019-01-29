@@ -2,8 +2,8 @@
 
 
 [[projects]]
-  branch = "feature/SWDEV-135-micro-service"
-  digest = "1:f01346c1dd2d257335d910ccbd2f2cad923325c70b82b5296d4d33a19e89f2b9"
+  branch = "develop"
+  digest = "1:3e063a2411f350ad384b9e5b7214a1e3141e45e7e713d83b4114e0d360921e6f"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -18,7 +18,7 @@
     "wrapper",
   ]
   pruneopts = "UT"
-  revision = "b48ef1453c1e435293c507a4de60ce3cee0c7234"
+  revision = "7a53dfa087d86a46bf6da083212159ad9d85272f"
 
 [[projects]]
   branch = "master"
@@ -78,15 +78,15 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:bf2955581fb448af0f9c2a6e14ec8be0d60321fd7c5d5cdc381a8f5b992ad421"
+  digest = "1:9088a53706dbe7fec47e520cad1eb20c2ce93839554e20f0189f2e0de559ca91"
   name = "github.com/hashicorp/consul"
   packages = [
     "api",
     "watch",
   ]
   pruneopts = "UT"
-  revision = "65d2c9b51d02e6b14db3da3cb8424ef72e046780"
-  version = "v1.4.1"
+  revision = "c97c712e96e0e53308054d5e1180289fe02dce38"
+  version = "v1.4.2"
 
 [[projects]]
   digest = "1:0ade334594e69404d80d9d323445d2297ff8161637f9b2d347cc6973d2d6f05b"
@@ -240,7 +240,7 @@
   version = "v0.22.1"
 
 [[projects]]
-  digest = "1:2f050c3568104c42952bd4c340b63ae47e86140f96d23e0f7903e43ec2341d19"
+  digest = "1:dd01d5037caed32a14d1311c5fbdc3ad359efef9a177ca51dd90febb594153c9"
   name = "github.com/micro/go-plugins"
   packages = [
     "broker/grpc",
@@ -250,8 +250,8 @@
     "server/grpc",
   ]
   pruneopts = "UT"
-  revision = "d44d3b04724ad8b9f123db8ed220c46106695a5e"
-  version = "v0.21.0"
+  revision = "f93523ae8824c2828ac410904d7cf0b96e6eb9a4"
+  version = "v0.21.1"
 
 [[projects]]
   branch = "master"
@@ -299,12 +299,12 @@
   version = "v1.1.3"
 
 [[projects]]
-  digest = "1:78bbb1ba5b7c3f2ed0ea1eab57bdd3859aec7e177811563edc41198a760b06af"
+  digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
-  version = "v1.0.0"
+  revision = "af06845cf3004701891bf4fdb884bfe4920b3727"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:61332bb44d05257bbf0356d8400a8b30fe0b9fdc3b72b8b55661da8f0a4f39ae"
@@ -389,7 +389,7 @@
     "ed25519/internal/edwards25519",
   ]
   pruneopts = "UT"
-  revision = "057139ce5d2bdbe6fe73c53679e24e9cf007f637"
+  revision = "bf88e3f4ba724b9852073e3d792ab18358069896"
 
 [[projects]]
   branch = "master"
@@ -414,11 +414,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:db12953ac7a80656b159265fe13146959beaada45938a532f484a3aeb289462e"
+  digest = "1:7c3cf8f9e513ba8a0bd2f2c694646397a45e9d7458e61fabd774abb0f6149372"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "b90733256f2e882e81d52f9126de08df5615afd9"
+  revision = "302c3dd5f1cc82baae8e44d9c3178e89b6e2b345"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -449,7 +449,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "8819c946db4494a2259bf100a377f51aa585d893"
+  revision = "8ac453e89fca495c0d17f98932642f392e2a11f3"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
@@ -539,7 +539,6 @@
     "github.com/golang/protobuf/proto",
     "github.com/google/uuid",
     "github.com/micro/go-grpc",
-    "github.com/micro/go-log",
     "github.com/micro/go-micro",
     "github.com/micro/go-micro/client",
     "github.com/micro/go-micro/metadata",
@@ -547,8 +546,8 @@
     "github.com/micro/go-plugins/broker/rabbitmq",
     "github.com/pborman/uuid",
     "golang.org/x/crypto/bcrypt",
-    "golang.org/x/net/context",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/metadata",
     "gopkg.in/gomail.v2",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",

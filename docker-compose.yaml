@@ -53,6 +53,7 @@ services:
       DB_COLLECTION: task
       DB_TIMEOUT: 5
       DB_POOL_LIMIT: 4096
+#      DISABLE_AUTH: "true"
     links:
       - broker
       - datastore
@@ -126,8 +127,10 @@ services:
     ports:
       - "50051:50051"
     links:
+      - taskmgr
+      - email
+      - usermgr
       - broker
       - datastore
       - consul
-      - taskmgr
 

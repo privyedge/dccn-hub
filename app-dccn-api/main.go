@@ -9,10 +9,10 @@ import (
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 
-	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
-
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+
+	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app-dccn-api/apihandler"
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/config"
@@ -51,8 +51,6 @@ func Init() {
 func startHandler() {
 	// New Service
 	srv := grpc.NewService()
-
-	// reflection.Register()
 
 	// Initialise service
 	srv.Init()

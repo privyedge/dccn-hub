@@ -2,6 +2,7 @@ package apihandler
 
 import (
 	"context"
+	"log"
 
 	"github.com/micro/go-micro/client"
 
@@ -17,8 +18,14 @@ type ApiEmail struct {
 }
 
 func (p *ApiEmail) Send(ctx context.Context, req *common_proto.MailEvent, rsp *common_proto.Error) error {
-	out, _ := p.api.Send(ctx, req)
-	*rsp = *out
+
+	log.Println("Debug into Send")
+	if out, err := p.api.Send(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
 	return nil
 }
 
