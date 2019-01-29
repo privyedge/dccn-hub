@@ -8,4 +8,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -i -o cmd/usermgr ap
 FROM scratch
 
 COPY --from=builder /go/src/github.com/Ankr-network/dccn-hub/cmd/usermgr /
-CMD ["/dccn_usermgr"]
+CMD ["/usermgr"]
