@@ -16,6 +16,7 @@ type ApiTask struct {
 }
 
 func (p *ApiTask) CreateTask(ctx context.Context, req *taskmgr.CreateTaskRequest, rsp *taskmgr.CreateTaskResponse) error {
+
 	log.Println("Debug into CreateTask")
 	if out, err := p.api.CreateTask(ctx, req); err != nil {
 		log.Println(err.Error())
@@ -33,7 +34,6 @@ func (p *ApiTask) TaskList(ctx context.Context, req *taskmgr.ID, rsp *taskmgr.Ta
 		return err
 	} else {
 		*rsp = *out
-		rsp.Tasks = append(rsp.Tasks, out.Tasks...)
 	}
 	return nil
 }

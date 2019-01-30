@@ -52,7 +52,7 @@ func startHandler(db dbservice.DBService) {
 	srv.Init()
 
 	// Register Handler
-	if err := usermgr.RegisterUserMgrHandler(srv.Server(), handler.New(db, token.New(conf.TokenActiveTime))); err != nil {
+	if err := usermgr.RegisterUserMgrHandler(srv.Server(), handler.New(db, token.New())); err != nil {
 		log.Fatal(err.Error())
 	}
 

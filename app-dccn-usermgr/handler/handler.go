@@ -54,6 +54,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		log.Println(err.Error())
 		return err
 	}
+	rsp.UserId = user.Id
 	return nil
 }
 

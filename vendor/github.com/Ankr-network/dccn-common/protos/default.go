@@ -2,10 +2,11 @@ package ankr_default
 
 // RabbitQ name
 const (
-	MQDeployTask    = "topic.deploy.task"
-	MQFeedbackTask  = "topic.feedback.task"
-	MQMail          = "topic.mail.handler"
-	TokenActiveTime = 60 // minutes
+	MQDeployTask          = "topic.deploy.task"
+	MQFeedbackTask        = "topic.feedback.task"
+	MQMail                = "topic.mail.handler"
+	AccessTokenValidTime  = 15      // 15 minutes
+	RefreshTokenValidTime = 72 * 60 // 72 hours
 )
 
 // To do: Remove this line when usr mgr is ready
