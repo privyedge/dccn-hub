@@ -1,11 +1,7 @@
 package testCommon
 
 import (
-	"fmt"
-	"log"
-	"path"
 	"reflect"
-	"runtime"
 
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 )
@@ -40,7 +36,7 @@ func MockTasks() []common_proto.Task {
 			Image:        "nginx",
 			Replica:      2,
 			DataCenter:   "dc01",
-			DataCenterId: 1,
+			DataCenterId: "1",
 		},
 		{
 			UserId:       "1",
@@ -49,7 +45,7 @@ func MockTasks() []common_proto.Task {
 			Image:        "nginx",
 			Replica:      2,
 			DataCenter:   "dc02",
-			DataCenterId: 1,
+			DataCenterId: "1",
 		},
 		{
 			UserId:       "2",
@@ -58,23 +54,7 @@ func MockTasks() []common_proto.Task {
 			Image:        "nginx",
 			Replica:      2,
 			DataCenter:   "dc01",
-			DataCenterId: 1,
+			DataCenterId: "1",
 		},
 	}
-}
-
-func IsSuccess(info string, err *common_proto.Error) bool {
-	if err == nil {
-		return true
-	}
-
-	pathInfo := ""
-	if _, file, line, ok := runtime.Caller(1); ok {
-		pathInfo = fmt.Sprintf(" [%s:%v]: ", path.Base(file), line)
-	}
-	if err.Status == common_proto.Status_FAILURE {
-		log.Fatal(pathInfo, info+": ", err.Details)
-		return false
-	}
-	return true
 }

@@ -50,12 +50,16 @@ func main() {
 
 	cl := taskmgr.NewTaskMgrService(ankr_default.TaskMgrRegistryServerName, service.Client())
 	task := testCommon.MockTasks()[0]
-	if rsp, _ := cl.CreateTask(context.TODO(), &taskmgr.CreateTaskRequest{UserId: task.UserId, Task: &task}); testCommon.IsSuccess("CreateTask", rsp.Error) {
+	if _, err := cl.CreateTask(context.TODO(), &taskmgr.CreateTaskRequest{UserId: task.UserId, Task: &task}); err != nil {
+		log.Fatal(err.Error())
+	} else {
 		log.Println("CreateTask Ok")
 	}
 
 	var userTasks []*common_proto.Task
-	if rsp, _ := cl.TaskList(context.TODO(), &taskmgr.ID{UserId: "1"}); testCommon.IsSuccess("TaskList", rsp.Error) {
+	if rsp, err := cl.TaskList(context.TODO(), &taskmgr.ID{UserId: "1"}); err != nil {
+		log.Fatal(err.Error())
+	} else {
 		userTasks = append(userTasks, rsp.Tasks...)
 		log.Println("TaskList Ok")
 	}
@@ -73,7 +77,9 @@ func main() {
 	time.Sleep(2 * time.Second)
 
 	// Verify publish event
-	if rsp, _ := cl.TaskDetail(context.TODO(), &taskmgr.Request{UserId: pubTask.UserId, TaskId: pubTask.Id}); testCommon.IsSuccess("UpdateTask Verify", rsp.Error) {
+	if rsp, err := cl.TaskDetail(context.TODO(), &taskmgr.Request{UserId: pubTask.UserId, TaskId: pubTask.Id}); err != nil {
+		log.Fatal(err.Error())
+	} else {
 		if rsp.Task.Status != common_proto.TaskStatus_CANCEL_FAILED {
 			log.Fatal("UpdateTaskByFeedback do not task effect")
 		} else {
