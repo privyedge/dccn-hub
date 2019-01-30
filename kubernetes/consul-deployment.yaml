@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: consul
+  name: consul
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: consul
+    spec:
+      containers:
+      - args:
+        - consul
+        - agent
+        - -dev
+        - -log-level=warn
+        - -ui
+        - -client=0.0.0.0
+        image: consul:latest
+        name: dccn-registry-consul
+        ports:
+        - containerPort: 8300
+        - containerPort: 8400
+        - containerPort: 8500
+        - containerPort: 53
+          protocol: UDP
+        resources: {}
+      restartPolicy: Always
+status: {}
