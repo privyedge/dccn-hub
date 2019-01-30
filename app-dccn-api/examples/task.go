@@ -56,6 +56,7 @@ func main() {
 		} else {
 			log.Println(*rsp)
 		}
+		return
 	}
 
 	log.Println("Test TaskList")

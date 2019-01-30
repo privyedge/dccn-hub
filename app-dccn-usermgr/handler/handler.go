@@ -84,9 +84,21 @@ func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *user
 func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
 
 	log.Println("Debug into VerifyToken: ", req.Token)
-	if err := p.token.Verify(req.Token); err != nil {
+	if _, err := p.token.Verify(req.Token); err != nil {
 		log.Println(err.Error())
 		return err
+	}
+	return nil
+}
+
+func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.Token, rsp *usermgr.NewTokenResponse) error {
+
+	log.Println("Debug into VerifyAndRefreshToken: ", req.Token)
+	if newToken, err := p.token.VerifyAndRefresh(req.Token); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		rsp.Token = newToken
 	}
 	return nil
 }

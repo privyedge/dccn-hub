@@ -18,8 +18,11 @@ service UserMgr {
     // Auth  validates user
     rpc NewToken(User) returns (NewTokenResponse) {
     }
-    // VerifyToken Validated Token
+    // VerifyToken validated token
     rpc VerifyToken(Token) returns (common.proto.Error) {
+    }
+    // VerifyToken validated token and refresh token, return new token
+    rpc VerifyAndRefreshToken(Token) returns (NewTokenResponse) {
     }
 }
 
