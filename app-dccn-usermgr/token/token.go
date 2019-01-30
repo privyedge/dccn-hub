@@ -67,13 +67,13 @@ func (p *Token) Verify(tokenString string) error {
 	})
 
 	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 
 	// Validate the token
-	_, ok := token.Claims.(*UserPayload)
-	if ok && token.Valid {
+	if _, ok := token.Claims.(*UserPayload); ok && token.Valid {
 		return nil
 	}
-	return errors.New("invalid user")
+	return errors.New("token is invalid")
 }

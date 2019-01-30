@@ -1,0 +1,43 @@
+package subscriber
+
+import (
+	"context"
+	"log"
+
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+
+	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/handler"
+)
+
+type Subscriber struct {
+	cache *handler.DataCenterStreamCaches
+}
+
+func New(c *handler.DataCenterStreamCaches) *Subscriber {
+	return &Subscriber{cache: c}
+}
+
+// UpdateTaskByFeedback receives task result from data center, returns to v1
+// UpdateTaskStatusByFeedback updates database status by performing feedback from the data center of the task.
+// sets executor's id, updates task status.
+func (p *Subscriber) UpdateTaskByFeedback(ctx context.Context, event *common_proto.Event) error {
+
+	log.Print("Debug into UpdateTaskByFeedback")
+	switch event.EventType {
+	case common_proto.Operation_TASK_CREATE, common_proto.Operation_TASK_CANCEL, common_proto.Operation_TASK_UPDATE:
+		stream, err := p.cache.One()
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
+		if err := stream.Send(event); err != nil {
+			log.Println(err.Error())
+			return err
+		}
+	default:
+		log.Println(ankr_default.ErrUnknown.Error())
+		return ankr_default.ErrUnknown
+	}
+	return nil
+}

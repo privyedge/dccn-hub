@@ -20,7 +20,7 @@ var Default = Config{
 		Timeout:    5,
 		PoolLimit:  4096,
 	},
-	TokenActiveTime: 20,
+	TokenActiveTime: 60,
 }
 
 func Load() (Config, error) {

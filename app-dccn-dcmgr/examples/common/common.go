@@ -1,4 +1,4 @@
-package apiCommon
+package testCommon
 
 import (
 	"fmt"
@@ -19,7 +19,6 @@ func IsEqual(origin, dst *common_proto.Task) bool {
 		origin.Replica == dst.Replica &&
 		origin.DataCenter == dst.DataCenter &&
 		origin.DataCenterId == dst.DataCenterId &&
-		// origin.Status == dst.Status &&
 		origin.UniqueName == dst.UniqueName &&
 		origin.Url == dst.Url &&
 		origin.Hidden == dst.Hidden &&
@@ -41,7 +40,7 @@ func MockTasks() []common_proto.Task {
 			Image:        "nginx",
 			Replica:      2,
 			DataCenter:   "dc01",
-			DataCenterId: "1",
+			DataCenterId: 1,
 		},
 		{
 			UserId:       "1",
@@ -50,7 +49,7 @@ func MockTasks() []common_proto.Task {
 			Image:        "nginx",
 			Replica:      2,
 			DataCenter:   "dc02",
-			DataCenterId: "1",
+			DataCenterId: 1,
 		},
 		{
 			UserId:       "2",
@@ -59,7 +58,7 @@ func MockTasks() []common_proto.Task {
 			Image:        "nginx",
 			Replica:      2,
 			DataCenter:   "dc01",
-			DataCenterId: "1",
+			DataCenterId: 1,
 		},
 	}
 }

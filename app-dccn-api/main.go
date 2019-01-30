@@ -1,27 +1,35 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
+	"os"
 
 	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
+	"github.com/micro/go-micro/metadata"
+	"github.com/micro/go-micro/server"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
-
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app-dccn-api/apihandler"
+
+	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
+	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/subscriber"
+
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/config"
-	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
 
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 var (
+	srv  micro.Service
 	conf config.Config
 	db   dbservice.DBService
 	err  error
@@ -50,7 +58,9 @@ func Init() {
 
 func startHandler() {
 	// New Service
-	srv := grpc.NewService()
+	srv = grpc.NewService(
+		micro.WrapHandler(AuthWrapper),
+	)
 
 	// Initialise service
 	srv.Init()
@@ -69,10 +79,10 @@ func startHandler() {
 	// New Publisher to deploy new task action.
 	taskFeedback := micro.NewPublisher(ankr_default.MQFeedbackTask, srv.Client())
 
-	dcHandler := handler.New(taskFeedback)
+	dcHandler := handler.New(db, taskFeedback)
 
 	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
-	if err := micro.RegisterSubscriber(ankr_default.MQDeployTask, srv.Server(), dcHandler); err != nil {
+	if err := micro.RegisterSubscriber(ankr_default.MQDeployTask, srv.Server(), subscriber.New(dcHandler.DcStreamCaches)); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -89,5 +99,36 @@ func startHandler() {
 	// Run srv
 	if err := srv.Run(); err != nil {
 		log.Println(err.Error())
+	}
+}
+
+func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, resp interface{}) error {
+		log.Println("NEW METHOD Request: ", req.Method())
+		if os.Getenv("DISABLE_AUTH") == "true" {
+			log.Println("disable auth")
+			return fn(ctx, req, resp)
+		}
+		meta, ok := metadata.FromContext(ctx)
+		if !ok {
+			log.Println("no auth meta-data found in request")
+			return errors.New("no auth meta-data found in request")
+		}
+
+		// Note this is now uppercase (not entirely sure why this is...)
+		token := meta["token"]
+		log.Println("Authenticating with token: ", token)
+
+		// Auth here
+		// Really shouldn't be using a global here, find a better way
+		// of doing this, since you can't pass it into a wrapper.
+		userMgrService := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
+		if _, err := userMgrService.VerifyToken(context.Background(), &usermgr.Token{Token: token}); err != nil {
+			log.Println(err.Error())
+			return err
+		}
+		err = fn(ctx, req, resp)
+		log.Println(err.Error())
+		return err
 	}
 }
