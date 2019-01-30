@@ -8,7 +8,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-var addr = "localhost:50051"
+// var addr = "localhost:50051"
+var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)

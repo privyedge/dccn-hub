@@ -16,6 +16,7 @@ run: build
 local:
 	$(MICRO_ENV) \
 	$(PROGRAM_ENV) \
+	DISABLE_AUTH=true \
 	go run main.go
 
 clean:
@@ -34,6 +35,7 @@ devtools:
 	@type "protoc-gen-micro" 2> /dev/null || echo 'Please install protoc-gen-micro'
 
 define MICRO_ENV
+	MICRO_BROKER="rabbitmq" \
 	MICRO_REGISTRY="mdns" \
 	MICRO_SERVER_ADDRESS="127.0.0.1:50051" \
 	MICRO_SERVER_VERSION="v1.0" \

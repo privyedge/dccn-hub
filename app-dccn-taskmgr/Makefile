@@ -17,7 +17,6 @@ run: build
 local:
 	@$(MICRO_ENV) \
 	$(PROGRAM_ENV) \
-	DISABLE_AUTH=true \
 	go run main.go
 
 clean:

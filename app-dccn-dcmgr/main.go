@@ -3,14 +3,14 @@ package main
 import (
 	"log"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	micro "github.com/micro/go-micro"
 
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/handler"
-	micro "github.com/micro/go-micro"
 
 	grpc "github.com/micro/go-grpc"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
@@ -54,7 +54,7 @@ func startHandler() {
 	// New Publisher to deploy new task action.
 	taskFeedback := micro.NewPublisher(ankr_default.MQFeedbackTask, srv.Client())
 
-	dcHandler := handler.New(taskFeedback)
+	dcHandler := handler.New(db, taskFeedback)
 	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
 	if err := micro.RegisterSubscriber(ankr_default.MQDeployTask, srv.Server(), dcHandler); err != nil {
 		log.Fatal(err.Error())

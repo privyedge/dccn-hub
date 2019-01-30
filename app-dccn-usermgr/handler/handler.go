@@ -28,14 +28,14 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	log.Println("Debug Register")
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(rsp.Details)
+		log.Println(err.Error())
 		return err
 	}
 	user.Password = string(hashedPwd)
 	user.Email = strings.ToLower(user.Email)
 	user.Id = uuid.New().String()
 	if err := p.db.Create(user); err != nil {
-		log.Println(rsp.Details)
+		log.Println(err.Error())
 		return err
 	}
 	return nil
@@ -46,12 +46,12 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	log.Println("Debug Login")
 	user, err := p.db.Get(strings.ToLower(req.Email))
 	if err != nil {
-		log.Println(rsp.Error.Details)
+		log.Println(err.Error())
 		return err
 	}
 	rsp.Token, err = p.token.New(user)
 	if err != nil {
-		log.Println(rsp.Error.Details)
+		log.Println(err.Error())
 		return err
 	}
 	return nil
@@ -67,13 +67,13 @@ func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *user
 	log.Println("Debug into NewToken")
 	req, err := p.db.Get(strings.ToLower(req.Email))
 	if err != nil {
-		log.Println(rsp.Error.Details)
+		log.Println(err.Error())
 		return err
 	}
 
 	rsp.Token, err = p.token.New(req)
 	if err != nil {
-		log.Println(rsp.Error.Details)
+		log.Println(err.Error())
 		return err
 	}
 
@@ -84,7 +84,7 @@ func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *
 
 	log.Println("Debug into VerifyToken: ", req.Token)
 	if err := p.token.Verify(req.Token); err != nil {
-		log.Println(rsp.Details)
+		log.Println(err.Error())
 		return err
 	}
 	return nil
