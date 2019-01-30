@@ -63,6 +63,7 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 	}
 
 	req.Task.Status = common_proto.TaskStatus_START
+	req.Task.UserId = req.UserId
 	req.Task.Id = uuid.New().String()
 	rsp.TaskId = req.Task.Id
 
@@ -75,6 +76,7 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		log.Println(ankr_default.ErrPublish)
 		return ankr_default.ErrPublish
 	}
+
 	if err := p.db.Create(req.Task); err != nil {
 		log.Println(err.Error())
 		return err

@@ -49,7 +49,8 @@ message LoginRequest {
 
 message LoginResponse {
     string token = 1;
-    common.proto.Error error = 2;
+    string user_id = 2;
+    common.proto.Error error = 3;
 }
 
 message LogoutRequest {

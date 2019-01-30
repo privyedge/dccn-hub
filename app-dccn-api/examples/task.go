@@ -51,7 +51,7 @@ func main() {
 	tasks := apiCommon.MockTasks()
 	log.Println("Test CreateTask")
 	for i := range tasks {
-		if rsp, err := cl.CreateTask(ctx, &taskmgr.CreateTaskRequest{UserId: tasks[i].UserId, Task: &tasks[i]}); err != nil {
+		if rsp, err := cl.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: tasks[i].UserId, Task: &tasks[i]}); err != nil {
 			log.Fatal(err.Error())
 		} else {
 			log.Println(*rsp)

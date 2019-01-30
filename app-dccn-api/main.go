@@ -29,10 +29,11 @@ import (
 )
 
 var (
-	srv  micro.Service
-	conf config.Config
-	db   dbservice.DBService
-	err  error
+	srv      micro.Service
+	conf     config.Config
+	db       dbservice.DBService
+	err      error
+	authList map[string]struct{}
 )
 
 func main() {
@@ -54,6 +55,15 @@ func Init() {
 		log.Fatal(err.Error())
 	}
 	log.Printf("Load config %+v\n", conf)
+
+	authList = map[string]struct{}{
+		"TaskMgr.CreateTask": struct{}{},
+		"TaskMgr.TaskList":   struct{}{},
+		"TaskMgr.CancelTask": struct{}{},
+		"TaskMgr.PurgeTask":  struct{}{},
+		"TaskMgr.TaskDetail": struct{}{},
+		"TaskMgr.UpdateTask": struct{}{},
+	}
 }
 
 func startHandler() {
@@ -102,11 +112,14 @@ func startHandler() {
 	}
 }
 
+func needAuth(method string) bool {
+	_, ok := authList[method]
+	return ok
+}
+
 func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, resp interface{}) error {
-		log.Println("NEW METHOD Request: ", req.Method())
-		if os.Getenv("DISABLE_AUTH") == "true" {
-			log.Println("disable auth")
+		if os.Getenv("DISABLE_AUTH") == "true" || !needAuth(req.Method()) {
 			return fn(ctx, req, resp)
 		}
 		meta, ok := metadata.FromContext(ctx)
@@ -127,8 +140,6 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			log.Println(err.Error())
 			return err
 		}
-		err = fn(ctx, req, resp)
-		log.Println(err.Error())
-		return err
+		return fn(ctx, req, resp)
 	}
 }

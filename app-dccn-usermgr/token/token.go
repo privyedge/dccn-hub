@@ -6,8 +6,9 @@ import (
 	"time"
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-
 	jwt "github.com/dgrijalva/jwt-go"
+
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
 )
 
 var secret = []byte("14444749c1ecc982cd0f91113db98211")
@@ -18,7 +19,8 @@ type IToken interface {
 }
 
 type Token struct {
-	activeTime int
+	RefreshTokenValidTime int
+	AccessTokenValidTime  int
 }
 
 // UserPayload is our custom metadata, which will be hashed
@@ -29,24 +31,24 @@ type UserPayload struct {
 }
 
 // New returns Token instance.
-func New(activeTime int) *Token {
-	return &Token{activeTime}
+func New() *Token {
+	return &Token{
+		AccessTokenValidTime:  ankr_default.AccessTokenValidTime,
+		RefreshTokenValidTime: ankr_default.RefreshTokenValidTime,
+	}
 }
 
 // New returns JWT string.
 func (p *Token) New(user *usermgr.User) (string, error) {
 
-	expireTime := time.Now().Add(time.Minute * time.Duration(p.activeTime)).Unix()
+	expireTime := time.Now().Add(time.Minute * time.Duration(p.RefreshTokenValidTime)).Unix()
 
 	// Create the Claims
 	payload := UserPayload{
 		user,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime,
-			Issuer:    "ankr_network",
-			// Subject:   p.config.Subject,
-			// NotBefore: p.config.NotBefore,
-			// Audience:  p.config.Audience,
+			Issuer:    "ankr.network",
 		},
 	}
 
