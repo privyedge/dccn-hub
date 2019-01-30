@@ -4,11 +4,10 @@ import (
 	"context"
 	"log"
 
+	grpc "github.com/micro/go-grpc"
+
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-	dccnwrapper "github.com/Ankr-network/dccn-common/wrapper"
-
-	grpc "github.com/micro/go-grpc"
 )
 
 func main() {
@@ -26,7 +25,9 @@ func main() {
 	}
 
 	cli := pb.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
-	if rsp, _ := cli.Register(context.Background(), user); dccnwrapper.IsSuccess("Register", rsp) {
+	if _, err := cli.Register(context.Background(), user); err != nil {
+		log.Fatal(err.Error())
+	} else {
 		log.Println("Register Ok")
 	}
 
