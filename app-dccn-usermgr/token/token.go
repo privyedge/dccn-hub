@@ -15,7 +15,8 @@ var secret = []byte("14444749c1ecc982cd0f91113db98211")
 
 type IToken interface {
 	New(user *usermgr.User) (string, error)
-	Verify(tokenString string) error
+	Verify(tokenString string) (*UserPayload, error)
+	VerifyAndRefresh(tokenString string) (string, error)
 }
 
 type Token struct {
@@ -60,7 +61,7 @@ func (p *Token) New(user *usermgr.User) (string, error) {
 }
 
 // Verify a token string into a token object
-func (p *Token) Verify(tokenString string) error {
+func (p *Token) Verify(tokenString string) (*UserPayload, error) {
 
 	log.Println("Debug into Verify: ", tokenString)
 	// Parse the token
@@ -70,12 +71,31 @@ func (p *Token) Verify(tokenString string) error {
 
 	if err != nil {
 		log.Println(err.Error())
-		return err
+		return nil, err
 	}
 
 	// Validate the token
-	if _, ok := token.Claims.(*UserPayload); ok && token.Valid {
-		return nil
+	if payload, ok := token.Claims.(*UserPayload); ok && token.Valid {
+		return payload, nil
 	}
-	return errors.New("token is invalid")
+	return nil, errors.New("token is invalid")
+}
+
+func (p *Token) VerifyAndRefresh(tokenString string) (string, error) {
+	jwt.TimeFunc = func() time.Time {
+		return time.Unix(0, 0)
+	}
+	payload, err := p.Verify(tokenString)
+	if err != nil {
+		log.Println(err.Error())
+		return "", err
+	}
+
+	jwt.TimeFunc = time.Now
+	payload.StandardClaims.ExpiresAt = time.Now().Add(time.Duration(p.AccessTokenValidTime) * time.Minute).Unix()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+
+	// Sign token and return
+	return token.SignedString(secret)
 }

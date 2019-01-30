@@ -56,8 +56,10 @@ type UserMgrService interface {
 	Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*common_proto1.Error, error)
 	// Auth  validates user
 	NewToken(ctx context.Context, in *User, opts ...client.CallOption) (*NewTokenResponse, error)
-	// VerifyToken Validated Token
+	// VerifyToken validated token
 	VerifyToken(ctx context.Context, in *Token, opts ...client.CallOption) (*common_proto1.Error, error)
+	// VerifyToken validated token and refresh token, return new token
+	VerifyAndRefreshToken(ctx context.Context, in *Token, opts ...client.CallOption) (*NewTokenResponse, error)
 }
 
 type userMgrService struct {
@@ -128,6 +130,16 @@ func (c *userMgrService) VerifyToken(ctx context.Context, in *Token, opts ...cli
 	return out, nil
 }
 
+func (c *userMgrService) VerifyAndRefreshToken(ctx context.Context, in *Token, opts ...client.CallOption) (*NewTokenResponse, error) {
+	req := c.c.NewRequest(c.name, "UserMgr.VerifyAndRefreshToken", in)
+	out := new(NewTokenResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for UserMgr service
 
 type UserMgrHandler interface {
@@ -139,8 +151,10 @@ type UserMgrHandler interface {
 	Logout(context.Context, *LogoutRequest, *common_proto1.Error) error
 	// Auth  validates user
 	NewToken(context.Context, *User, *NewTokenResponse) error
-	// VerifyToken Validated Token
+	// VerifyToken validated token
 	VerifyToken(context.Context, *Token, *common_proto1.Error) error
+	// VerifyToken validated token and refresh token, return new token
+	VerifyAndRefreshToken(context.Context, *Token, *NewTokenResponse) error
 }
 
 func RegisterUserMgrHandler(s server.Server, hdlr UserMgrHandler, opts ...server.HandlerOption) error {
@@ -150,6 +164,7 @@ func RegisterUserMgrHandler(s server.Server, hdlr UserMgrHandler, opts ...server
 		Logout(ctx context.Context, in *LogoutRequest, out *common_proto1.Error) error
 		NewToken(ctx context.Context, in *User, out *NewTokenResponse) error
 		VerifyToken(ctx context.Context, in *Token, out *common_proto1.Error) error
+		VerifyAndRefreshToken(ctx context.Context, in *Token, out *NewTokenResponse) error
 	}
 	type UserMgr struct {
 		userMgr
@@ -180,4 +195,8 @@ func (h *userMgrHandler) NewToken(ctx context.Context, in *User, out *NewTokenRe
 
 func (h *userMgrHandler) VerifyToken(ctx context.Context, in *Token, out *common_proto1.Error) error {
 	return h.UserMgrHandler.VerifyToken(ctx, in, out)
+}
+
+func (h *userMgrHandler) VerifyAndRefreshToken(ctx context.Context, in *Token, out *NewTokenResponse) error {
+	return h.UserMgrHandler.VerifyAndRefreshToken(ctx, in, out)
 }

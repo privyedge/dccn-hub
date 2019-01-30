@@ -75,6 +75,18 @@ func (p *ApiUser) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *comm
 	return nil
 }
 
+func (p *ApiUser) VerifyAndRefreshToken(ctx context.Context, req *usermgr.Token, rsp *usermgr.NewTokenResponse) error {
+
+	log.Println("Debug into VerifyAndRefreshToken")
+	if out, err := p.api.VerifyAndRefreshToken(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
+	return nil
+}
+
 func NewApiUser(c client.Client) *ApiUser {
 	return &ApiUser{
 		api: usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, c),

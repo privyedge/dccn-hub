@@ -136,10 +136,13 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		// Really shouldn't be using a global here, find a better way
 		// of doing this, since you can't pass it into a wrapper.
 		userMgrService := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
-		if _, err := userMgrService.VerifyToken(context.Background(), &usermgr.Token{Token: token}); err != nil {
+		if rsp, err := userMgrService.VerifyAndRefreshToken(context.Background(), &usermgr.Token{Token: token}); err != nil {
 			log.Println(err.Error())
 			return err
+		} else {
+			ctx = metadata.NewContext(ctx, map[string]string{"newtoken": rsp.Token})
 		}
+
 		return fn(ctx, req, resp)
 	}
 }
