@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+import "common/common.proto";
+import "common/error.proto";
+
+package taskmgr;
+
+service TaskMgr {
+    // Sends request to start a task and list task
+    rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {}
+    rpc TaskList (ID) returns (TaskListResponse) {}
+    rpc CancelTask (Request) returns (common.proto.Error) {}
+    rpc PurgeTask (Request) returns (common.proto.Error) {}
+    rpc TaskDetail (Request) returns (TaskDetailResponse) {}
+    rpc UpdateTask (UpdateTaskRequest) returns (common.proto.Error) {}
+}
+
+// The dccn client request message containing the user's token
+message CreateTaskRequest {
+    string user_id = 1;
+    common.proto.Task task = 2;
+}
+
+message CreateTaskResponse {
+    string task_id = 1;
+    common.proto.Error error = 2;
+}
+
+message ID {
+    string user_id = 1;
+}
+
+message Request {
+    string user_id = 1;
+    string task_id = 2;
+}
+
+message TaskListResponse {
+    repeated common.proto.Task tasks = 1;
+    common.proto.Error error = 3;
+}
+
+message UpdateTaskRequest{
+    string user_id = 1;
+    common.proto.Task task = 2;
+}
+
+message TaskDetailResponse{
+    common.proto.Task task = 1;
+    common.proto.Error error = 2;
+}
+
