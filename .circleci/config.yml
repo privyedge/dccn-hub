@@ -65,10 +65,11 @@ jobs:
               done
             done
             declare -a deployment_arr=("taskmgr" "usermgr" "email" "api")
+            declare -a name_arr=("app-dccn-taskmgr" "app-dccn-usermgr" "app-dccn-email" "app-dccn-api")
             kops export kubecfg --name ${K8S_CLUSTER}.k8s.ankr.network --state s3://kops.${K8S_CLUSTER}.config
             for ((i=0; i<arrlen; i++)); do
               kubectl patch deployment/${deployment_arr[$i]} -p \
-              '{"spec":{"template":{"spec":{"containers":[{"name":"'${deployment_arr[$i]}'","image":"'${AWS_ACCOUNT}'.dkr.ecr.'${AWS_REGION}'.amazonaws.com/'${component_arr[$i]}':'${BRANCH_NAME}'"}]}}}}'
+              '{"spec":{"template":{"spec":{"containers":[{"name":"'${name_arr[$i]}'","image":"'${AWS_ACCOUNT}'.dkr.ecr.'${AWS_REGION}'.amazonaws.com/'${component_arr[$i]}':'${BRANCH_NAME}'"}]}}}}'
               if ! kubectl rollout status deploy/${deployment_arr[$i]}; then
                 echo "Deploy failed, roll back to previous version"
                 kubectl rollout undo deploy/${deployment_arr[$i]} 
