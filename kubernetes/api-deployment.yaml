@@ -37,12 +37,10 @@ spec:
           value: amqp://guest:guest@broker:5672
         - name: MICRO_REGISTER_INTERVAL
           value: "15"
-        - name: MICRO_REGISTER_TTL
-          value: "15"
         - name: MICRO_REGISTRY
-          value: mdns
+          value: consul
         - name: MICRO_REGISTRY_ADDRESS
-          value: mdns:8500
+          value: consul:8500
         - name: MICRO_SERVER_ADDRESS
           value: :50051
         - name: MICRO_SERVER_VERSION
