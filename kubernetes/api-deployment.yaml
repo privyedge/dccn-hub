@@ -40,9 +40,9 @@ spec:
         - name: MICRO_REGISTER_TTL
           value: "15"
         - name: MICRO_REGISTRY
-          value: consul
+          value: mdns
         - name: MICRO_REGISTRY_ADDRESS
-          value: consul:8500
+          value: mdns:8500
         - name: MICRO_SERVER_ADDRESS
           value: :50051
         - name: MICRO_SERVER_VERSION
