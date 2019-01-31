@@ -37,8 +37,6 @@ spec:
           value: amqp://guest:guest@broker:5672
         - name: MICRO_REGISTER_INTERVAL
           value: "15"
-        - name: MICRO_REGISTER_TTL
-          value: "600"
         - name: MICRO_REGISTRY
           value: consul
         - name: MICRO_REGISTRY_ADDRESS
@@ -47,6 +45,7 @@ spec:
           value: :50051
         - name: MICRO_SERVER_VERSION
           value: v1.0
+                815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-api
         image: "815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-api:feat"
         imagePullPolicy: Always
         name: app-dccn-api
