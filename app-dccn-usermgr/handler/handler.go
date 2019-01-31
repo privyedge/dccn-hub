@@ -2,12 +2,14 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strings"
 
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"github.com/google/uuid"
+	"github.com/micro/go-micro/metadata"
 	"golang.org/x/crypto/bcrypt"
 
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
@@ -15,12 +17,17 @@ import (
 )
 
 type UserHandler struct {
-	db    dbservice.DBService
-	token token.IToken
+	db        dbservice.DBService // db
+	token     token.IToken        // token interface
+	blacklist *Blacklist          // used for logout
 }
 
 func New(dbService dbservice.DBService, tokenService token.IToken) *UserHandler {
-	return &UserHandler{db: dbService, token: tokenService}
+	return &UserHandler{
+		db:        dbService,
+		token:     tokenService,
+		blacklist: NewBlacklist(),
+	}
 }
 
 func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *common_proto.Error) error {
@@ -55,11 +62,20 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		return err
 	}
 	rsp.UserId = user.Id
+	p.blacklist.Add(rsp.Token)
 	return nil
 }
 
 func (p *UserHandler) Logout(ctx context.Context, in *usermgr.LogoutRequest, out *common_proto.Error) error {
+
 	log.Println("Debug into Logout")
+	md, ok := metadata.FromContext(ctx)
+	if !ok {
+		log.Println("no auth meta-data found in request")
+		return errors.New("no auth meta-data found in request")
+	}
+
+	p.blacklist.Remove(md["token"])
 	return nil
 }
 
@@ -84,6 +100,12 @@ func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *user
 func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
 
 	log.Println("Debug into VerifyToken: ", req.Token)
+	if !p.blacklist.Available(req.Token) {
+		err := errors.New("token is unavailable")
+		log.Println(err.Error())
+		return err
+	}
+
 	if _, err := p.token.Verify(req.Token); err != nil {
 		log.Println(err.Error())
 		return err
@@ -94,6 +116,12 @@ func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *
 func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.Token, rsp *usermgr.NewTokenResponse) error {
 
 	log.Println("Debug into VerifyAndRefreshToken: ", req.Token)
+	if !p.blacklist.Available(req.Token) {
+		err := errors.New("token is unavailable")
+		log.Println(err.Error())
+		return err
+	}
+
 	if newToken, err := p.token.VerifyAndRefresh(req.Token); err != nil {
 		log.Println(err.Error())
 		return err
@@ -101,4 +129,8 @@ func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.To
 		rsp.Token = newToken
 	}
 	return nil
+}
+
+func (p *UserHandler) Destroy() {
+	p.blacklist.destroy()
 }
