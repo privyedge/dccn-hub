@@ -15,9 +15,9 @@ import (
 	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-var addr = "localhost:50051"
+// var addr = "localhost:50051"
 
-// var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client-dev.dccn.ankr.network:50051"
 
 // func init() {
 // 	addr = os.Getenv("API_ADDRESS")
@@ -116,18 +116,7 @@ func main() {
 	// UpdateTask
 	task.Name = "updateTask"
 	if _, err := taskClient.UpdateTask(tokenContext, &taskmgr.UpdateTaskRequest{UserId: userId, Task: &task}); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Println("TaskDetail Ok")
-		// Verify updated task
-		if rsp, err := taskClient.TaskDetail(tokenContext, &taskmgr.Request{UserId: userId, TaskId: task.Id}); err != nil {
-			log.Fatal(err.Error())
-		} else {
-			if !apiCommon.IsEqual(rsp.Task, &task) || rsp.Task.Status != common_proto.TaskStatus_UPDATING {
-				log.Fatal("UpdateTask operation does not take effect")
-			}
-			log.Println("UpdateTask takes effect")
-		}
+		log.Println(err.Error())
 	}
 
 	log.Println("END")
