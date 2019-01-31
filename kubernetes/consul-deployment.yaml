@@ -26,6 +26,7 @@ spec:
         - -ui
         - -client=0.0.0.0
         image: consul:latest
+        imagePullPolicy: Always
         name: dccn-registry-consul
         ports:
         - containerPort: 8300

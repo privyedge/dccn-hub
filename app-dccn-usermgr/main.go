@@ -51,8 +51,11 @@ func startHandler(db dbservice.DBService) {
 	// Initialise service
 	srv.Init()
 
+	userHandler := handler.New(db, token.New())
+	defer userHandler.Destroy()
+
 	// Register Handler
-	if err := usermgr.RegisterUserMgrHandler(srv.Server(), handler.New(db, token.New())); err != nil {
+	if err := usermgr.RegisterUserMgrHandler(srv.Server(), userHandler); err != nil {
 		log.Fatal(err.Error())
 	}
 

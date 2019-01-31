@@ -44,6 +44,7 @@ spec:
         - name: MICRO_SERVER_VERSION
           value: v1.0
         image: "815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-email:feat"
+        imagePullPolicy: Always
         name: app-dccn-email
         resources: {}
       restartPolicy: Always

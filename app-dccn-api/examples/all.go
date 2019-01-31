@@ -15,9 +15,9 @@ import (
 	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-// var addr = "localhost:50051"
+var addr = "localhost:50051"
 
-var addr = "client-dev.dccn.ankr.network:50051"
+// var addr = "client-dev.dccn.ankr.network:50051"
 
 // func init() {
 // 	addr = os.Getenv("API_ADDRESS")
@@ -68,17 +68,17 @@ func main() {
 	})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
+	tokenContext, cancel := context.WithTimeout(ctx, 80*time.Second)
 	defer cancel()
 	task := apiCommon.MockTasks()[0]
 	log.Println("Test CreateTask")
 	if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
 		log.Fatal(err.Error())
 	} else {
+		task.Id = rsp.TaskId
 		log.Println(*rsp)
 	}
 
-	// var userTasks []*common_proto.Task
 	userTasks := make([]*common_proto.Task, 0)
 	if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.ID{UserId: userId}); err != nil {
 		log.Fatal(err.Error())
@@ -89,6 +89,44 @@ func main() {
 		} else {
 			log.Println(len(userTasks), "tasks belongs to ", userId)
 			log.Println(userTasks[0])
+		}
+	}
+
+	log.Println("Test CancelTask")
+	if _, err := taskClient.CancelTask(tokenContext, &taskmgr.Request{UserId: userId, TaskId: task.Id}); err != nil {
+		log.Fatal(err.Error())
+	} else {
+		log.Println("CancelTask Ok")
+
+		// Verify Canceled task
+		log.Println("Test TaskDetail")
+		if _, err := taskClient.TaskDetail(tokenContext, &taskmgr.Request{UserId: userId, TaskId: task.Id}); err != nil {
+			log.Fatal(err.Error())
+		} else {
+			log.Println("TaskDetail Ok")
+		}
+	}
+
+	if _, err := userClient.Logout(tokenContext, &usermgr.LogoutRequest{}); err != nil {
+		log.Fatal(err.Error())
+	} else {
+		log.Println("Logout ok")
+	}
+
+	// UpdateTask
+	task.Name = "updateTask"
+	if _, err := taskClient.UpdateTask(tokenContext, &taskmgr.UpdateTaskRequest{UserId: userId, Task: &task}); err != nil {
+		log.Fatal(err.Error())
+	} else {
+		log.Println("TaskDetail Ok")
+		// Verify updated task
+		if rsp, err := taskClient.TaskDetail(tokenContext, &taskmgr.Request{UserId: userId, TaskId: task.Id}); err != nil {
+			log.Fatal(err.Error())
+		} else {
+			if !apiCommon.IsEqual(rsp.Task, &task) || rsp.Task.Status != common_proto.TaskStatus_UPDATING {
+				log.Fatal("UpdateTask operation does not take effect")
+			}
+			log.Println("UpdateTask takes effect")
 		}
 	}
 

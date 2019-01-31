@@ -19,6 +19,7 @@ spec:
     spec:
       containers:
       - image: rabbitmq:management
+        imagePullPolicy: Always
         name: dccn-broker-rabbitmq
         ports:
         - containerPort: 5672
