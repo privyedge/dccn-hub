@@ -32,17 +32,22 @@ func NewDataCenterStreamCaches() *DataCenterStreamCaches {
 
 func (p *DataCenterStreamCaches) Add(dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) {
 
-	log.Println("Debug into DataCenterStreamCaches'Add")
 	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if _, ok := p.streams[dc.Name]; ok {
+		return
+	}
+
+	log.Println("Debug into DataCenterStreamCaches'Add")
 	p.streams[dc.Name] = stream
-	p.mu.Unlock()
 }
 
 func (p *DataCenterStreamCaches) Remove(dc string) {
 
-	log.Println("Debug into DataCenterStreamCaches'Remove")
 	p.mu.Lock()
 	if _, ok := p.streams[dc]; ok {
+		log.Println("Debug into DataCenterStreamCaches'Remove: ", dc)
 		delete(p.streams, dc)
 	}
 	p.mu.Unlock()
@@ -91,5 +96,16 @@ func (p *DataCenterStreamCaches) checkHealthy() {
 			}
 		}
 		time.Sleep(time.Second * time.Duration(ankr_default.HeartBeatInterval))
+	}
+}
+
+func (p *DataCenterStreamCaches) Clanup() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	for _, stream := range p.streams {
+		if err := stream.Close(); err != nil {
+			log.Fatal(err.Error())
+		}
 	}
 }

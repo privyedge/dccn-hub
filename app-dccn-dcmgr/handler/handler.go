@@ -62,6 +62,12 @@ func (p *DcMgrHandler) All() error {
 	return nil
 }
 
-func (p *DcMgrHandler) Avaliable() error {
+func (p *DcMgrHandler) Available() error {
 	return nil
+}
+
+func (p *DcMgrHandler) Cleanup() {
+	if p.DcStreamCaches != nil {
+		p.DcStreamCaches.Clanup()
+	}
 }

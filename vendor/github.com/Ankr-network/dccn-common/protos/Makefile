@@ -13,6 +13,8 @@ RECURSIVE_PROTO = for app in $(APPS); do \
         done
 
 
+# To do: there should be a script to loop through all the micro services.
+# To do: there should be only one copy of each proto file.
 proto:
 	@protoc -I. \
 	--micro_out=Mcommon/event.proto=github.com/Ankr-network/dccn-common/protos/common,Mcommon/error.proto=github.com/Ankr-network/dccn-common/protos/common:. \

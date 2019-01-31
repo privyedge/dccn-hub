@@ -15,7 +15,14 @@ import (
 	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-var addr = "localhost:50051"
+// var addr = "localhost:50051"
+
+var addr = "client-dev.dccn.ankr.network:50051"
+
+// func init() {
+// 	addr = os.Getenv("API_ADDRESS")
+// 	log.Println("Get Addr: ", addr)
+// }
 
 func main() {
 

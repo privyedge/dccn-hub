@@ -101,6 +101,8 @@ func startHandler() {
 		log.Fatal(err.Error())
 	}
 
+	defer dcHandler.Cleanup()
+
 	// Register Email Handler
 	if err := mail.RegisterMailHandler(srv.Server(), apihandler.NewApiEmail(srv.Client())); err != nil {
 		log.Fatal(err.Error())

@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:d53c6c34d711c4424226cda10d4f5d2ca9f08c4f64bebf3f568f2f9ef18f08bf"
+  digest = "1:2889cecf67f5556b07db5e0bbd61ba0fc3fc7e49eb8e3ec0250b2efe100ba98b"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -17,7 +17,7 @@
     "protos/usermgr/v1/micro",
   ]
   pruneopts = "UT"
-  revision = "7a53dfa087d86a46bf6da083212159ad9d85272f"
+  revision = "eeead89611117e1365f3c81030e5abe708a56596"
 
 [[projects]]
   branch = "master"
@@ -173,15 +173,15 @@
   version = "v1.1.5"
 
 [[projects]]
-  branch = "master"
-  digest = "1:30284237628259cb445afc0e1b4c7b4ed265ba1a6111ee72927452c0864f789f"
+  digest = "1:6491a68a381ec652fad0b1ed9664870b21763058270be238fc9dd0875e21c095"
   name = "github.com/micro/cli"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1b0c9793c30063c75054ac3a245ef8f7f5154229"
+  revision = "bef92b8564e931cfd32870e52be76880ce358235"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:bce08ab82dd9c66fe37060e8afe82d514ecbac0f9a986800d934f617874f248c"
+  digest = "1:ea66ad5ef6a772db85c9c6eca72136f6f6e7b0d96983ba3bb82d5acf3a71cf11"
   name = "github.com/micro/go-grpc"
   packages = [
     ".",
@@ -190,19 +190,19 @@
     "server",
   ]
   pruneopts = "UT"
-  revision = "a84e0b680eb9b442c3aa3a66e9372f79c05e7c85"
-  version = "v0.8.0"
+  revision = "36812a48569422e572be1c9b877e01971410e1ea"
+  version = "v0.9.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:1ba6e7291c93f36a9eef6628caaed64a82b1da2508d01f6347c7936f5c2531f6"
+  digest = "1:ad887831095e1445d282e25438f7b9d10e42b1e11e6633e29742609312b9e8ed"
   name = "github.com/micro/go-log"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cbfa9447f9b655f8e66583237e51f40ca9bff860"
+  revision = "5cb7bb4413f4ae8de0d7e826aa2854861d3a6c31"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:3b824884819d3cafe0c2562bd6708a0f62a9ef04327dbff10482e1796c7a29df"
+  digest = "1:796fef2d20aac49be0053fa033f289d50b846762e09348745dfab817f761ac48"
   name = "github.com/micro/go-micro"
   packages = [
     ".",
@@ -237,8 +237,8 @@
     "transport/memory",
   ]
   pruneopts = "UT"
-  revision = "89c8e1f4a750716e6988a4acdc651593c1b00a68"
-  version = "v0.23.0"
+  revision = "107b5710199ed8d6278dc52a2a5328b5859e5ff8"
+  version = "v0.24.0"
 
 [[projects]]
   digest = "1:dd01d5037caed32a14d1311c5fbdc3ad359efef9a177ca51dd90febb594153c9"
@@ -251,16 +251,16 @@
     "server/grpc",
   ]
   pruneopts = "UT"
-  revision = "f93523ae8824c2828ac410904d7cf0b96e6eb9a4"
-  version = "v0.21.1"
+  revision = "2b2efff55dccf6c4f6fa8d39897b14b9b77543af"
+  version = "v0.22.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:7243b71c52f5226ed26340e9bbffd702484c152caa2e78234f4384a8309dcafb"
+  digest = "1:1a66bea3296319ac1928861f1d98c212502afb3c36663a1c19ec2e40971e3c20"
   name = "github.com/micro/go-rcache"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a581a57b513351792b9f21fc8b95d87b1c5a95da"
+  revision = "0ce6738e29729b9682b05dd828cfae9d3063e341"
+  version = "v0.1.0"
 
 [[projects]]
   digest = "1:4ecc9eb4e64de90f1863fd4851b94f0c867b1f0f53ff0e037cd678c4b4028d0a"
@@ -271,15 +271,14 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a821cb65a246b429a68e30eb263fb6bba4fa082ea09318d3122f0b3d90dea3c4"
+  digest = "1:6271fb71dcd6758564f64edeb022e7fc4485fa5a63dcb68805ab760e2ec34ead"
   name = "github.com/micro/mdns"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9c3770d4057a5adca108c15ca317fee54766f9f7"
+  revision = "3a29b6675e7404722eed4d4dde532c2e103007a7"
+  version = "v0.1.0"
 
 [[projects]]
-  branch = "master"
   digest = "1:65c7e1d0a7eb2d2062a69041059a31e65c0009f3c6cd3883d66532110025c7a3"
   name = "github.com/micro/util"
   packages = [
@@ -289,15 +288,16 @@
     "go/lib/tls",
   ]
   pruneopts = "UT"
-  revision = "2d4f591dc5383712927e372348c0885478402595"
+  revision = "77fba40c3c49cc7f12e111d3901a9a710a1854c1"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:d64a0aa67f715fd28f5ddfe0d74c06b6d6fe0fed931d77e662f2c4694f6854dc"
+  digest = "1:1b46adc9e3d878cdf38a164cfdac2e19340f4d2662aa5bee88062f6ee08ac9df"
   name = "github.com/miekg/dns"
   packages = ["."]
   pruneopts = "UT"
-  revision = "56be65265e34e731425e0269a301774938827c60"
-  version = "v1.1.3"
+  revision = "8fc2e5773bbd308ca2fcc962fd8d25c1bd0f6743"
+  version = "v1.1.4"
 
 [[projects]]
   digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
@@ -406,11 +406,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7c3cf8f9e513ba8a0bd2f2c694646397a45e9d7458e61fabd774abb0f6149372"
+  digest = "1:aba2486bbebaadd1f62bde3c363ddbd984efade895833d86ed069f586fd9e899"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "302c3dd5f1cc82baae8e44d9c3178e89b6e2b345"
+  revision = "aca44879d5644da7c5b8ec6a1115e9b6ea6c40d9"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
