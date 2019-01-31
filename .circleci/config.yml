@@ -72,7 +72,7 @@ jobs:
             for ((i=0; i<arrlen; i++)); do
               kubectl patch deployment/${deployment_arr[$i]} -p \
               '{"spec":{"template":{"spec":{"containers":[{"name":"'${name_arr[$i]}'","image":"'${AWS_ACCOUNT}'.dkr.ecr.'${AWS_REGION}'.amazonaws.com/'${component_arr[$i]}':'${BRANCH_NAME}'"}]}}}}'
-              if ! kubectl rollout status deploy/${deployment_arr[$i]}; then
+              if ! kubectl rollout status deploy/${deployment_arr[$i]} --watch=true --timeout=30s; then
                 echo "Deploy failed, roll back to previous version"
                 kubectl rollout undo deploy/${deployment_arr[$i]} 
               fi
