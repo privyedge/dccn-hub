@@ -37,6 +37,8 @@ spec:
           value: amqp://guest:guest@broker:5672
         - name: MICRO_REGISTER_INTERVAL
           value: "15"
+        - name: MICRO_REGISTER_TTL
+          value: "600"
         - name: MICRO_REGISTRY
           value: consul
         - name: MICRO_REGISTRY_ADDRESS
