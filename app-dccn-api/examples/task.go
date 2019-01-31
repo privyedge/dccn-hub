@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"google.golang.org/grpc"
@@ -18,10 +19,10 @@ var addr = "client-dev.dccn.ankr.network:50051"
 // var addr = "localhost:50051"
 var token = "test token here"
 
-// func init() {
-// 	addr = os.Getenv("API_ADDRESS")
-// 	log.Println("API ADDRESS: ", addr)
-// }
+func init() {
+	addr = os.Getenv("API_ADDRESS")
+	log.Println("API ADDRESS: ", addr)
+}
 
 func main() {
 

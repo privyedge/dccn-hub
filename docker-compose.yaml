@@ -16,9 +16,20 @@ services:
     ports:
       - "27017:27017"
 
+  consul:
+    image: consul:latest
+    command: consul agent -dev -log-level=warn -ui -client=0.0.0.0
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+
   micro:
     image: microhq/micro:latest
-    command: --registry=mdns --enable_stats --register_interval=5 --register_ttl=10 --register_interval=10 app-dccn-api --handler=rpc
+    command: --enable_stats --register_interval=5 --register_ttl=10 --register_interval=10 app-dccn-api --handler=rpc
+    links:
+      - consul
     ports:
       - "8080:8080"
 
@@ -29,11 +40,11 @@ services:
       context: .
       dockerfile: ./dockerfile/task.Dockerfile
     environment:
-      MICRO_REGISTRY: mdns
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
       MICRO_BROKER: rabbitmq
       MICRO_BROKER_ADDRESS: amqp://guest:guest@broker:5672
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
@@ -44,6 +55,7 @@ services:
     links:
       - broker
       - datastore
+      - consul
 
   usermgr:
     image: app-dccn-usermgr
@@ -52,9 +64,9 @@ services:
       context: .
       dockerfile: ./dockerfile/user.Dockerfile
     environment:
-      MICRO_REGISTRY: mdns
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
@@ -63,6 +75,7 @@ services:
       DB_POOL_LIMIT: 4096
     links:
       - datastore
+      - consul
 
   email:
     image: app-dccn-email
@@ -71,11 +84,11 @@ services:
       context: .
       dockerfile: ./dockerfile/email.Dockerfile
     environment:
-      MICRO_REGISTRY: mdns
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
       MICRO_BROKER: rabbitmq
       MICRO_BROKER_ADDRESS: amqp://guest:guest@broker:5672
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
@@ -85,6 +98,7 @@ services:
     links:
       - broker
       - datastore
+      - consul
 
   api:
     image: app-dccn-api
@@ -93,12 +107,12 @@ services:
       context: .
       dockerfile: ./dockerfile/api.Dockerfile
     environment:
-      MICRO_REGISTRY: mdns
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
       MICRO_SERVER_ADDRESS: :50051
       MICRO_BROKER: rabbitmq
       MICRO_BROKER_ADDRESS: amqp://guest:guest@broker:5672
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
@@ -110,8 +124,47 @@ services:
       - "50051:50051"
     links:
       - taskmgr
-      - email
+#      - email
       - usermgr
       - broker
       - datastore
+      - consul
 
+  all:
+    image: app-dccn-all-test
+    container_name: app-dccn-all-test
+    build:
+      context: .
+      dockerfile: ./dockerfile/all.Dockerfile
+    environment:
+      API_ADDRESS: api:50051
+
+  task-client:
+    image: app-dccn-task-client
+    container_name: app-dccn-task-client
+    build:
+      context: .
+      dockerfile: ./dockerfile/task_client.Dockerfile
+    environment:
+      API_ADDRESS: api:50051
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      MICRO_SERVER_ADDRESS: :50051
+    links:
+      - taskmgr
+      - consul
+
+  api-taskmgr-client:
+    image: app-dccn-api-taskmgr-client
+    container_name: app-dccn-api-taskmgr-client
+    build:
+      context: .
+      dockerfile: ./dockerfile/api_task_client.Dockerfile
+    environment:
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      API_ADDRESS: "app-dccn-api:50051"
+    links:
+      - api
+      - taskmgr
+      - consul
