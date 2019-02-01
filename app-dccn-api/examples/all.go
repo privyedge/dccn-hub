@@ -68,15 +68,16 @@ func main() {
 	})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	tokenContext, cancel := context.WithTimeout(ctx, 80*time.Second)
+	tokenContext, cancel := context.WithTimeout(ctx, 180*time.Second)
 	defer cancel()
+
 	task := apiCommon.MockTasks()[0]
 	log.Println("Test CreateTask")
 	if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
 		log.Fatal(err.Error())
 	} else {
 		task.Id = rsp.TaskId
-		log.Println(*rsp)
+		log.Println("CreateTask ok", *rsp)
 	}
 
 	userTasks := make([]*common_proto.Task, 0)
