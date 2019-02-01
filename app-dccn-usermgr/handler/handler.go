@@ -122,7 +122,7 @@ func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *
 	return nil
 }
 
-func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.Token, rsp *usermgr.NewTokenResponse) error {
+func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
 
 	log.Println("Debug into VerifyAndRefreshToken: ", req.Token)
 	if !p.blacklist.Available(req.Token) {
@@ -131,12 +131,19 @@ func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.To
 		return err
 	}
 
-	if newToken, err := p.token.VerifyAndRefresh(req.Token); err != nil {
-		log.Println(err.Error())
-		return err
-	} else {
-		rsp.Token = newToken
+	_, err := p.token.Verify(req.Token)
+	if err == nil || (err != nil && !p.blacklist.Available(req.Token)) {
+		p.blacklist.Refresh(req.Token)
+		return nil
 	}
+
+	p.blacklist.Remove(req.Token)
+	log.Println(err.Error())
+	return err
+}
+
+func (p *UserHandler) RefreshToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
+	p.blacklist.Refresh(req.Token)
 	return nil
 }
 

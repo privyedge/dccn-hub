@@ -12,6 +12,7 @@ import (
 	"github.com/micro/go-micro/server"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
@@ -29,11 +30,13 @@ import (
 )
 
 var (
-	srv      micro.Service
-	conf     config.Config
-	db       dbservice.DBService
-	err      error
-	authList map[string]struct{}
+	srv        micro.Service
+	conf       config.Config
+	db         dbservice.DBService
+	err        error
+	authList   map[string]struct{}
+	userClient *apihandler.ApiUser
+	taskClient *apihandler.ApiTask
 )
 
 func main() {
@@ -76,12 +79,14 @@ func startHandler() {
 	srv.Init()
 
 	// Register User Handler
-	if err := usermgr.RegisterUserMgrHandler(srv.Server(), apihandler.NewApiUser(srv.Client())); err != nil {
+	userClient = apihandler.NewApiUser(srv.Client())
+	if err := usermgr.RegisterUserMgrHandler(srv.Server(), userClient); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Register Task Handler
-	if err := taskmgr.RegisterTaskMgrHandler(srv.Server(), apihandler.NewApiTask(srv.Client())); err != nil {
+	taskClient = apihandler.NewApiTask(srv.Client())
+	if err := taskmgr.RegisterTaskMgrHandler(srv.Server(), taskClient); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -121,28 +126,36 @@ func needAuth(method string) bool {
 
 func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, resp interface{}) error {
+		meta, ok := metadata.FromContext(ctx)
+		// Note this is now uppercase (not entirely sure why this is...)
+		var token string
+		if ok {
+			token = meta["token"]
+		}
+
 		if os.Getenv("DISABLE_AUTH") == "true" || !needAuth(req.Method()) {
+			if ok && token != "" {
+				if err := userClient.RefreshToken(ctx, &usermgr.Token{Token: token}, &common_proto.Error{}); err != nil {
+					log.Println(err.Error())
+					return err
+				}
+			}
 			return fn(ctx, req, resp)
 		}
-		meta, ok := metadata.FromContext(ctx)
+
 		if !ok {
 			log.Println("no auth meta-data found in request")
 			return errors.New("no auth meta-data found in request")
 		}
 
-		// Note this is now uppercase (not entirely sure why this is...)
-		token := meta["token"]
 		log.Println("Authenticating with token: ", token)
-
 		// Auth here
 		// Really shouldn't be using a global here, find a better way
 		// of doing this, since you can't pass it into a wrapper.
 		userMgrService := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
-		if rsp, err := userMgrService.VerifyAndRefreshToken(context.Background(), &usermgr.Token{Token: token}); err != nil {
+		if _, err := userMgrService.VerifyAndRefreshToken(context.Background(), &usermgr.Token{Token: token}); err != nil {
 			log.Println(err.Error())
 			return err
-		} else {
-			ctx = metadata.NewContext(ctx, map[string]string{"newtoken": rsp.Token})
 		}
 
 		return fn(ctx, req, resp)
