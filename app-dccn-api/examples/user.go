@@ -8,8 +8,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-// var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "localhost:50051"
+
+// var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -45,6 +46,13 @@ func main() {
 	} else {
 		log.Printf("login Success: %s\n", rsp.Token)
 		token = rsp.Token
+	}
+
+	// use wrong password
+	if _, err := cli.Login(context.TODO(), &pb.LoginRequest{Email: user.Email, Password: user.Password + "_wrong"}); err != nil {
+		log.Println("want err: ", err.Error())
+	} else {
+		log.Fatal("Exception OK")
 	}
 
 	// Verify Login Token
