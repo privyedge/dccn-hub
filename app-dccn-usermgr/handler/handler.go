@@ -56,6 +56,15 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		log.Println(err.Error())
 		return err
 	}
+
+	// Compares our given password against the hashed password
+	// stored in the database
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		err = errors.New("invalid password")
+		log.Println(err.Error())
+		return err
+	}
+
 	rsp.Token, err = p.token.New(user)
 	if err != nil {
 		log.Println(err.Error())
