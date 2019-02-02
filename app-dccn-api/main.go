@@ -92,6 +92,7 @@ func startHandler() {
 
 	// Dc Manager register handler
 	// New Publisher to deploy new task action.
+	log.Println("Debut Into Publisher")
 	taskFeedback := micro.NewPublisher(ankr_default.MQFeedbackTask, srv.Client())
 
 	dcHandler := handler.New(db, taskFeedback)
