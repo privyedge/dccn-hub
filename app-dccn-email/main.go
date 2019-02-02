@@ -5,6 +5,7 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 
+	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
 
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
@@ -16,7 +17,7 @@ import (
 
 func main() {
 	// New Service
-	service := micro.NewService(
+	service := grpc.NewService(
 		micro.Name(ankr_default.EmailRegistryServerName),
 	)
 
@@ -29,7 +30,8 @@ func main() {
 	}
 
 	// Register Function as TaskStatusFeedback
-	if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.Handler); err != nil {
+	// if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.Handler); err != nil {
+	if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.New()); err != nil {
 		log.Fatal(err.Error())
 	}
 

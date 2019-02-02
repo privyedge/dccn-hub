@@ -1,0 +1,40 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: dccn-user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dccn-user
+  template:
+    metadata:
+      labels:
+        app: dccn-user
+    spec:
+        containers:
+        - name: dccn-user
+          image: dccn-user
+#          imagePullPolicy: Always
+#          不要拉取镜像,Always为默认值
+          imagePullPolicy: IfNotPresent
+          command: [ "/usermgr" ]
+          env:
+          - name: DB_COLLECTION
+            value: user
+          - name: DB_HOST
+            value: datastore:27017
+          - name: DB_NAME
+            value: dccn
+          - name: DB_POOL_LIMIT
+            value: "4096"
+          - name: DB_TIMEOUT
+            value: "5"
+          - name: MICRO_REGISTER_INTERVAL
+            value: "15"
+          - name: MICRO_REGISTRY
+            value: consul
+          - name: MICRO_REGISTRY_ADDRESS
+            value: consul:8500
+          - name: MICRO_SERVER_VERSION
+            value: v1.0
