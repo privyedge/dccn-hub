@@ -24,16 +24,16 @@ build: build-api build-email build-task build-task build-test
 
 #=================== CREATE ===================
 create-dep:
-	-kubectl create -f deployments/broker.yml
-	-kubectl create -f deployments/consul.yml
-	-kubectl create -f deployments/datastore.yml
+	-kubectl create -f kubernetes/broker.yml
+	-kubectl create -f kubernetes/consul.yml
+	-kubectl create -f kubernetes/datastore.yml
 	kubectl get pod
 
 create-app:
-	-kubectl create -f deployments/task.yml
-	-kubectl create -f deployments/user.yml
-	-kubectl create -f deployments/email.yml
-	-kubectl create -f deployments/api.yml
+	-kubectl create -f kubernetes/task.yml
+	-kubectl create -f kubernetes/user.yml
+	-kubectl create -f kubernetes/email.yml
+	-kubectl create -f kubernetes/api.yml
 
 create: build create-dep create-app
 	kubectl get pod
@@ -46,32 +46,32 @@ run: build
 
 #=================== TEST ===================
 test:
-	kubectl create -f deployments/test.yml
+	kubectl create -f kubernetes/test.yml
 
 #=================== CLEAN UP ===================
 clean-api:
-	-kubectl delete -f deployments/api.yml
+	-kubectl delete -f kubernetes/api.yml
 
 clean-task:
-	-kubectl delete -f deployments/task.yml
+	-kubectl delete -f kubernetes/task.yml
 
 clean-user:
-	-kubectl delete -f deployments/user.yml
+	-kubectl delete -f kubernetes/user.yml
 
 clean-email:
-	-kubectl delete -f deployments/email.yml
+	-kubectl delete -f kubernetes/email.yml
 
 clean-test:
-	-kubectl delete -f deployments/test.yml
+	-kubectl delete -f kubernetes/test.yml
 
 clean-broker:
-	-kubectl delete -f deployments/broker.yml
+	-kubectl delete -f kubernetes/broker.yml
 
 clean-datastore:
-	-kubectl delete -f deployments/datastore.yml
+	-kubectl delete -f kubernetes/datastore.yml
 
 clean-consul:
-	-kubectl delete -f deployments/consul.yml
+	-kubectl delete -f kubernetes/consul.yml
 
 clean-dep: clean-broker clean-datastore clean-consul
 	kubectl get pod
