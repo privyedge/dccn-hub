@@ -30,8 +30,7 @@ func main() {
 	}
 
 	// Register Function as TaskStatusFeedback
-	// if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.Handler); err != nil {
-	if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.New()); err != nil {
+	if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.Handler); err != nil {
 		log.Fatal(err.Error())
 	}
 

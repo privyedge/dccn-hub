@@ -14,10 +14,8 @@ spec:
     spec:
         containers:
         - name: dccn-task
-          image: dccn-task
-#          imagePullPolicy: Always
-#          不要拉取镜像,Always为默认值
-          imagePullPolicy: IfNotPresent
+          image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-taskmgr:feat
+          imagePullPolicy: Always
           command: [ "/taskmgr" ]
           env:
           - name: DB_COLLECTION

@@ -14,7 +14,7 @@ spec:
     spec:
         containers:
         - name: dccn-email
-          image: dccn-email
+          image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-email:feat
 #          imagePullPolicy: Always
 #          不要拉取镜像,Always为默认值
           imagePullPolicy: IfNotPresent

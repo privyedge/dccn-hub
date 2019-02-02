@@ -15,9 +15,7 @@ spec:
         containers:
         - name: dccn-test
           image: dccn-test-all
-#          imagePullPolicy: Always
-#          不要拉取镜像,Always为默认值
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           command: [ "/test-all" ]
           env:
           - name: API_ADDRESS
