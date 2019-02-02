@@ -51,7 +51,7 @@ services:
       DB_COLLECTION: task
       DB_TIMEOUT: 5
       DB_POOL_LIMIT: 4096
-#      DISABLE_AUTH: "true"
+      DISABLE_AUTH: "true"
     links:
       - broker
       - datastore
