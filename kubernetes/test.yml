@@ -19,5 +19,5 @@ spec:
           command: [ "/test-all" ]
           env:
           - name: API_ADDRESS
-            value: dccn-api:50051
+            value: api:50051
 #            value: client-dev.dccn.ankr.network:50051

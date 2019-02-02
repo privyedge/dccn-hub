@@ -1,19 +1,19 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dccn-email
+  name: email
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dccn-email
+      app: email
   template:
     metadata:
       labels:
-        app: dccn-email
+        app: email
     spec:
         containers:
-        - name: dccn-email
+        - name: email
           image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-email:feat
 #          imagePullPolicy: Always
 #          不要拉取镜像,Always为默认值

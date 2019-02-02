@@ -1,19 +1,19 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dccn-user
+  name: usermgr
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dccn-user
+      app: usermgr
   template:
     metadata:
       labels:
-        app: dccn-user
+        app: usermgr
     spec:
         containers:
-        - name: dccn-user
+        - name: usermgr
           image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-usermgr:feat
           imagePullPolicy: Always
           command: [ "/usermgr" ]

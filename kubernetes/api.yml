@@ -1,19 +1,19 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dccn-api
+  name: api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dccn-api
+      app: api
   template:
     metadata:
       labels:
-        app: dccn-api
+        app: api
     spec:
         containers:
-        - name: dccn-api
+        - name: api
           image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-api:feat
           imagePullPolicy: Always
           command: [ "/api" ]
@@ -48,13 +48,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: dccn-api
+  name: api
   labels:
-    app: dccn-api
+    app: api
 spec:
   ports:
     - port: 50051
       targetPort: 50051
       protocol: TCP
   selector:
-    app: dccn-api
+    app: api
