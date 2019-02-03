@@ -21,12 +21,13 @@ func New(c *handler.DataCenterStreamCaches) *Subscriber {
 // UpdateTaskByFeedback receives task result from data center, returns to v1
 // UpdateTaskStatusByFeedback updates database status by performing feedback from the data center of the task.
 // sets executor's id, updates task status.
-func (p *Subscriber) UpdateTaskByFeedback(ctx context.Context, event *common_proto.Event) error {
+func (p *Subscriber) HandlerDeployEventFromTaskMgr(ctx context.Context, event *common_proto.Event) error {
 
-	log.Print("Debug into UpdateTaskByFeedback")
+	task := event.GetTask()
+	log.Printf("HandlerDeployEvnetFromTaskMgr: Receive New Event: %+v", *task)
 	switch event.EventType {
 	case common_proto.Operation_TASK_CREATE, common_proto.Operation_TASK_CANCEL, common_proto.Operation_TASK_UPDATE:
-		stream, err := p.cache.One()
+		stream, err := p.cache.One(task.DataCenter)
 		if err != nil {
 			log.Println(err.Error())
 			return err

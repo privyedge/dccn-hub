@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"sync"
@@ -14,7 +15,7 @@ import (
 var heartbeat = &common_proto.Event{EventType: common_proto.Operation_HEARTBEAT}
 
 type DataCenterStreamCaches struct {
-	mu *sync.Mutex
+	mu *sync.RWMutex
 	// TODO: Redis here
 	streams map[string]dcmgr.DCStreamer_ServerStreamStream
 }
@@ -22,7 +23,7 @@ type DataCenterStreamCaches struct {
 func NewDataCenterStreamCaches() *DataCenterStreamCaches {
 
 	cache := &DataCenterStreamCaches{
-		mu:      new(sync.Mutex),
+		mu:      new(sync.RWMutex),
 		streams: make(map[string]dcmgr.DCStreamer_ServerStreamStream),
 	}
 	go cache.checkHealthy()
@@ -54,35 +55,62 @@ func (p *DataCenterStreamCaches) Remove(dc string) {
 }
 
 func (p *DataCenterStreamCaches) Len(dc string) int {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.mu.RLock()
+	defer p.mu.RUnlock()
 
 	return len(p.streams)
 }
 
-func (p *DataCenterStreamCaches) One() (dcmgr.DCStreamer_ServerStreamStream, error) {
+func (p *DataCenterStreamCaches) Has(dc string) bool {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	_, ok := p.streams[dc]
+	return ok
+}
+
+func (p *DataCenterStreamCaches) One(dc string) (dcmgr.DCStreamer_ServerStreamStream, error) {
 
 	log.Println("Debug into DataCenterStreamCaches'SelectFreeDataCenter")
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.mu.RLock()
+	defer p.mu.RUnlock()
 
-	if len(p.streams) <= 0 {
-		return nil, ankr_default.ErrNoAvailableDataCenter
+	switch dc {
+	case "":
+		if len(p.streams) <= 0 {
+			return nil, ankr_default.ErrNoAvailableDataCenter
+		}
+
+		dcs := make([]string, len(p.streams))
+		var i = 0
+		for dc := range p.streams {
+			dcs[i] = dc
+			i++
+		}
+
+		randIndex := rand.Intn(len(dcs))
+		return p.streams[dcs[randIndex]], nil
+
+	default:
+		return p.Get(dc)
 	}
+}
 
-	dcs := make([]string, len(p.streams))
-	var i = 0
-	for dc := range p.streams {
-		dcs[i] = dc
-		i++
+func (p *DataCenterStreamCaches) Get(dc string) (dcmgr.DCStreamer_ServerStreamStream, error) {
+
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	if ss, ok := p.streams[dc]; ok {
+		return ss, nil
 	}
-
-	randIndex := rand.Intn(len(dcs))
-	return p.streams[dcs[randIndex]], nil
+	return nil, fmt.Errorf("%s not avaiable", dc)
 }
 
 func (p *DataCenterStreamCaches) All() map[string]dcmgr.DCStreamer_ServerStreamStream {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
 	return p.streams
 }
 
@@ -99,7 +127,7 @@ func (p *DataCenterStreamCaches) checkHealthy() {
 	}
 }
 
-func (p *DataCenterStreamCaches) Clanup() {
+func (p *DataCenterStreamCaches) Cleanup() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 

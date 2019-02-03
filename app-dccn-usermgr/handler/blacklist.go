@@ -20,7 +20,7 @@ func NewBlacklist() *Blacklist {
 	blacklist := &Blacklist{
 		mu:             new(sync.Mutex),
 		caches:         make(map[string]int64),
-		checkInterval:  5,
+		checkInterval:  ankr_default.CleanupInterval,
 		tokenValidTime: ankr_default.AccessTokenValidTime,
 		term:           make(chan struct{}),
 	}

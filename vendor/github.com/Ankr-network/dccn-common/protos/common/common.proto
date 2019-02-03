@@ -19,7 +19,8 @@ message Task  {
     bool hidden = 12;
     uint32 uptime = 13; // uptime of the task
     uint64 creation_date = 14; //task creation date
-    bytes extra = 15;
+    string report = 15; // detail for status
+    bytes extra = 16;
 }
 
 message DataCenter {

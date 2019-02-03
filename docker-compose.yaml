@@ -135,7 +135,7 @@ services:
     container_name: app-dccn-all-test
     build:
       context: .
-      dockerfile: ./dockerfile/all.Dockerfile
+      dockerfile: ./dockerfile/test.Dockerfile
     environment:
       API_ADDRESS: api:50051
 

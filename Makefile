@@ -35,6 +35,9 @@ create-app:
 	-kubectl create -f deployments/email.yml
 	-kubectl create -f deployments/api.yml
 
+create-test:
+	-kubectl create -f deployments/test.yml
+
 create: build create-dep create-app
 	kubectl get pod
 
@@ -50,10 +53,10 @@ test:
 
 #=================== CLEAN UP ===================
 clean-api:
-	-kubectl delete -f deployments/api.yml
+	-kubectl delete deployment.apps/api
 
 clean-task:
-	-kubectl delete -f deployments/task.yml
+	-kubectl delete deployment.apps/api
 
 clean-user:
 	-kubectl delete -f deployments/user.yml

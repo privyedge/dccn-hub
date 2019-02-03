@@ -11,7 +11,8 @@ import (
 func (p *DcMgrHandler) updateDataCenter(dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) error {
 
 	log.Println("Debug into updateDataCenter")
-	if dc.Id == "" {
+	// TODO: logic here need change; add user for data center; or return data center id
+	if !p.DcStreamCaches.Has(dc.Name) {
 		// data center dose not exist, register it
 		dc.Id = uuid.New().String()
 		if err := p.db.Create(dc); err != nil {

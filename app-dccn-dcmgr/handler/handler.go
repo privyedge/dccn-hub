@@ -68,6 +68,6 @@ func (p *DcMgrHandler) Available() error {
 
 func (p *DcMgrHandler) Cleanup() {
 	if p.DcStreamCaches != nil {
-		p.DcStreamCaches.Clanup()
+		p.DcStreamCaches.Cleanup()
 	}
 }

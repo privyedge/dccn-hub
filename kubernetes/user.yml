@@ -14,7 +14,7 @@ spec:
     spec:
         containers:
         - name: app-dccn-usermgr
-          image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-usermgr:feat
+          image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-usermgr:feat20190202234751
           imagePullPolicy: Always
           command: [ "/usermgr" ]
           env:

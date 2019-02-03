@@ -20,19 +20,20 @@ func New(db db.DBService) *TaskStatusFeedback {
 // UpdateTaskByFeedback receives task result from data center, returns to v1
 // UpdateTaskStatusByFeedback updates database status by performing feedback from the data center of the task.
 // sets executor's id, updates task status.
-func (p *TaskStatusFeedback) UpdateTaskByFeedback(ctx context.Context, event *common_proto.Event) error {
+func (p *TaskStatusFeedback) HandlerFeedbackEventFromDataCenter(ctx context.Context, event *common_proto.Event) error {
 
-	log.Println("Debug into UpdateTaskByFeedback")
+	feedback := event.GetTaskFeedback()
+	log.Printf("HandlerFeedbackEventFromDataCenter: Receive New Event: %+v", *feedback)
 	var update bson.M
 	switch event.EventType {
 	case common_proto.Operation_TASK_CREATE:
-		update = bson.M{"$set": bson.M{"status": event.GetTaskFeedback().Status, "datacenter": event.GetTaskFeedback().DataCenter}}
+		update = bson.M{"$set": bson.M{"status": feedback.Status, "datacenter": feedback.DataCenter}}
 		if event.GetTaskFeedback().Url != "" {
-			update = bson.M{"$set": bson.M{"status": event.GetTaskFeedback().Status, "datacenter": event.GetTaskFeedback().DataCenter, "url": event.GetTaskFeedback().Url}}
+			update = bson.M{"$set": bson.M{"status": feedback.Status, "datacenter": feedback.DataCenter, "url": feedback.Url, "report": feedback.Report}}
 		}
 	case common_proto.Operation_TASK_UPDATE, common_proto.Operation_TASK_CANCEL:
-		update = bson.M{"$set": bson.M{"status": event.GetTaskFeedback().Status}}
+		update = bson.M{"$set": bson.M{"status": feedback.Status, "report": feedback.Report}}
 	}
 
-	return p.db.Update(event.GetTaskFeedback().TaskId, update)
+	return p.db.Update(feedback.TaskId, update)
 }
