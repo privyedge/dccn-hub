@@ -14,7 +14,7 @@ spec:
     spec:
         containers:
         - name: app-dccn-taskmgr
-          image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-taskmgr:feat20190202234751
+          image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-taskmgr:feat
           imagePullPolicy: Always
           command: [ "/taskmgr" ]
           env:
