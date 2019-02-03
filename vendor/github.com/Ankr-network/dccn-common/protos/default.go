@@ -7,6 +7,7 @@ const (
 	MQMail                = "topic.mail.handler"
 	AccessTokenValidTime  = 15      // 15 minutes
 	RefreshTokenValidTime = 72 * 60 // 72 hours
+	CleanupInterval       = 20      // minute
 )
 
 // To do: Remove this line when usr mgr is ready
