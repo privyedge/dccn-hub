@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 	"log"
 	"time"
 
@@ -42,11 +42,11 @@ func main() {
 		Password: "12345678901",
 		Balance:  199,
 	}
-	if _, err := userClient.Register(context.Background(), user); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Println("Register Ok")
-	}
+	//if _, err := userClient.Register(context.Background(), user); err != nil {
+	//	log.Fatal(err.Error())
+	//} else {
+	//	log.Println("Register Ok")
+	//}
 
 	var token string
 	var userId string
@@ -65,16 +65,13 @@ func main() {
 
 	tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	task := apiCommon.MockTasks()[0]
-	task.Image = "nginx:1.12"
-	task.Name = "name456"
-	// task.DataCenter = ""
-	log.Println("Test CreateTask")
-	if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Println(*rsp)
-	}
+	//task := apiCommon.MockTasks()[0]
+	//log.Println("Test CreateTask")
+	//if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
+	//	log.Fatal(err.Error())
+	//} else {
+	//	log.Println(*rsp)
+	//}
 
 	// var userTasks []*common_proto.Task
 	userTasks := make([]*common_proto.Task, 0)
@@ -85,8 +82,11 @@ func main() {
 		if len(userTasks) == 0 {
 			log.Fatalf("no tasks belongs to %s", userId)
 		} else {
-			log.Println(len(userTasks), "tasks belongs to ", userId)
-			log.Println(userTasks[0])
+			log.Println(len(userTasks), "tasks belongs to ", user.Email)
+			for i := 0; i < len(userTasks); i++ {
+				log.Println(userTasks[i])
+			}
+
 		}
 	}
 

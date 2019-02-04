@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+
 	"log"
 	"time"
 
@@ -42,11 +43,11 @@ func main() {
 		Password: "12345678901",
 		Balance:  199,
 	}
-	if _, err := userClient.Register(context.Background(), user); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Println("Register Ok")
-	}
+	//if _, err := userClient.Register(context.Background(), user); err != nil {
+	//	log.Fatal(err.Error())
+	//} else {
+	//	log.Println("Register Ok")
+	//}
 
 	var token string
 	var userId string
@@ -65,18 +66,7 @@ func main() {
 
 	tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	task := apiCommon.MockTasks()[0]
-	task.Image = "nginx:1.12"
-	task.Name = "name456"
-	// task.DataCenter = ""
-	log.Println("Test CreateTask")
-	if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Println(*rsp)
-	}
 
-	// var userTasks []*common_proto.Task
 	userTasks := make([]*common_proto.Task, 0)
 	if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.ID{UserId: userId}); err != nil {
 		log.Fatal(err.Error())
@@ -85,10 +75,32 @@ func main() {
 		if len(userTasks) == 0 {
 			log.Fatalf("no tasks belongs to %s", userId)
 		} else {
-			log.Println(len(userTasks), "tasks belongs to ", userId)
-			log.Println(userTasks[0])
+			if(len(userTasks) == 0){
+				log.Printf("no task , so cancel task can not test")
+				return
+			}
+
+			log.Println(len(userTasks), "tasks belongs to ", user.Email)
+			log.Printf("such task will delete : ")
+			//for i := 0; i < len(userTasks); i++ {
+				log.Println(userTasks[0])
+			//}
+
 		}
 	}
 
-	log.Println("END")
+
+	task := apiCommon.MockTasks()[0]
+	task.Image = "web02"
+	log.Println("Test PurgeTask")
+	if rsp, err := taskClient.PurgeTask(tokenContext, &taskmgr.Request{UserId: userId, TaskId:userTasks[0].Id}); err != nil {
+		log.Fatal(err.Error())
+	} else {
+		log.Printf("purge task status  %s    detail : %s " , rsp.Status ,rsp.Details)
+	}
+
+	// var userTasks []*common_proto.Task
+
+	//
+	//log.Println("END")
 }
