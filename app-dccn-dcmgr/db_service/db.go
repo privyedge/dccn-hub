@@ -82,7 +82,7 @@ func (p *DB) Create(center *common_proto.DataCenter) error {
 func (p *DB) Update(datacenter *common_proto.DataCenter) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"id": datacenter.Id}, datacenter)
+	return p.collection(session).Update(bson.M{"name": datacenter.Name}, datacenter)
 }
 
 func (p *DB) UpdateStatus(name string, status common_proto.Status) error {
