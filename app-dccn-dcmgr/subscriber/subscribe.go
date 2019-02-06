@@ -40,5 +40,7 @@ func (p *Subscriber) HandlerDeployEventFromTaskMgr(ctx context.Context, event *c
 		log.Println(ankr_default.ErrUnknown.Error())
 		return ankr_default.ErrUnknown
 	}
+ log.Printf("send message to DataCenter  %+v", *task)
+
 	return nil
 }

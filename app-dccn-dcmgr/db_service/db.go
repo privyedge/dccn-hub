@@ -67,7 +67,7 @@ func (p *DB) GetByName(name string) (*common_proto.DataCenter, error) {
 	defer session.Close()
 
 	var center common_proto.DataCenter
-	err := p.collection(session).Find(bson.M{"datacenter": name}).One(&center)
+	err := p.collection(session).Find(bson.M{"name": name}).One(&center)
 	return &center, err
 }
 
@@ -82,13 +82,13 @@ func (p *DB) Create(center *common_proto.DataCenter) error {
 func (p *DB) Update(datacenter *common_proto.DataCenter) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"name": datacenter.Name}, datacenter)
+	return p.collection(session).Update(bson.M{"name": datacenter.Name}, bson.M{"$set": bson.M{"Report": datacenter.Report, "Metrics":datacenter.Metrics}})
 }
 
 func (p *DB) UpdateStatus(name string, status common_proto.Status) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"datacenter": name}, bson.M{"status": status})
+	return p.collection(session).Update(bson.M{"name": name}, bson.M{"$set": bson.M{"status": status}})
 }
 
 // Close closes the db connection.

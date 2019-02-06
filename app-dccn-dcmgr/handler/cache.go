@@ -7,9 +7,10 @@ import (
 	"sync"
 	"time"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos"
+	"github.com/Ankr-network/dccn-common/protos/common"
+	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
+	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 )
 
 var heartbeat = &common_proto.Event{EventType: common_proto.Operation_HEARTBEAT}
@@ -18,6 +19,7 @@ type DataCenterStreamCaches struct {
 	mu *sync.RWMutex
 	// TODO: Redis here
 	streams map[string]dcmgr.DCStreamer_ServerStreamStream
+	db dbservice.DBService
 }
 
 func NewDataCenterStreamCaches() *DataCenterStreamCaches {
@@ -45,7 +47,6 @@ func (p *DataCenterStreamCaches) Add(dc *common_proto.DataCenter, stream dcmgr.D
 }
 
 func (p *DataCenterStreamCaches) Remove(dc string) {
-
 	p.mu.Lock()
 	if _, ok := p.streams[dc]; ok {
 		log.Println("Debug into DataCenterStreamCaches'Remove: ", dc)
@@ -76,6 +77,14 @@ func (p *DataCenterStreamCaches) One(dc string) (dcmgr.DCStreamer_ServerStreamSt
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
+	//todo this debug logs, need to remove
+	log.Printf("total find dataCenter %d \n ", len(p.streams))
+	for dc := range p.streams {
+		log.Printf("find dataCenter %s \n", dc)
+	}
+
+
+
 	switch dc {
 	case "":
 		if len(p.streams) <= 0 {
@@ -90,6 +99,8 @@ func (p *DataCenterStreamCaches) One(dc string) (dcmgr.DCStreamer_ServerStreamSt
 		}
 
 		randIndex := rand.Intn(len(dcs))
+		log.Printf("find DataCenter %s", dcs[randIndex])
+
 		return p.streams[dcs[randIndex]], nil
 
 	default:
@@ -120,7 +131,12 @@ func (p *DataCenterStreamCaches) checkHealthy() {
 			if err := stream.Send(heartbeat); err != nil {
 				p.Remove(dc)
 				log.Println(stream.Close())
-				// log.Println(p.db.UpdateStatus(dc, common_proto.Status_UNAVAILABLE))
+				log.Println()
+				p.db.UpdateStatus(dc, common_proto.Status_UNAVAILABLE)
+				log.Printf("datacenter %s unavailable ", dc)
+			}else{
+				p.db.UpdateStatus(dc, common_proto.Status_AVAILABLE)
+				log.Printf("datacenter %s available ", dc)
 			}
 		}
 		time.Sleep(time.Second * time.Duration(ankr_default.HeartBeatInterval))

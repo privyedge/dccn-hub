@@ -25,6 +25,8 @@ func New(db dbservice.DBService, feedback micro.Publisher) *DcMgrHandler {
 		taskFeedback:   feedback,
 		DcStreamCaches: NewDataCenterStreamCaches(),
 	}
+
+	handler.DcStreamCaches.db = db
 	return handler
 }
 
@@ -33,12 +35,14 @@ func (p *DcMgrHandler) ServerStream(ctx context.Context, stream dcmgr.DCStreamer
 	log.Println("Debug into ServerStream")
 	for {
 		in, err := stream.Recv()
-		log.Println("Recv new request")
+		log.Println("Recv datacenter message")
 		if err == io.EOF {
+			log.Println("datacenter error eof ")
 			log.Println(err.Error())
 			return nil
 		}
 		if err != nil {
+			log.Println("datacenter error nil, dc may lost connection ")
 			log.Println(err.Error())
 			return err
 		}

@@ -9,18 +9,22 @@ import (
 )
 
 func (p *DcMgrHandler) updateDataCenter(dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) error {
-
-	log.Printf("update data center  : %s ", dc.Name)
 	// first update database
+	log.Printf("into updateDataCenter  : %v ", dc)
+
 	center , err :=  p.db.GetByName(dc.Name)
-	if center.Id == "" {
+
+
+	if center.Name == "" {
 		// data center dose not exist, register it
+		log.Printf("insert new datacenter  : %v ", dc)
 		dc.Id = uuid.New().String()
 		if err = p.db.Create(dc); err != nil {
 			log.Println(err.Error(), ", ", *dc)
 			return err
 		}
 	} else {
+		log.Printf("update datacenter by name : %s  ", center.Name)
 		if err = p.db.Update(dc); err != nil {
 			log.Println(err.Error())
 			return err
