@@ -36,15 +36,27 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
-		return err
+		rsp.Status = common_proto.Status_FAILURE
+		return nil
 	}
+
+	_, dbErr := p.db.Get(strings.ToLower(user.Email))
+	if dbErr == nil {
+		log.Println("email exist")
+		rsp.Status = common_proto.Status_FAILURE
+		return nil
+	}
+
 	user.Password = string(hashedPwd)
 	user.Email = strings.ToLower(user.Email)
 	user.Id = uuid.New().String()
 	if err := p.db.Create(user); err != nil {
 		log.Println(err.Error())
-		return err
+		rsp.Status = common_proto.Status_FAILURE
+		return nil
 	}
+
+	rsp.Status = common_proto.Status_SUCCESS
 	return nil
 }
 
