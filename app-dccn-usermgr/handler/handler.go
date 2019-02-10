@@ -83,7 +83,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		return err
 	}
 	rsp.UserId = user.Id
-	p.blacklist.Add(rsp.Token)
+	//p.blacklist.Add(rsp.Token)
 	return nil
 }
 
@@ -137,11 +137,11 @@ func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *
 func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
 
 	log.Println("Debug into VerifyAndRefreshToken: ", req.Token)
-	if !p.blacklist.Available(req.Token) {
-		err := errors.New("token is unavailable")
-		log.Println(err.Error())
-		return err
-	}
+	//if !p.blacklist.Available(req.Token) {
+	//	err := errors.New("token is unavailable")
+	//	log.Println(err.Error())
+	//	return err
+	//}
 
 	_, err := p.token.Verify(req.Token)
 	if err == nil || (err != nil && !p.blacklist.Available(req.Token)) {
