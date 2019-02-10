@@ -97,6 +97,8 @@ func startHandler() {
 	dcHandler := handler.New(db, taskFeedback)
 
 	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
+	opt := srv.Server().Options()
+	opt.Broker.Connect()
 	if err := micro.RegisterSubscriber(ankr_default.MQDeployTask, srv.Server(), subscriber.New(dcHandler.DcStreamCaches)); err != nil {
 		log.Fatal(err.Error())
 	}

@@ -60,6 +60,8 @@ func startHandler(db dbservice.DBService) {
 	deployTask := micro.NewPublisher(ankr_default.MQDeployTask, srv.Client())
 
 	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
+	opt := srv.Server().Options()
+	opt.Broker.Connect()
 	if err := micro.RegisterSubscriber(ankr_default.MQFeedbackTask, srv.Server(), subscriber.New(db)); err != nil {
 		log.Fatal(err.Error())
 	}
