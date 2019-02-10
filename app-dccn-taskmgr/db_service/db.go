@@ -73,6 +73,8 @@ func (p *DB) GetAll(userId string) (*[]*common_proto.Task, error) {
 
 	var tasks []*common_proto.Task
 
+	log.Printf("find tasks with uid %s", userId)
+
 	if err := p.collection(session).Find(bson.M{"userid": userId}).All(&tasks); err != nil {
 		return nil, err
 	}
@@ -96,6 +98,7 @@ func (p *DB) Create(task *common_proto.Task) error {
 	session := p.session.Copy()
 	defer session.Close()
 
+	log.Printf("create task %+v\n", task)
 	return p.collection(session).Insert(task)
 }
 
@@ -111,7 +114,41 @@ func (p *DB) UpdateTask(taskId string, task *common_proto.Task) error {
 	session := p.session.Copy()
 	defer session.Close()
 
-	return p.collection(session).Update(bson.M{"id": taskId}, task)
+	fields := bson.M{}
+
+	if len(task.Name) > 0 {
+		fields["name"] = task.Name
+	}
+
+	if task.Replica > 0 {
+		fields["replica"] = task.Replica
+	}
+
+	if task.Status > 0 {
+		fields["status"] = task.Status
+	}
+
+	if task.Hidden {
+		fields["hidden"] = task.Hidden
+	}
+
+	if len(task.Image) > 0 {
+		fields["image"] = task.Image
+	}
+
+	if len(task.DataCenter) > 0 {
+		fields["datacenter"] = task.DataCenter
+	}
+
+
+	if len(task.Url) > 0 {
+		fields["url"] = task.Url
+	}
+
+	return p.collection(session).Update(bson.M{"id": taskId}, bson.M{"$set": fields})
+
+
+	//return p.collection(session).Update(bson.M{"id": taskId}, task)
 }
 
 // Cancel cancel task, sets task status CANCEL

@@ -16,6 +16,8 @@ type DBService interface {
 	GetByName(name string) (*common_proto.DataCenter, error)
 	// Create Creates a new dc item if not exits.
 	Create(center *common_proto.DataCenter) error
+	// GetAll gets all task related to user id.
+	GetAll() (*[]*common_proto.DataCenter, error)
 	// Update updates dc item
 	Update(center *common_proto.DataCenter) error
 	// UpdateStatus updates dc item
@@ -99,3 +101,18 @@ func (p *DB) Close() {
 func (p *DB) dropCollection() {
 	log.Println(p.session.DB(p.dbName).C(p.collectionName).DropCollection().Error())
 }
+
+
+func (p *DB) GetAll() (*[]*common_proto.DataCenter, error) {
+	session := p.session.Clone()
+	defer session.Close()
+
+	var dcs []*common_proto.DataCenter
+
+
+	if err := p.collection(session).Find(bson.M{}).All(&dcs); err != nil {
+		return nil, err
+	}
+	return &dcs, nil
+}
+

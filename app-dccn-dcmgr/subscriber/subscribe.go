@@ -24,7 +24,7 @@ func New(c *handler.DataCenterStreamCaches) *Subscriber {
 func (p *Subscriber) HandlerDeployEventFromTaskMgr(ctx context.Context, event *common_proto.Event) error {
 
 	task := event.GetTask()
-	log.Printf("HandlerDeployEvnetFromTaskMgr: Receive New Event: %+v", *task)
+	log.Printf("dc manager service(hub) HandlerDeployEvnetFromTaskMgr: Receive New Event: %+v", *task)
 	switch event.EventType {
 	case common_proto.Operation_TASK_CREATE, common_proto.Operation_TASK_CANCEL, common_proto.Operation_TASK_UPDATE:
 		stream, err := p.cache.One(task.DataCenter)

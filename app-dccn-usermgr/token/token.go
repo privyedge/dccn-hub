@@ -50,6 +50,7 @@ func (p *Token) New(user *usermgr.User) (string, error) {
 		jwt.StandardClaims{
 			ExpiresAt: expireTime,
 			Issuer:    "ankr.network",
+			Id: user.Id,
 		},
 	}
 

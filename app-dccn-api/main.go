@@ -90,6 +90,11 @@ func startHandler() {
 		log.Fatal(err.Error())
 	}
 
+	       // Register Task Handler
+	dcClient := handler.NewAPIHandler(db)
+	if err := dcmgr.RegisterDCAPIHandler(srv.Server(), dcClient); err != nil {
+	    log.Fatal(err.Error())
+	}
 	// Dc Manager register handler
 	// New Publisher to deploy new task action.
 	taskFeedback := micro.NewPublisher(ankr_default.MQFeedbackTask, srv.Client())

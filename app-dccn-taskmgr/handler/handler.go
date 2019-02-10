@@ -2,18 +2,21 @@ package handler
 
 import (
 	"context"
-	"log"
-
-	"gopkg.in/mgo.v2/bson"
-
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"github.com/Ankr-network/dccn-common/protos"
 	"github.com/google/uuid"
+	"github.com/micro/go-micro/metadata"
+	"gopkg.in/mgo.v2/bson"
+	"log"
+	"strings"
 
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	"github.com/Ankr-network/dccn-common/protos/common"
 
-	micro "github.com/micro/go-micro"
+	"github.com/micro/go-micro"
 
-	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	db "github.com/Ankr-network/dccn-hub/app-dccn-taskmgr/db_service"
 )
 
@@ -49,9 +52,46 @@ func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.Request, r
 	return nil
 }
 
-func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTaskRequest, rsp *taskmgr.CreateTaskResponse) error {
 
-	log.Println("Debug into CreateTask")
+type Token struct {
+	Exp int64
+	Jti string
+	Iss string
+}
+
+
+
+func getUserID(ctx context.Context) string{
+	meta, ok := metadata.FromContext(ctx)
+	// Note this is now uppercase (not entirely sure why this is...)
+	var token string
+	if ok {
+		token = meta["token"]
+	}
+
+
+	parts := strings.Split(token, ".")
+
+	decoded, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		fmt.Println("decode error:", err)
+
+	}
+	fmt.Println(string(decoded))
+
+	var dat Token
+
+	if err := json.Unmarshal(decoded, &dat); err != nil {
+		panic(err)
+	}
+
+
+	return string(dat.Jti)
+}
+
+func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTaskRequest, rsp *taskmgr.CreateTaskResponse) error {
+	req.UserId =getUserID(ctx)
+	log.Println("task manager service CreateTask")
 	if req.UserId == "" {
 		log.Println(ankr_default.ErrUserNotExist.Error())
 		return ankr_default.ErrUserNotExist
@@ -62,19 +102,27 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		return ankr_default.ErrReplicaTooMany
 	}
 
-	req.Task.Status = common_proto.TaskStatus_START
+	log.Printf("CreateTask task %+v", req)
+
+
+
+	req.Task.Status = 0
 	req.Task.UserId = req.UserId
 	req.Task.Id = uuid.New().String()
 	rsp.TaskId = req.Task.Id
+
 
 	event := common_proto.Event{
 		EventType: common_proto.Operation_TASK_CREATE,
 		OpMessage: &common_proto.Event_Task{Task: req.Task},
 	}
 
+
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
 		log.Println(ankr_default.ErrPublish)
 		return ankr_default.ErrPublish
+	}else{
+		log.Println("task manager service send CreateTask MQ message to dc manager service (api)")
 	}
 
 	if err := p.db.Create(req.Task); err != nil {
@@ -87,7 +135,7 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 
 // Must return nil for gRPC handler
 func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
-
+	req.UserId =getUserID(ctx)
 	log.Println("Debug into CancelTask")
 	if err := checkId(req.UserId, req.TaskId); err != nil {
 		log.Println(err.Error())
@@ -101,7 +149,8 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 
 	if task.Status != common_proto.TaskStatus_RUNNING &&
 		task.Status != common_proto.TaskStatus_START &&
-		task.Status != common_proto.TaskStatus_UPDATING {
+		task.Status != common_proto.TaskStatus_UPDATING &&
+		task.Status != common_proto.TaskStatus_CANCELLED { // canceled can do many times by users
 		log.Println(ankr_default.ErrStatusNotSupportOperation)
 		return ankr_default.ErrStatusNotSupportOperation
 	}
@@ -125,8 +174,8 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 }
 
 func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.ID, rsp *taskmgr.TaskListResponse) error {
-
-	log.Println("Debug into TaskList")
+	req.UserId =getUserID(ctx)
+	log.Println("task service into TaskList")
 
 	if req.UserId == "" {
 		log.Println(ankr_default.ErrUserNotExist)
@@ -138,19 +187,29 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.ID, rsp *tas
 		log.Println(err.Error())
 		return err
 	}
-	rsp.Tasks = append(rsp.Tasks, *tasks...)
+
+	tasksWithoutHidden := [](*common_proto.Task){}
+
+	for i := 0; i < len(*tasks); i++ {
+		if (*tasks)[i].Hidden != true {
+			tasksWithoutHidden = append(tasksWithoutHidden, (*tasks)[i])
+		}
+	}
+
+	rsp.Tasks = append(rsp.Tasks, tasksWithoutHidden...)
 
 	return nil
 }
 
 func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest, rsp *common_proto.Error) error {
-
-	log.Println("Debug into UpdateTask")
+	req.UserId =getUserID(ctx)
 
 	if err := checkId(req.UserId, req.Task.Id); err != nil {
 		log.Println(err.Error())
 		return err
 	}
+
+
 	task, err := p.checkOwner(req.UserId, req.Task.Id)
 	if err != nil {
 		log.Println(err.Error())
@@ -187,16 +246,22 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 }
 
 func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
-
-	log.Println("Debug into PurgeTask")
-	return nil
+	error := p.CancelTask(ctx, req, rsp)
+	if error == nil {
+		log.Printf(" PurgeTask  %s \n", req.TaskId)
+		p.db.Update(req.TaskId, bson.M{"$set": bson.M{"hidden": true}})
+	}
+	return error
 }
 
 func (p *TaskMgrHandler) checkOwner(userId, taskId string) (*common_proto.Task, error) {
 	task, err := p.db.Get(taskId)
+
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("taskid : %s user id -%s-   user_token_id -%s-  ", taskId, task.UserId, userId)
 
 	if task.UserId != userId {
 		return nil, ankr_default.ErrUserNotOwn
