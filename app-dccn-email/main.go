@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// Register Function as TaskStatusFeedback
-	opt := srv.Server().Options()
+	opt := service.Server().Options()
 	opt.Broker.Connect()
 	if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.Handler); err != nil {
 		log.Fatal(err.Error())
