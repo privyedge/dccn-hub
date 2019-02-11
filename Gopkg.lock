@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:289d2fdb933498c171be18fb1eaf6969a69f4b0a16c5bda43bfee27bf419cd4b"
+  digest = "1:54b9c9c69bfcf69f9a502ff1120def5032c5d94ba43d78ad5f8e26535bfdb440"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -17,7 +17,7 @@
     "protos/usermgr/v1/micro",
   ]
   pruneopts = "UT"
-  revision = "bf330f77b4070e1fa0f8c72ad5727adf3732f68e"
+  revision = "39baa7303758a328374015763ebcc0dffd05c5e4"
 
 [[projects]]
   branch = "master"
