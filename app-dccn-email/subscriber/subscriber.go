@@ -23,7 +23,7 @@ func SendMail(e *common_proto.MailEvent) error {
 	m.SetHeader("Subject", "Gomail")
 	m.SetBody("text/html", e.Message)
 
-	d := gomail.NewPlainDialer("smtp.qq.com", 465, sender, passwd) // 发送邮件服务器、端口、发件人账号、发件人密码
+	d := gomail.NewPlainDialer("smtp.qq.com", 465, sender, passwd)
 	if err := d.DialAndSend(m); err != nil {
 		log.Println(err.Error())
 		return err

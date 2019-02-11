@@ -2,8 +2,8 @@
 
 
 [[projects]]
-  branch = "feature/SWDEV-135-micro-service"
-  digest = "1:f01346c1dd2d257335d910ccbd2f2cad923325c70b82b5296d4d33a19e89f2b9"
+  branch = "develop"
+  digest = "1:54b9c9c69bfcf69f9a502ff1120def5032c5d94ba43d78ad5f8e26535bfdb440"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -15,10 +15,9 @@
     "protos/taskmgr/v1/micro",
     "protos/usermgr/v1/grpc",
     "protos/usermgr/v1/micro",
-    "wrapper",
   ]
   pruneopts = "UT"
-  revision = "b48ef1453c1e435293c507a4de60ce3cee0c7234"
+  revision = "39baa7303758a328374015763ebcc0dffd05c5e4"
 
 [[projects]]
   branch = "master"
@@ -78,15 +77,15 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:bf2955581fb448af0f9c2a6e14ec8be0d60321fd7c5d5cdc381a8f5b992ad421"
+  digest = "1:9088a53706dbe7fec47e520cad1eb20c2ce93839554e20f0189f2e0de559ca91"
   name = "github.com/hashicorp/consul"
   packages = [
     "api",
     "watch",
   ]
   pruneopts = "UT"
-  revision = "65d2c9b51d02e6b14db3da3cb8424ef72e046780"
-  version = "v1.4.1"
+  revision = "c97c712e96e0e53308054d5e1180289fe02dce38"
+  version = "v1.4.2"
 
 [[projects]]
   digest = "1:0ade334594e69404d80d9d323445d2297ff8161637f9b2d347cc6973d2d6f05b"
@@ -177,31 +176,36 @@
   version = "v1.1.5"
 
 [[projects]]
-  branch = "master"
-  digest = "1:30284237628259cb445afc0e1b4c7b4ed265ba1a6111ee72927452c0864f789f"
+  digest = "1:6491a68a381ec652fad0b1ed9664870b21763058270be238fc9dd0875e21c095"
   name = "github.com/micro/cli"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1b0c9793c30063c75054ac3a245ef8f7f5154229"
+  revision = "bef92b8564e931cfd32870e52be76880ce358235"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:6efa15e1c2c824d4055d0da37357664b1d1d188b5f15ca03e11a7d2b85d04e50"
+  digest = "1:ea66ad5ef6a772db85c9c6eca72136f6f6e7b0d96983ba3bb82d5acf3a71cf11"
   name = "github.com/micro/go-grpc"
-  packages = ["."]
+  packages = [
+    ".",
+    "broker",
+    "client",
+    "server",
+  ]
   pruneopts = "UT"
-  revision = "a08f306511bd3850a6379a2b3775dc42e5cf79a9"
-  version = "v0.7.0"
+  revision = "36812a48569422e572be1c9b877e01971410e1ea"
+  version = "v0.9.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:1ba6e7291c93f36a9eef6628caaed64a82b1da2508d01f6347c7936f5c2531f6"
+  digest = "1:ad887831095e1445d282e25438f7b9d10e42b1e11e6633e29742609312b9e8ed"
   name = "github.com/micro/go-log"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cbfa9447f9b655f8e66583237e51f40ca9bff860"
+  revision = "5cb7bb4413f4ae8de0d7e826aa2854861d3a6c31"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:cc602fcdd9e0baf166a9f83c3e53af5b9524749baedf734cec8d90a70fde3bdf"
+  digest = "1:f1ee8aa9243e063c9ac007055c65191ef00c94e32d9ed4a6a9b6f0b704ea715f"
   name = "github.com/micro/go-micro"
   packages = [
     ".",
@@ -236,11 +240,11 @@
     "transport/memory",
   ]
   pruneopts = "UT"
-  revision = "d090a97a3d12653206501b002edec2cd463adb99"
-  version = "v0.22.1"
+  revision = "cead99ac4419cb689fd6c46b57aba45a88b05753"
+  version = "v0.24.1"
 
 [[projects]]
-  digest = "1:2f050c3568104c42952bd4c340b63ae47e86140f96d23e0f7903e43ec2341d19"
+  digest = "1:dd01d5037caed32a14d1311c5fbdc3ad359efef9a177ca51dd90febb594153c9"
   name = "github.com/micro/go-plugins"
   packages = [
     "broker/grpc",
@@ -250,35 +254,26 @@
     "server/grpc",
   ]
   pruneopts = "UT"
-  revision = "d44d3b04724ad8b9f123db8ed220c46106695a5e"
-  version = "v0.21.0"
+  revision = "2b2efff55dccf6c4f6fa8d39897b14b9b77543af"
+  version = "v0.22.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:7243b71c52f5226ed26340e9bbffd702484c152caa2e78234f4384a8309dcafb"
+  digest = "1:1a66bea3296319ac1928861f1d98c212502afb3c36663a1c19ec2e40971e3c20"
   name = "github.com/micro/go-rcache"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a581a57b513351792b9f21fc8b95d87b1c5a95da"
+  revision = "0ce6738e29729b9682b05dd828cfae9d3063e341"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:4ecc9eb4e64de90f1863fd4851b94f0c867b1f0f53ff0e037cd678c4b4028d0a"
-  name = "github.com/micro/h2c"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "b2f7b8ee5ff4fd7a8af036ecda297deb1c584460"
-  version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:a821cb65a246b429a68e30eb263fb6bba4fa082ea09318d3122f0b3d90dea3c4"
+  digest = "1:6271fb71dcd6758564f64edeb022e7fc4485fa5a63dcb68805ab760e2ec34ead"
   name = "github.com/micro/mdns"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9c3770d4057a5adca108c15ca317fee54766f9f7"
+  revision = "3a29b6675e7404722eed4d4dde532c2e103007a7"
+  version = "v0.1.0"
 
 [[projects]]
-  branch = "master"
   digest = "1:65c7e1d0a7eb2d2062a69041059a31e65c0009f3c6cd3883d66532110025c7a3"
   name = "github.com/micro/util"
   packages = [
@@ -288,23 +283,24 @@
     "go/lib/tls",
   ]
   pruneopts = "UT"
-  revision = "2d4f591dc5383712927e372348c0885478402595"
+  revision = "77fba40c3c49cc7f12e111d3901a9a710a1854c1"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:d64a0aa67f715fd28f5ddfe0d74c06b6d6fe0fed931d77e662f2c4694f6854dc"
+  digest = "1:1b46adc9e3d878cdf38a164cfdac2e19340f4d2662aa5bee88062f6ee08ac9df"
   name = "github.com/miekg/dns"
   packages = ["."]
   pruneopts = "UT"
-  revision = "56be65265e34e731425e0269a301774938827c60"
-  version = "v1.1.3"
+  revision = "8fc2e5773bbd308ca2fcc962fd8d25c1bd0f6743"
+  version = "v1.1.4"
 
 [[projects]]
-  digest = "1:78bbb1ba5b7c3f2ed0ea1eab57bdd3859aec7e177811563edc41198a760b06af"
+  digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
-  version = "v1.0.0"
+  revision = "af06845cf3004701891bf4fdb884bfe4920b3727"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:61332bb44d05257bbf0356d8400a8b30fe0b9fdc3b72b8b55661da8f0a4f39ae"
@@ -337,14 +333,6 @@
   pruneopts = "UT"
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
-
-[[projects]]
-  digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
-  name = "github.com/pborman/uuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
-  version = "v1.2"
 
 [[projects]]
   branch = "master"
@@ -389,17 +377,18 @@
     "ed25519/internal/edwards25519",
   ]
   pruneopts = "UT"
-  revision = "057139ce5d2bdbe6fe73c53679e24e9cf007f637"
+  revision = "193df9c0f06f8bb35fba505183eaf0acc0136505"
 
 [[projects]]
   branch = "master"
-  digest = "1:d31df9cc7e6f49d558c7ba0ec75993b3630e78db24fa3a3da2ef490f05adf550"
+  digest = "1:9e9a051e04f815e5676498ad948313cb5938652566a5e66e12f720ca41dc6ff2"
   name = "golang.org/x/net"
   packages = [
     "bpf",
     "context",
     "http/httpguts",
     "http2",
+    "http2/h2c",
     "http2/hpack",
     "idna",
     "internal/iana",
@@ -410,15 +399,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
+  revision = "65e2d4e15006aab9813ff8769e768bbf4bb667a0"
 
 [[projects]]
   branch = "master"
-  digest = "1:db12953ac7a80656b159265fe13146959beaada45938a532f484a3aeb289462e"
+  digest = "1:8b466798e96432c23185ca32826702885299f94eb644c9a8dedb79771dff383a"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "b90733256f2e882e81d52f9126de08df5615afd9"
+  revision = "3b5209105503162ded1863c307ac66fec31120dd"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -449,7 +438,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "8819c946db4494a2259bf100a377f51aa585d893"
+  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
@@ -534,21 +523,17 @@
     "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro",
-    "github.com/Ankr-network/dccn-common/wrapper",
     "github.com/dgrijalva/jwt-go",
-    "github.com/golang/protobuf/proto",
     "github.com/google/uuid",
     "github.com/micro/go-grpc",
-    "github.com/micro/go-log",
     "github.com/micro/go-micro",
     "github.com/micro/go-micro/client",
     "github.com/micro/go-micro/metadata",
     "github.com/micro/go-micro/server",
     "github.com/micro/go-plugins/broker/rabbitmq",
-    "github.com/pborman/uuid",
     "golang.org/x/crypto/bcrypt",
-    "golang.org/x/net/context",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/metadata",
     "gopkg.in/gomail.v2",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",

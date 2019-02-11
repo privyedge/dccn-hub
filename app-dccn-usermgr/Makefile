@@ -1,10 +1,10 @@
-.PHONY: proto build test run deploy clean local
+.PHONY: build test run deploy clean local
 
 GOPATH:=$(shell go env GOPATH)
 
 all: run test deploy devtools
 
-build: proto
+build:
 	docker build . -t app_dccn_usermgr:v1.0
 
 run: build
@@ -14,7 +14,7 @@ run: build
 		$(PROGRAM_ENV) \
 		app_dccn_usermgr
 
-local: proto
+local:
 	@$(MICRO_ENV) \
 	$(PROGRAM_ENV) \
 	go run main.go
@@ -36,9 +36,8 @@ devtools:
 
 
 define MICRO_ENV
-	MICRO_REGISTRY=mdns \
+	MICRO_REGISTRY=consul \
 	MICRO_SERVER_VERSION="v1.0" \
-	MICRO_REGISTER_TTL=15 \
 	MICRO_REGISTER_INTERVAL=15
 endef
 

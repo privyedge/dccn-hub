@@ -18,7 +18,6 @@ services:
 
   consul:
     image: consul:latest
-    container_name: dccn-registry-consul
     command: consul agent -dev -log-level=warn -ui -client=0.0.0.0
     ports:
       - "8300:8300"
@@ -46,13 +45,13 @@ services:
       MICRO_BROKER: rabbitmq
       MICRO_BROKER_ADDRESS: amqp://guest:guest@broker:5672
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
       DB_COLLECTION: task
       DB_TIMEOUT: 5
       DB_POOL_LIMIT: 4096
+      DISABLE_AUTH: "true"
     links:
       - broker
       - datastore
@@ -68,7 +67,6 @@ services:
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul:8500
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
@@ -91,7 +89,6 @@ services:
       MICRO_BROKER: rabbitmq
       MICRO_BROKER_ADDRESS: amqp://guest:guest@broker:5672
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
@@ -116,18 +113,58 @@ services:
       MICRO_BROKER: rabbitmq
       MICRO_BROKER_ADDRESS: amqp://guest:guest@broker:5672
       MICRO_SERVER_VERSION: v1.0
-      MICRO_REGISTER_TTL: 15
       MICRO_REGISTER_INTERVAL: 15
       DB_HOST: datastore:27017
       DB_NAME: dccn
       DB_COLLECTION: datacenter
       DB_TIMEOUT: 5
       DB_POOL_LIMIT: 4096
+      DISABLE_AUTH: "true"
     ports:
       - "50051:50051"
     links:
+      - taskmgr
+#      - email
+      - usermgr
       - broker
       - datastore
       - consul
-      - taskmgr
 
+  all:
+    image: app-dccn-all-test
+    container_name: app-dccn-all-test
+    build:
+      context: .
+      dockerfile: ./dockerfile/test.Dockerfile
+    environment:
+      API_ADDRESS: api:50051
+
+  task-client:
+    image: app-dccn-task-client
+    container_name: app-dccn-task-client
+    build:
+      context: .
+      dockerfile: ./dockerfile/task_client.Dockerfile
+    environment:
+      API_ADDRESS: api:50051
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      MICRO_SERVER_ADDRESS: :50051
+    links:
+      - taskmgr
+      - consul
+
+  api-taskmgr-client:
+    image: app-dccn-api-taskmgr-client
+    container_name: app-dccn-api-taskmgr-client
+    build:
+      context: .
+      dockerfile: ./dockerfile/api_task_client.Dockerfile
+    environment:
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      API_ADDRESS: "app-dccn-api:50051"
+    links:
+      - api
+      - taskmgr
+      - consul

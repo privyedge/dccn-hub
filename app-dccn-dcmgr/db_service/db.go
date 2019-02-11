@@ -16,6 +16,8 @@ type DBService interface {
 	GetByName(name string) (*common_proto.DataCenter, error)
 	// Create Creates a new dc item if not exits.
 	Create(center *common_proto.DataCenter) error
+	// GetAll gets all task related to user id.
+	GetAll() (*[]*common_proto.DataCenter, error)
 	// Update updates dc item
 	Update(center *common_proto.DataCenter) error
 	// UpdateStatus updates dc item
@@ -67,7 +69,7 @@ func (p *DB) GetByName(name string) (*common_proto.DataCenter, error) {
 	defer session.Close()
 
 	var center common_proto.DataCenter
-	err := p.collection(session).Find(bson.M{"datacenter": name}).One(&center)
+	err := p.collection(session).Find(bson.M{"name": name}).One(&center)
 	return &center, err
 }
 
@@ -82,13 +84,13 @@ func (p *DB) Create(center *common_proto.DataCenter) error {
 func (p *DB) Update(datacenter *common_proto.DataCenter) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"id": datacenter.Id}, datacenter)
+	return p.collection(session).Update(bson.M{"name": datacenter.Name}, bson.M{"$set": bson.M{"Report": datacenter.Report, "Metrics":datacenter.Metrics}})
 }
 
 func (p *DB) UpdateStatus(name string, status common_proto.Status) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"datacenter": name}, bson.M{"status": status})
+	return p.collection(session).Update(bson.M{"name": name}, bson.M{"$set": bson.M{"status": status}})
 }
 
 // Close closes the db connection.
@@ -99,3 +101,18 @@ func (p *DB) Close() {
 func (p *DB) dropCollection() {
 	log.Println(p.session.DB(p.dbName).C(p.collectionName).DropCollection().Error())
 }
+
+
+func (p *DB) GetAll() (*[]*common_proto.DataCenter, error) {
+	session := p.session.Clone()
+	defer session.Close()
+
+	var dcs []*common_proto.DataCenter
+
+
+	if err := p.collection(session).Find(bson.M{}).All(&dcs); err != nil {
+		return nil, err
+	}
+	return &dcs, nil
+}
+

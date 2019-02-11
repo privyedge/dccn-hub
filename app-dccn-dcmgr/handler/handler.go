@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"log"
-	"sync"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
@@ -15,34 +14,39 @@ import (
 )
 
 type DcMgrHandler struct {
-	mu           sync.Mutex // protect dc streams
-	db           dbservice.DBService
-	taskFeedback micro.Publisher                                // sync task information with task manager
-	dcStreams    map[string]dcmgr.DCStreamer_ServerStreamStream // hold all data center as cache
+	db             dbservice.DBService
+	taskFeedback   micro.Publisher         // sync task information with task manager
+	DcStreamCaches *DataCenterStreamCaches // hold all data center as cache
 }
 
-func New(feedback micro.Publisher) *DcMgrHandler {
+func New(db dbservice.DBService, feedback micro.Publisher) *DcMgrHandler {
 	handler := &DcMgrHandler{
-		taskFeedback: feedback,
-		dcStreams:    make(map[string]dcmgr.DCStreamer_ServerStreamStream),
+		db:             db,
+		taskFeedback:   feedback,
+		DcStreamCaches: NewDataCenterStreamCaches(),
 	}
-	go handler.checkHealth()
+
+	handler.DcStreamCaches.db = db
 	return handler
 }
 
 func (p *DcMgrHandler) ServerStream(ctx context.Context, stream dcmgr.DCStreamer_ServerStreamStream) error {
+
+	log.Println("Debug into ServerStream")
 	for {
 		in, err := stream.Recv()
+		log.Println("Recv datacenter message")
 		if err == io.EOF {
+			log.Println("datacenter error eof ")
 			log.Println(err.Error())
 			return nil
 		}
 		if err != nil {
+			log.Println("datacenter error nil, dc may lost connection ")
 			log.Println(err.Error())
 			return err
 		}
 
-		p.mu.Lock()
 		switch in.EventType {
 		case common_proto.Operation_HEARTBEAT: // update data center in cache
 			if err := p.updateDataCenter(in.GetDataCenter(), stream); err != nil {
@@ -55,6 +59,19 @@ func (p *DcMgrHandler) ServerStream(ctx context.Context, stream dcmgr.DCStreamer
 		default:
 			log.Println(ankr_default.ErrUnknown.Error())
 		}
-		p.mu.Unlock()
+	}
+}
+
+func (p *DcMgrHandler) All() error {
+	return nil
+}
+
+func (p *DcMgrHandler) Available() error {
+	return nil
+}
+
+func (p *DcMgrHandler) Cleanup() {
+	if p.DcStreamCaches != nil {
+		p.DcStreamCaches.Cleanup()
 	}
 }

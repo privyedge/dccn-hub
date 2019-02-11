@@ -8,6 +8,7 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	pb "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
+
 	"github.com/Ankr-network/dccn-hub/app-dccn-taskmgr/config"
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-taskmgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app-dccn-taskmgr/handler"
@@ -17,6 +18,7 @@ import (
 )
 
 var (
+	srv  micro.Service
 	conf config.Config
 	db   dbservice.DBService
 	err  error
@@ -45,10 +47,10 @@ func Init() {
 
 // StartHandler starts handler to listen.
 func startHandler(db dbservice.DBService) {
+	// var srv micro.Service
 	// New Service
-	srv := grpc.NewService(
+	srv = grpc.NewService(
 		micro.Name(ankr_default.TaskMgrRegistryServerName),
-		// micro.WrapHandler(wrapper.AuthWrapper),
 	)
 
 	// Initialise srv
@@ -58,6 +60,8 @@ func startHandler(db dbservice.DBService) {
 	deployTask := micro.NewPublisher(ankr_default.MQDeployTask, srv.Client())
 
 	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
+	opt := srv.Server().Options()
+	opt.Broker.Connect()
 	if err := micro.RegisterSubscriber(ankr_default.MQFeedbackTask, srv.Server(), subscriber.New(db)); err != nil {
 		log.Fatal(err.Error())
 	}

@@ -8,8 +8,7 @@ import (
 )
 
 type Config struct {
-	DB              dbcommon.Config `json:"db"`
-	TokenActiveTime int             `json:"token_active_time"`
+	DB dbcommon.Config `json:"db"`
 }
 
 var Default = Config{
@@ -20,7 +19,6 @@ var Default = Config{
 		Timeout:    5,
 		PoolLimit:  4096,
 	},
-	TokenActiveTime: 20,
 }
 
 func Load() (Config, error) {
@@ -43,13 +41,6 @@ func Load() (Config, error) {
 			return Default, err
 		} else {
 			Default.DB.PoolLimit = t
-		}
-	}
-	if activeTime := os.Getenv("TOKEN_ACTIVE_TIME"); len(activeTime) != 0 {
-		if t, err := strconv.Atoi(activeTime); err != nil {
-			return Default, err
-		} else {
-			Default.TokenActiveTime = t
 		}
 	}
 	return Default, nil
