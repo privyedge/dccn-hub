@@ -2,22 +2,24 @@ package main
 
 import (
 	"context"
+	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
+
 	//"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 	"log"
 	"time"
 
-	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
+	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	//common_proto "github.com/Ankr-network/dccn-common/protos/common"
 //	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
 //var addr = "localhost:50051"
-//var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 
@@ -32,7 +34,7 @@ func main() {
 		}
 	}(conn)
 
-	taskClient := taskmgr.NewTaskMgrClient(conn)
+	dcClient := dcmgr.NewDCAPIClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	user := &usermgr.User{
@@ -49,13 +51,13 @@ func main() {
 	//}
 
 	var token string
-	var userId string
+	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
 		log.Fatal(err.Error())
 	} else {
 		log.Printf("login Success: %s\n", rsp.Token)
 		token = rsp.Token
-		userId = rsp.UserId
+	//	userId = rsp.UserId
 	}
 
 	md := metadata.New(map[string]string{
@@ -74,20 +76,15 @@ func main() {
 	//}
 
 	// var userTasks []*common_proto.Task
-	userTasks := make([]*common_proto.Task, 0)
-	if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.ID{UserId: userId}); err != nil {
+	if rsp, err := dcClient.DataCenterList(tokenContext, &dcmgr.DataCenterListRequest{}); err != nil {
 		log.Fatal(err.Error())
 	} else {
-		userTasks = append(userTasks, rsp.Tasks...)
-		if len(userTasks) == 0 {
-			log.Fatalf("no tasks belongs to %s", userId)
-		} else {
-			log.Println(len(userTasks), "tasks belongs to ", user.Email)
-			for i := 0; i < len(userTasks); i++ {
-				log.Println(userTasks[i])
-			}
+		for i := 0; i < len(rsp.DcList); i++ {
+			dc := rsp.DcList[i]
+			log.Printf("DataCenterList metrics %s name %s  status %s \n", dc.Name, dc.Metrics, dc.Status)
 
 		}
+
 	}
 
 	log.Println("END")
