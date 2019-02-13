@@ -40,20 +40,20 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 		log.Println(email_error.Error())
 		rsp.Status = common_proto.Status_FAILURE
 		rsp.Details = email_error.Error()
-		return nil
+		return email_error
 	}
 
 	if len(user.Password) < 6 {
 		rsp.Status = common_proto.Status_FAILURE
 		rsp.Details = ankr_default.ErrPasswordLength.Error()
-		return nil
+		return ankr_default.ErrPasswordLength
 	}
 
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
 		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		return errors.New("GenerateFromPassword error")
 	}
 
 	_, dbErr := p.db.Get(strings.ToLower(user.Email))
@@ -61,7 +61,7 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 		log.Println("email exist")
 		rsp.Status = common_proto.Status_FAILURE
 		rsp.Details = ankr_default.ErrEmailExit.Error()
-		return nil
+		return ankr_default.ErrEmailExit
 	}
 
 	user.Password = string(hashedPwd)
@@ -70,7 +70,7 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	if err := p.db.Create(user); err != nil {
 		log.Println(err.Error())
 		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		return errors.New("data add user error")
 	}
 
 	rsp.Status = common_proto.Status_SUCCESS
