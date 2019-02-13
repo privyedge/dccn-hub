@@ -6,15 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Ankr-network/dccn-common/protos"
+	"github.com/Ankr-network/dccn-common/protos/common"
 	"github.com/google/uuid"
+	"github.com/gorhill/cronexpr"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/metadata"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"strings"
-
-	"github.com/Ankr-network/dccn-common/protos/common"
-
-	"github.com/micro/go-micro"
 
 	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	db "github.com/Ankr-network/dccn-hub/app-dccn-taskmgr/db_service"
@@ -34,7 +33,7 @@ func New(db db.DBService, deployTask micro.Publisher) *TaskMgrHandler {
 }
 
 func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.Request, rsp *taskmgr.TaskDetailResponse) error {
-
+	req.UserId =getUserID(ctx)
 	log.Println("Debug into TaskDetail")
 
 	if err := checkId(req.UserId, req.TaskId); err != nil {
@@ -106,6 +105,19 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 
 
 
+
+	if req.Task.Type == common_proto.TaskType_CRONJOB { // check schudule filed
+		_ , err := cronexpr.Parse(req.Task.Schedule)
+		if err != nil {
+			log.Printf("check crobjob scheducle fomat error %s \n", err.Error())
+			return ankr_default.ErrCronJobScheduleFormat
+		}
+
+	}
+
+
+
+
 	req.Task.Status = 0
 	req.Task.UserId = req.UserId
 	req.Task.Id = uuid.New().String()
@@ -147,13 +159,14 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 		return err
 	}
 
-	if task.Status != common_proto.TaskStatus_RUNNING &&
-		task.Status != common_proto.TaskStatus_START &&
-		task.Status != common_proto.TaskStatus_UPDATING &&
-		task.Status != common_proto.TaskStatus_CANCELLED { // canceled can do many times by users
-		log.Println(ankr_default.ErrStatusNotSupportOperation)
-		return ankr_default.ErrStatusNotSupportOperation
-	}
+	// cancel will carry out anyway
+	//if task.Status != common_proto.TaskStatus_RUNNING &&
+	//	task.Status != common_proto.TaskStatus_STARTING &&
+	//	task.Status != common_proto.TaskStatus_UPDATING &&
+	//	task.Status != common_proto.TaskStatus_CANCELLED { // canceled can do many times by users
+	//	log.Println(ankr_default.ErrStatusNotSupportOperation)
+	//	return ankr_default.ErrStatusNotSupportOperation
+	//}
 
 	event := common_proto.Event{
 		EventType: common_proto.Operation_TASK_CANCEL,
@@ -165,7 +178,7 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 		return err
 	}
 
-	if err := p.db.Update(task.Id, bson.M{"$set": bson.M{"status": common_proto.TaskStatus_CANCEL}}); err != nil {
+	if err := p.db.Update(task.Id, bson.M{"$set": bson.M{"status": common_proto.TaskStatus_CANCELLED}}); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -216,7 +229,11 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 		return err
 	}
 
-	if req.Task.Replica <= 0 || req.Task.Replica >= 100 {
+	if req.Task.Replica == 0 {
+		req.Task.Replica = task.Replica
+	}
+
+	if req.Task.Replica < 0 || req.Task.Replica >= 100 {
 		log.Println(ankr_default.ErrReplicaTooMany.Error())
 		return ankr_default.ErrReplicaTooMany
 	}

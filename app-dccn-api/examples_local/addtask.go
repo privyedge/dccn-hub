@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Ankr-network/dccn-common/protos/common"
 	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 
 	"log"
@@ -70,10 +71,14 @@ func main() {
 	task := apiCommon.MockTasks()[0]
 	task.Image = "nginx:1.12"
 	task.Name = "task-2-8"
+	task.Type = common_proto.TaskType_CRONJOB
+	task.Schedule = "1234"
 //        task.Status = 0
 	log.Println("Test CreateTask %+v", task)
 	if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
-		log.Fatal(err.Error())
+
+		//log.Println("detail create %+v " + rsp)
+		log.Fatal(err)
 	} else {
 		log.Println("create task successfully : taskid   " + rsp.TaskId)
 	}

@@ -41,8 +41,8 @@ func main() {
 	user := &usermgr.User{
 		Name:     "user_test1",
 		Nickname: "test1",
-		Email:    `1231@Gmail.com`,
-		Password: "12345678901",
+		Email:    ``,
+		Password: "",
 		Balance:  199,
 	}
 	if rps, err := userClient.Register(context.Background(), user); err != nil {
