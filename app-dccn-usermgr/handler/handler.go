@@ -91,6 +91,8 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		err = ankr_default.ErrPasswordError
 		log.Println(err.Error())
+		error := common_proto.Error{}
+		rsp.Error = &error
 		rsp.Error.Status = common_proto.Status_FAILURE
 		rsp.Error.Details = ankr_default.ErrPasswordError.Error()
 		return err
