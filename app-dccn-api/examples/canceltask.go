@@ -18,7 +18,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client-stage.dccn.ankr.network:50051"
 
 func main() {
 
@@ -68,8 +68,9 @@ func main() {
 	defer cancel()
 
 	//userTasks := make([]*common_proto.Task, 0)
+	TaskId := "36c7cec2-30cf-4440-86aa-b71cecd91766"
 
-	if rsp, err := taskClient.CancelTask(tokenContext, &taskmgr.Request{UserId: userId, TaskId: "ade95c45-f92f-4b8f-a2fd-103b039bea68"}); err != nil {
+	if rsp, err := taskClient.CancelTask(tokenContext, &taskmgr.Request{UserId: userId, TaskId: TaskId}); err != nil {
 		log.Fatal(err.Error())
 	} else {
 

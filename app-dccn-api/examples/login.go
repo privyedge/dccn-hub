@@ -19,7 +19,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client-stage.dccn.ankr.network:50051"
 
 func main() {
 
@@ -39,7 +39,7 @@ func main() {
 
 	user := &usermgr.User{
 		Email:    `1231@Gmail.com`,
-		Password: "12345678902",
+		Password: "12345678901",
 	}
 
 

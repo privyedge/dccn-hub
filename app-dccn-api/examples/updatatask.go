@@ -20,7 +20,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client-stage.dccn.ankr.network:50051"
 
 func main() {
 
@@ -70,9 +70,9 @@ func main() {
 	defer cancel()
 
 	task := apiCommon.MockTasks()[0]
-	task.Id = "ade95c45-f92f-4b8f-a2fd-103b039bea68"
-	task.Image = "nginx:1.13"
-	task.Name = "task1234"
+	task.Id = "36c7cec2-30cf-4440-86aa-b71cecd91766"
+	task.Image = "nginx:1.12"
+	task.Name = "ok123"
 
 	if rsp, err := taskClient.UpdateTask(tokenContext, &taskmgr.UpdateTaskRequest{UserId: userId, Task: &task}); err != nil {
 		log.Fatal(err.Error())

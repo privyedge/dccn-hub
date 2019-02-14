@@ -17,7 +17,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client-stage.dccn.ankr.network:50051"
 
 func main() {
 
@@ -84,7 +84,8 @@ func main() {
 		} else {
 			log.Println(len(userTasks), "tasks belongs to ", user.Email)
 			for i := 0; i < len(userTasks); i++ {
-				log.Println(userTasks[i])
+				task := userTasks[i]
+				log.Printf("task id %s  status : %s  datacenter %s datacenterid: %s\n", task.Id, task.Status,  task.DataCenter, task.DataCenterId)
 			}
 
 		}

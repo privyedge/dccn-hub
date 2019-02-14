@@ -70,7 +70,7 @@ func main() {
 	defer cancel()
 	task := apiCommon.MockTasks()[0]
 	task.Image = "nginx:1.12"
-	task.Name = "task1234"
+	task.Name = "task"
 	log.Println("Test CreateTask")
 	if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
 		log.Fatal(err.Error())

@@ -19,7 +19,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client-stage.dccn.ankr.network:50051"
 
 func main() {
 
@@ -81,7 +81,7 @@ func main() {
 	} else {
 		for i := 0; i < len(rsp.DcList); i++ {
 			dc := rsp.DcList[i]
-			log.Printf("DataCenterList metrics %s name %s  status %s \n", dc.Name, dc.Metrics, dc.Status)
+			log.Printf("DataCenterList metrics:  %s name :  %s  status:   %s \n",  dc.Metrics, dc.Name, dc.Status)
 
 		}
 
