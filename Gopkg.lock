@@ -3,12 +3,13 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:54b9c9c69bfcf69f9a502ff1120def5032c5d94ba43d78ad5f8e26535bfdb440"
+  digest = "1:89b07fe853181c748585c3ffcb5031c48ca15bf42b7aed80fbca3d6402d1b3eb"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
     "protos",
     "protos/common",
+    "protos/dcmgr/v1/grpc",
     "protos/dcmgr/v1/micro",
     "protos/email/v1/micro",
     "protos/taskmgr/v1/grpc",
@@ -17,7 +18,7 @@
     "protos/usermgr/v1/micro",
   ]
   pruneopts = "UT"
-  revision = "39baa7303758a328374015763ebcc0dffd05c5e4"
+  revision = "2700b4abadecec32f860b8150d2dac08c655b825"
 
 [[projects]]
   branch = "master"
@@ -75,6 +76,14 @@
   pruneopts = "UT"
   revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
   version = "v1.1.0"
+
+[[projects]]
+  digest = "1:e3f17aa0eb8c151426d23cb767ae50f5b42c46533db3424761ee639b56ab9041"
+  name = "github.com/gorhill/cronexpr"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a557574d6c024ed6e36acc8b610f5f211c91568a"
+  version = "1.0.0"
 
 [[projects]]
   digest = "1:9088a53706dbe7fec47e520cad1eb20c2ce93839554e20f0189f2e0de559ca91"
@@ -258,12 +267,12 @@
   version = "v0.22.0"
 
 [[projects]]
-  digest = "1:1a66bea3296319ac1928861f1d98c212502afb3c36663a1c19ec2e40971e3c20"
+  digest = "1:baead7e9fa73faf55028ff508e68612d230787c912f64b6533f2d00e37fe835f"
   name = "github.com/micro/go-rcache"
   packages = ["."]
   pruneopts = "UT"
-  revision = "0ce6738e29729b9682b05dd828cfae9d3063e341"
-  version = "v0.1.0"
+  revision = "c795e0972a7eb6ca2ae1098371028d168870d7d0"
+  version = "v0.2.1"
 
 [[projects]]
   digest = "1:6271fb71dcd6758564f64edeb022e7fc4485fa5a63dcb68805ab760e2ec34ead"
@@ -377,7 +386,7 @@
     "ed25519/internal/edwards25519",
   ]
   pruneopts = "UT"
-  revision = "193df9c0f06f8bb35fba505183eaf0acc0136505"
+  revision = "74369b46fc6756741c016591724fd1cb8e26845f"
 
 [[projects]]
   branch = "master"
@@ -399,15 +408,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "65e2d4e15006aab9813ff8769e768bbf4bb667a0"
+  revision = "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898"
 
 [[projects]]
   branch = "master"
-  digest = "1:8b466798e96432c23185ca32826702885299f94eb644c9a8dedb79771dff383a"
+  digest = "1:8207c052fb873f83c61a5aa16f6add5feb9881eda2112b56f69fd3b9e7f55c3f"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "3b5209105503162ded1863c307ac66fec31120dd"
+  revision = "983097b1a8a340cd1cc7df17d735154d89e10b1a"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -517,6 +526,7 @@
     "github.com/Ankr-network/dccn-common/db",
     "github.com/Ankr-network/dccn-common/protos",
     "github.com/Ankr-network/dccn-common/protos/common",
+    "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/grpc",
     "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro",
     "github.com/Ankr-network/dccn-common/protos/email/v1/micro",
     "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc",
@@ -525,6 +535,7 @@
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro",
     "github.com/dgrijalva/jwt-go",
     "github.com/google/uuid",
+    "github.com/gorhill/cronexpr",
     "github.com/micro/go-grpc",
     "github.com/micro/go-micro",
     "github.com/micro/go-micro/client",

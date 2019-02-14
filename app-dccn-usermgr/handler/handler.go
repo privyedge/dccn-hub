@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"log"
+	"regexp"
 	"strings"
 
+	"github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"github.com/google/uuid"
@@ -33,18 +35,33 @@ func New(dbService dbservice.DBService, tokenService token.IToken) *UserHandler 
 func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *common_proto.Error) error {
 
 	log.Println("Debug Register")
+	email_error := ValidateEmailFormat(user.Email)
+	if email_error != nil {
+		log.Println(email_error.Error())
+		rsp.Status = common_proto.Status_FAILURE
+		rsp.Details = email_error.Error()
+		return email_error
+	}
+
+	if len(user.Password) < 6 {
+		rsp.Status = common_proto.Status_FAILURE
+		rsp.Details = ankr_default.ErrPasswordLength.Error()
+		return ankr_default.ErrPasswordLength
+	}
+
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
 		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		return errors.New("GenerateFromPassword error")
 	}
 
 	_, dbErr := p.db.Get(strings.ToLower(user.Email))
 	if dbErr == nil {
 		log.Println("email exist")
 		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		rsp.Details = ankr_default.ErrEmailExit.Error()
+		return ankr_default.ErrEmailExit
 	}
 
 	user.Password = string(hashedPwd)
@@ -53,7 +70,7 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	if err := p.db.Create(user); err != nil {
 		log.Println(err.Error())
 		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		return errors.New("data add user error")
 	}
 
 	rsp.Status = common_proto.Status_SUCCESS
@@ -72,14 +89,19 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	// Compares our given password against the hashed password
 	// stored in the database
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		err = errors.New("invalid password")
+		err = ankr_default.ErrPasswordError
 		log.Println(err.Error())
+		error := common_proto.Error{}
+		rsp.Error = &error
+		rsp.Error.Status = common_proto.Status_FAILURE
+		rsp.Error.Details = ankr_default.ErrPasswordError.Error()
 		return err
 	}
 
 	rsp.Token, err = p.token.New(user)
 	if err != nil {
 		log.Println(err.Error())
+		rsp.Error.Status = common_proto.Status_FAILURE
 		return err
 	}
 	rsp.UserId = user.Id
@@ -124,7 +146,9 @@ func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *
 
 	log.Println("Debug into VerifyToken: ", req.Token)
 	if !p.blacklist.Available(req.Token) {
-		err := errors.New("token is unavailable")
+		err := ankr_default.ErrTokenNeedRefresh
+		rsp.Status = common_proto.Status_FAILURE
+		rsp.Details = ankr_default.ErrTokenNeedRefresh.Error()
 		log.Println(err.Error())
 		return err
 	}
@@ -142,7 +166,9 @@ func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.To
 
 	//for token reflesh
 	if !p.blacklist.Available(req.Token) {
-		err := errors.New("token is unavailable")
+		rsp.Status = common_proto.Status_FAILURE
+		rsp.Details = ankr_default.ErrTokenNeedRefresh.Error()
+		err := ankr_default.ErrTokenNeedRefresh
 		log.Println(err.Error())
 		return err
 	}
@@ -162,6 +188,16 @@ func (p *UserHandler) RefreshToken(ctx context.Context, req *usermgr.Token, rsp 
 	p.blacklist.Refresh(req.Token)
 	return nil
 }
+
+func ValidateEmailFormat(email string) error{
+	emailRegexp := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	if !emailRegexp.MatchString(email) {
+		return ankr_default.ErrEmailFormat
+	}
+	return nil
+}
+
+
 
 func (p *UserHandler) Destroy() {
 	p.blacklist.destroy()

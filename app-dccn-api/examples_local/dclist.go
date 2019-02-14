@@ -79,7 +79,7 @@ func main() {
 	if rsp, err := dcClient.DataCenterList(tokenContext, &dcmgr.DataCenterListRequest{}); err != nil {
 		log.Fatal(err.Error())
 	} else {
-	     log.Printf("DataCenterList  %+v", rsp)
+	     log.Printf("DataCenterList metrics %s %s \n", rsp.DcList[0].Name, rsp.DcList[0].Metrics)
 	}
 
 	log.Println("END")
