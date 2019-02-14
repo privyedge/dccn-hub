@@ -18,7 +18,7 @@
     "protos/usermgr/v1/micro",
   ]
   pruneopts = "UT"
-  revision = "2700b4abadecec32f860b8150d2dac08c655b825"
+  revision = "15998e8f244cc43242ff73c660160683e8a09dd3"
 
 [[projects]]
   branch = "master"
