@@ -14,8 +14,12 @@ type DBService interface {
 	Get(email string) (*pb.User, error)
 	// Create Creates a new user item if not exits
 	Create(user *pb.User) error
-	// Update updates dc item
+	// Update updates user item
 	Update(user *pb.User) error
+	// UpdatePassword updates user password
+	UpdatePassword(email string, password []byte) error
+	// UpdateActivateStatus updates user activate status
+	UpdateActivateStatus(userId string) error
 	// Close closes db connection
 	Close()
 	// dropCollection for testing usage
@@ -70,6 +74,18 @@ func (p *DB) Update(user *pb.User) error {
 	session := p.session.Clone()
 	defer session.Close()
 	return p.collection(session).Update(bson.M{"email": user.Email}, user)
+}
+
+func (p *DB) UpdatePassword(email string, password []byte) error {
+	session := p.session.Clone()
+	defer session.Close()
+	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"password": password}})
+}
+
+func (p *DB) UpdateActivateStatus(email string) error {
+	session := p.session.Clone()
+	defer session.Close()
+	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"isactivation": true}})
 }
 
 // Close closes the db connection.

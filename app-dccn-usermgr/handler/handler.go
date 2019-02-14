@@ -9,6 +9,7 @@ import (
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"github.com/google/uuid"
+	micro "github.com/micro/go-micro"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/crypto/bcrypt"
 
@@ -19,13 +20,15 @@ import (
 type UserHandler struct {
 	db        dbservice.DBService // db
 	token     token.IToken        // token interface
-	blacklist *Blacklist          // used for logout
+	pubEmail  micro.Publisher
+	blacklist *Blacklist // used for logout
 }
 
-func New(dbService dbservice.DBService, tokenService token.IToken) *UserHandler {
+func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micro.Publisher) *UserHandler {
 	return &UserHandler{
 		db:        dbService,
 		token:     tokenService,
+		pubEmail:  pubEmail,
 		blacklist: NewBlacklist(),
 	}
 }
@@ -36,15 +39,25 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
-		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		return err
 	}
 
 	_, dbErr := p.db.Get(strings.ToLower(user.Email))
 	if dbErr == nil {
-		log.Println("email exist")
-		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		log.Println(dbErr.Error())
+		return dbErr
+	}
+
+	authorizationToken, err := p.token.NewAuthorizationToken(user.Email)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	// sends activate email
+	if err := p.pubEmail.Publish(context.Background(), &common_proto.MailEvent{ToAddress: user.Email, Body: authorizationToken}); err != nil {
+		log.Println(err.Error())
+		return err
 	}
 
 	user.Password = string(hashedPwd)
@@ -52,11 +65,85 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	user.Id = uuid.New().String()
 	if err := p.db.Create(user); err != nil {
 		log.Println(err.Error())
-		rsp.Status = common_proto.Status_FAILURE
-		return nil
+		return err
 	}
 
-	rsp.Status = common_proto.Status_SUCCESS
+	return nil
+}
+
+func (p *UserHandler) AskResetPassword(ctx context.Context, req *usermgr.AskResetPasswordRequest, rsp *common_proto.Error) error {
+	log.Println("Debug AskResetPassword")
+
+	authorizationToken, err := p.token.NewAuthorizationToken(req.Email)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	// some logic to examine and verify user here
+
+	// sends activate email
+	if err := p.pubEmail.Publish(context.Background(), &common_proto.MailEvent{ToAddress: req.Email, Body: authorizationToken}); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	return nil
+}
+
+func (p *UserHandler) ResetPassword(ctx context.Context, req *usermgr.ResetPasswordRequest, rsp *common_proto.Error) error {
+
+	log.Println("Debug ResetPassword")
+
+	// verify code if is expired
+	payload, err := p.token.VerifyAuthorizationToken(req.Token)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if payload.Email != req.Email {
+		err = errors.New("user invalid")
+		log.Println(err.Error())
+		return err
+	}
+
+	// encrypt password
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	// update password. if not exist, db return not found
+	if err := p.db.UpdatePassword(req.Email, hashedPwd); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	// TODO: remove user cache token here
+	// change secret, otherwise token in caches
+	// need redesign token
+
+	return nil
+}
+
+func (p *UserHandler) Activate(ctx context.Context, req *usermgr.ActivateRequest, rsp *common_proto.Error) error {
+
+	log.Println("Debug Activate")
+
+	// verify code if is expired
+	payload, err := p.token.VerifyAuthorizationToken(req.Token)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	// update password. if not exist, db return not found
+	if err := p.db.UpdateActivateStatus(payload.Email); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
 	return nil
 }
 
@@ -77,14 +164,14 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		return err
 	}
 
-	rsp.Token, err = p.token.New(user)
+	rsp.Token, err = p.token.NewAuthenticationToken(user)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 	rsp.UserId = user.Id
 
-	//for token reflesh
+	// used to refresh token
 	p.blacklist.Add(rsp.Token)
 	return nil
 }
@@ -111,7 +198,7 @@ func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *user
 		return err
 	}
 
-	rsp.Token, err = p.token.New(req)
+	rsp.Token, err = p.token.NewAuthenticationToken(req)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -129,7 +216,7 @@ func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *
 		return err
 	}
 
-	if _, err := p.token.Verify(req.Token); err != nil {
+	if _, err := p.token.VerifyAuthenticationToken(req.Token); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -147,7 +234,7 @@ func (p *UserHandler) VerifyAndRefreshToken(ctx context.Context, req *usermgr.To
 		return err
 	}
 
-	_, err := p.token.Verify(req.Token)
+	_, err := p.token.VerifyAuthenticationToken(req.Token)
 	if err == nil || (err != nil && !p.blacklist.Available(req.Token)) {
 		p.blacklist.Refresh(req.Token)
 		return nil
