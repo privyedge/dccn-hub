@@ -20,8 +20,6 @@ spec:
           imagePullPolicy: IfNotPresent
           command: [ "/email" ]
           env:
-          - name: MICRO_REGISTER_TTL
-            value: "30"
           - name: MICRO_REGISTER_INTERVAL
             value: "20"
           - name: MICRO_REGISTRY

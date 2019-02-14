@@ -28,8 +28,6 @@ spec:
             value: "4096"
           - name: DB_TIMEOUT
             value: "5"
-          - name: MICRO_REGISTER_TTL
-            value: "30"
           - name: MICRO_REGISTER_INTERVAL
             value: "20"
           - name: MICRO_REGISTRY
