@@ -1,4 +1,4 @@
-package main
+package apiCommon
 
 import (
 	"context"
@@ -18,8 +18,8 @@ import (
 //	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-var addr = "localhost:50051"
-//var addr = "client-dev.dccn.ankr.network:50051"
+//var addr = "localhost:50051"
+var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 
@@ -41,14 +41,15 @@ func main() {
 	user := &usermgr.User{
 		Name:     "user_test1",
 		Nickname: "test1",
-		Email:    ``,
-		Password: "",
+		Email:    `12111@Gmail.com`,
+		Password: "12345678901",
 		Balance:  199,
 	}
 	if rps, err := userClient.Register(context.Background(), user); err != nil {
-		log.Fatal(err.Error())
+	//	log.Fatal(err.Error())
+		log.Print("receive === error")
 	} else {
-		log.Printf("Register result :  %s %s ", rps.Status.String(), rps.Details)
+		log.Printf("Register result no error :  %s %s ", rps.Status.String(), rps.Details)
 	}
 
 	//var token string

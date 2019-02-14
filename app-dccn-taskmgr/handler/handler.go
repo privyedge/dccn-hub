@@ -103,6 +103,10 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 
 	log.Printf("CreateTask task %+v", req)
 
+	if req.Task.Replica == 0 {
+		req.Task.Replica = 1
+	}
+
 
 
 
