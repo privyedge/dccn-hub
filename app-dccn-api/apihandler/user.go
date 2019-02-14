@@ -27,6 +27,42 @@ func (p *ApiUser) Register(ctx context.Context, req *usermgr.User, rsp *common_p
 	return nil
 }
 
+func (p *ApiUser) AskResetPassword(ctx context.Context, req *usermgr.AskResetPasswordRequest, rsp *common_proto.Error) error {
+
+	log.Println("Debug AskResetPassword")
+	if out, err := p.api.AskResetPassword(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
+	return nil
+}
+
+func (p *ApiUser) ResetPassword(ctx context.Context, req *usermgr.ResetPasswordRequest, rsp *common_proto.Error) error {
+
+	log.Println("Debug ResetPassword")
+	if out, err := p.api.ResetPassword(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
+	return nil
+}
+
+func (p *ApiUser) Activate(ctx context.Context, req *usermgr.ActivateRequest, rsp *common_proto.Error) error {
+
+	log.Println("Debug Activate")
+	if out, err := p.api.Activate(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
+	}
+	return nil
+}
+
 func (p *ApiUser) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
 
 	log.Println("Debug into Login")
