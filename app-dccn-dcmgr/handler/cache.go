@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Ankr-network/dccn-common/protos"
-	"github.com/Ankr-network/dccn-common/protos/common"
-	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 )
 
@@ -19,7 +19,7 @@ type DataCenterStreamCaches struct {
 	mu *sync.RWMutex
 	// TODO: Redis here
 	streams map[string]dcmgr.DCStreamer_ServerStreamStream
-	db dbservice.DBService
+	db      dbservice.DBService
 }
 
 func NewDataCenterStreamCaches() *DataCenterStreamCaches {
@@ -37,10 +37,6 @@ func (p *DataCenterStreamCaches) Add(dc *common_proto.DataCenter, stream dcmgr.D
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
-	if _, ok := p.streams[dc.Name]; ok {
-		return
-	}
 
 	log.Println("Debug into DataCenterStreamCaches'Add")
 	p.streams[dc.Name] = stream
@@ -82,8 +78,6 @@ func (p *DataCenterStreamCaches) One(dc string) (dcmgr.DCStreamer_ServerStreamSt
 	for dc := range p.streams {
 		log.Printf("find dataCenter %s \n", dc)
 	}
-
-
 
 	switch dc {
 	case "":
@@ -134,7 +128,7 @@ func (p *DataCenterStreamCaches) checkHealthy() {
 				log.Println()
 				p.db.UpdateStatus(dc, common_proto.Status_UNAVAILABLE)
 				log.Printf("datacenter %s unavailable ", dc)
-			}else{
+			} else {
 				p.db.UpdateStatus(dc, common_proto.Status_AVAILABLE)
 				log.Printf("datacenter %s available ", dc)
 			}
