@@ -65,12 +65,14 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 		return err
 	}
 
+	// check if email exist already
 	_, dbErr := p.db.Get(strings.ToLower(user.Email))
 	if dbErr == nil {
 		log.Println(dbErr.Error())
 		return dbErr
 	}
 
+	// generate authorization token
 	authorizationToken, err := p.token.NewAuthorizationToken(user.Email)
 	if err != nil {
 		log.Println(err.Error())
@@ -97,6 +99,7 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 func (p *UserHandler) ForgetPassword(ctx context.Context, req *usermgr.ForgetPasswordRequest, rsp *common_proto.Error) error {
 	log.Println("Debug AskResetPassword")
 
+	// generate new authorization token for reset password
 	authorizationToken, err := p.token.NewAuthorizationToken(req.Email)
 	if err != nil {
 		log.Println(err.Error())
@@ -124,13 +127,14 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 		return err
 	}
 
+	// Check if the operation was initiated by req.user
 	if payload.Email != req.Email {
 		err = errors.New("user invalid")
 		log.Println(err.Error())
 		return err
 	}
 
-	// encrypt password
+	// hash password
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
@@ -161,6 +165,7 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 		return err
 	}
 
+	// Check if the operation was initiated by req.user
 	if payload.Email != req.Email {
 		err = errors.New("email invalid")
 		log.Println(err.Error())

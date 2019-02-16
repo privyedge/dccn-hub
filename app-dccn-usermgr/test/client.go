@@ -10,7 +10,6 @@ import (
 
 func mockUser() *pb.User {
 	return &pb.User{
-		Nickname: "xiaoming",
 		Password: "1234567",
 		Email:    "123@gmail.com",
 	}

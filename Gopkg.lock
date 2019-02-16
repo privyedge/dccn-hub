@@ -2,7 +2,8 @@
 
 
 [[projects]]
-  branch = "develop"
+  # branch = "develop"
+  branch = "feature/SWDEV-142-activate-user"
   digest = "1:89b07fe853181c748585c3ffcb5031c48ca15bf42b7aed80fbca3d6402d1b3eb"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
