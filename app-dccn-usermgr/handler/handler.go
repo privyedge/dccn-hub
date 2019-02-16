@@ -161,6 +161,12 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 		return err
 	}
 
+	if payload.Email != req.Email {
+		err = errors.New("email invalid")
+		log.Println(err.Error())
+		return err
+	}
+
 	// update password. if not exist, db return not found
 	if err := p.db.UpdateActivateStatus(payload.Email); err != nil {
 		log.Println(err.Error())
