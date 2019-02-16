@@ -8,7 +8,8 @@ type PatternType int
 
 const (
 	// email pattern
-	emailPattern = `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
+	// emailPattern = `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
+	emailPattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 	// 8-32 chars, [0-9A-Za-z_]
 	passwordPattern = `^(\w){8-32}$`
 	// 6-18 chars, begin with chars, [0-9A-Za-z_] is available

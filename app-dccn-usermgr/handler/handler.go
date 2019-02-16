@@ -24,6 +24,22 @@ type UserHandler struct {
 	blacklist *Blacklist // used for logout
 }
 
+func (p *UserHandler) UpdateAttributes(context.Context, *usermgr.UpdateAttributesRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
+func (p *UserHandler) ChangePassword(context.Context, *usermgr.ChangePasswordRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
+func (p *UserHandler) ChangeEmail(context.Context, *usermgr.ChangeEmailRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
+func (p *UserHandler) VerifyEmail(context.Context, *usermgr.VerifyEmailRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
 func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micro.Publisher) *UserHandler {
 	return &UserHandler{
 		db:        dbService,
@@ -78,7 +94,7 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	return nil
 }
 
-func (p *UserHandler) ForgetPassword(ctx context.Context, req *usermgr.AskResetPasswordRequest, rsp *common_proto.Error) error {
+func (p *UserHandler) ForgetPassword(ctx context.Context, req *usermgr.ForgetPasswordRequest, rsp *common_proto.Error) error {
 	log.Println("Debug AskResetPassword")
 
 	authorizationToken, err := p.token.NewAuthorizationToken(req.Email)
@@ -97,12 +113,12 @@ func (p *UserHandler) ForgetPassword(ctx context.Context, req *usermgr.AskResetP
 	return nil
 }
 
-func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ResetPasswordRequest, rsp *common_proto.Error) error {
+func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Error) error {
 
 	log.Println("Debug ResetPassword")
 
 	// verify code if is expired
-	payload, err := p.token.VerifyAuthorizationToken(req.Token)
+	payload, err := p.token.VerifyAuthorizationToken(req.VerificationCode)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -115,7 +131,7 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ResetPas
 	}
 
 	// encrypt password
-	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -134,12 +150,12 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ResetPas
 	return nil
 }
 
-func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.ActivateRequest, rsp *common_proto.Error) error {
+func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequest, rsp *common_proto.Error) error {
 
 	log.Println("Debug Activate")
 
 	// verify code if is expired
-	payload, err := p.token.VerifyAuthorizationToken(req.Token)
+	payload, err := p.token.VerifyAuthorizationToken(req.VerificationCode)
 	if err != nil {
 		log.Println(err.Error())
 		return err

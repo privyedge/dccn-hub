@@ -33,7 +33,7 @@ spec:
           - name: MICRO_BROKER_ADDRESS
             value: amqp://guest:guest@broker:5672
           - name: MICRO_REGISTER_INTERVAL
-            value: "15"
+            value: "20"
           - name: MICRO_REGISTRY
             value: consul
           - name: MICRO_REGISTRY_ADDRESS

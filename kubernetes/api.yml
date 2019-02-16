@@ -33,7 +33,7 @@ spec:
           - name: MICRO_BROKER_ADDRESS
             value: amqp://guest:guest@broker:5672
           - name: MICRO_REGISTER_INTERVAL
-            value: "15"
+            value: "20"
           - name: MICRO_REGISTRY
             value: consul
           - name: MICRO_REGISTRY_ADDRESS
@@ -44,18 +44,3 @@ spec:
             value: v1.0
           ports:
           - containerPort: 50051
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: api
-  labels:
-    app: api
-spec:
-  ports:
-    - port: 50051
-      targetPort: 50051
-      protocol: TCP
-  selector:
-    app: api
-  type: LoadBalancer

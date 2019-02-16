@@ -15,6 +15,22 @@ type ApiUser struct {
 	api usermgr.UserMgrService
 }
 
+func (p *ApiUser) UpdateAttributes(context.Context, *usermgr.UpdateAttributesRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
+func (p *ApiUser) ChangePassword(context.Context, *usermgr.ChangePasswordRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
+func (p *ApiUser) ChangeEmail(context.Context, *usermgr.ChangeEmailRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
+func (p *ApiUser) VerifyEmail(context.Context, *usermgr.VerifyEmailRequest, *common_proto.Error) error {
+	panic("implement me")
+}
+
 func (p *ApiUser) Register(ctx context.Context, req *usermgr.User, rsp *common_proto.Error) error {
 
 	log.Println("Debug into Register")
@@ -27,10 +43,10 @@ func (p *ApiUser) Register(ctx context.Context, req *usermgr.User, rsp *common_p
 	return nil
 }
 
-func (p *ApiUser) ForgetPassword(ctx context.Context, req *usermgr.AskResetPasswordRequest, rsp *common_proto.Error) error {
+func (p *ApiUser) ForgetPassword(ctx context.Context, req *usermgr.ForgetPasswordRequest, rsp *common_proto.Error) error {
 
 	log.Println("Debug AskResetPassword")
-	if out, err := p.api.AskResetPassword(ctx, req); err != nil {
+	if out, err := p.api.ForgetPassword(ctx, req); err != nil {
 		log.Println(err.Error())
 		return err
 	} else {
@@ -39,10 +55,10 @@ func (p *ApiUser) ForgetPassword(ctx context.Context, req *usermgr.AskResetPassw
 	return nil
 }
 
-func (p *ApiUser) ConfirmPassword(ctx context.Context, req *usermgr.ResetPasswordRequest, rsp *common_proto.Error) error {
+func (p *ApiUser) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Error) error {
 
 	log.Println("Debug ResetPassword")
-	if out, err := p.api.ResetPassword(ctx, req); err != nil {
+	if out, err := p.api.ConfirmPassword(ctx, req); err != nil {
 		log.Println(err.Error())
 		return err
 	} else {
@@ -51,10 +67,10 @@ func (p *ApiUser) ConfirmPassword(ctx context.Context, req *usermgr.ResetPasswor
 	return nil
 }
 
-func (p *ApiUser) ConfirmRegistration(ctx context.Context, req *usermgr.ActivateRequest, rsp *common_proto.Error) error {
+func (p *ApiUser) ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequest, rsp *common_proto.Error) error {
 
 	log.Println("Debug Activate")
-	if out, err := p.api.Activate(ctx, req); err != nil {
+	if out, err := p.api.ConfirmRegistration(ctx, req); err != nil {
 		log.Println(err.Error())
 		return err
 	} else {
