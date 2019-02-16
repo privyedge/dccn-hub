@@ -1,4 +1,4 @@
-package apiCommon
+package main
 
 import (
 	"context"
@@ -6,16 +6,15 @@ import (
 
 	//	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 	"log"
-//	"time"
+	//	"time"
 
-//	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
+	//	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
 	"google.golang.org/grpc"
-//	"google.golang.org/grpc/metadata"
+	//	"google.golang.org/grpc/metadata"
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
-
-//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
 //var addr = "localhost:50051"
@@ -34,9 +33,8 @@ func main() {
 		}
 	}(conn)
 
-//	taskClient := taskmgr.NewTaskMgrClient(conn)
+	//	taskClient := taskmgr.NewTaskMgrClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
-
 
 	user := &usermgr.User{
 		Name:     "user_test1",
@@ -46,7 +44,7 @@ func main() {
 		Balance:  199,
 	}
 	if rps, err := userClient.Register(context.Background(), user); err != nil {
-	//	log.Fatal(err.Error())
+		//	log.Fatal(err.Error())
 		log.Print("receive === error")
 	} else {
 		log.Printf("Register result no error :  %s %s ", rps.Status.String(), rps.Details)
@@ -61,9 +59,6 @@ func main() {
 	// 	//token = rsp.Token
 	// 	//userId = rsp.UserId
 	// }
-
-
-
 
 	log.Println("END")
 }
