@@ -31,6 +31,7 @@ func TestVerifyEmailPattern(t *testing.T) {
 
 func TestVerifyUserPattern(t *testing.T) {
 	okNames := []string{
+		"a89787asfA_KjKJ",
 		"a23_12kjk",
 		"aaaaaakjl",
 		"a787098070",
@@ -45,10 +46,11 @@ func TestVerifyUserPattern(t *testing.T) {
 	}
 
 	errNames := []string{
-		"a2_98sf09f",
+		"",
 		"2222222a_",
 		"_akj9879879",
 		"a2_",
+		"a2_ksjfdklajsfkljaslfjklasjflkasjfkljsklafjklasdjfkljflk",
 	}
 	for _, name := range errNames {
 		if matchPattern(OpUserNameMatch, name) {
@@ -58,9 +60,10 @@ func TestVerifyUserPattern(t *testing.T) {
 }
 func TestVerifyPasswordPattern(t *testing.T) {
 	okPasswords := []string{
-		"a89787asfA_KjKJ",
-		"A89787asfAKjKJ",
-		"9A89787asfAKjKJ",
+		"a2312kjkklsjfalkjflka",
+		"A2312KJKKLSJFALKJFLKA",
+		"AaaaaKJKKLSJFALKJFLKA",
+		"a89787asfAKjKJ",
 	}
 	for _, pw := range okPasswords {
 		if !matchPattern(OpPasswordMatch, pw) {
@@ -68,55 +71,16 @@ func TestVerifyPasswordPattern(t *testing.T) {
 		}
 	}
 	errPasswords := []string{
-		"123aA",
-		"123aAksAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-		"12367890765",
-		"aaaaaaaaaaaa",
-		"AAAAAAAAAAAAAAAA",
-		"1AAAAAAAAAAAAAA",
-		"1aaaaaaaaaaaaaaa",
+		"a23aA",
+		"a23aAksAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+		// "12367890765",
+		// "aaaaaaaaaaaa",
+		// "AAAAAAAAAAAAAAAA",
+		// "1AAAAAAAAAAAAAA",
 	}
 	for _, pw := range errPasswords {
 		if matchPattern(OpPasswordMatch, pw) {
 			t.Fatal("verify password pattern failed ", pw)
-		}
-	}
-}
-
-func TestPattern(t *testing.T) {
-	// re := regexp.MustCompilePOSIX(`^[0-9A-Za-z_]{3,5}$`)
-	// re := regexp.MustCompile(`^[0-9A-Za-z_]{3,5}$`)
-	// var re *regexp.Regexp
-	// re = regexp.MustCompile(`^(\w){3,5}$`)
-	okStr := []string{
-		"abc",
-		"_____",
-		"0000",
-		"0abc",
-		"0abc_",
-		"_abc9",
-		"ab_c9",
-	}
-	for _, str := range okStr {
-		// if !re.MatchString(str) {
-		if !matchPattern(OpTestMatch, str) {
-			t.Fatal("error")
-		}
-	}
-
-	errStrs := []string{
-		"",
-		"0",
-		"a",
-		"_",
-		"000000",
-		"______",
-		"aaaaaaa",
-	}
-	for _, str := range errStrs {
-		// if re.MatchString(str) {
-		if matchPattern(OpTestMatch, str) {
-			t.Fatal("error ", str)
 		}
 	}
 }
