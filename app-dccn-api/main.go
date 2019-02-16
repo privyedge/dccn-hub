@@ -90,10 +90,10 @@ func startHandler() {
 		log.Fatal(err.Error())
 	}
 
-	       // Register Task Handler
+	// Register Task Handler
 	dcClient := handler.NewAPIHandler(db)
 	if err := dcmgr.RegisterDCAPIHandler(srv.Server(), dcClient); err != nil {
-	    log.Fatal(err.Error())
+		log.Fatal(err.Error())
 	}
 	// Dc Manager register handler
 	// New Publisher to deploy new task action.
@@ -115,7 +115,7 @@ func startHandler() {
 
 	defer dcHandler.Cleanup()
 
-	// Register Email Handler
+	// Register OpEmailMatch Handler
 	if err := mail.RegisterMailHandler(srv.Server(), apihandler.NewApiEmail(srv.Client())); err != nil {
 		log.Fatal(err.Error())
 	}

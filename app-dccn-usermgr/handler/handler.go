@@ -36,6 +36,13 @@ func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micr
 func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *common_proto.Error) error {
 
 	log.Println("Debug Register")
+	// verify email and password
+	if !matchPattern(OpUserNameMatch, user.Name) || !matchPattern(OpPasswordMatch, user.Password) || !matchPattern(OpEmailMatch, user.Email) {
+		err := errors.New("name or email or password invalid")
+		log.Println(err.Error())
+		return err
+	}
+
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
@@ -71,7 +78,7 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	return nil
 }
 
-func (p *UserHandler) AskResetPassword(ctx context.Context, req *usermgr.AskResetPasswordRequest, rsp *common_proto.Error) error {
+func (p *UserHandler) ForgetPassword(ctx context.Context, req *usermgr.AskResetPasswordRequest, rsp *common_proto.Error) error {
 	log.Println("Debug AskResetPassword")
 
 	authorizationToken, err := p.token.NewAuthorizationToken(req.Email)
@@ -90,7 +97,7 @@ func (p *UserHandler) AskResetPassword(ctx context.Context, req *usermgr.AskRese
 	return nil
 }
 
-func (p *UserHandler) ResetPassword(ctx context.Context, req *usermgr.ResetPasswordRequest, rsp *common_proto.Error) error {
+func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ResetPasswordRequest, rsp *common_proto.Error) error {
 
 	log.Println("Debug ResetPassword")
 
@@ -127,7 +134,7 @@ func (p *UserHandler) ResetPassword(ctx context.Context, req *usermgr.ResetPassw
 	return nil
 }
 
-func (p *UserHandler) Activate(ctx context.Context, req *usermgr.ActivateRequest, rsp *common_proto.Error) error {
+func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.ActivateRequest, rsp *common_proto.Error) error {
 
 	log.Println("Debug Activate")
 
@@ -169,7 +176,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		log.Println(err.Error())
 		return err
 	}
-	rsp.UserId = user.Id
+	*rsp.User = *user
 
 	// used to refresh token
 	p.blacklist.Add(rsp.Token)
