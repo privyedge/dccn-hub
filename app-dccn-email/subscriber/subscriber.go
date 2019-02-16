@@ -102,7 +102,7 @@ func SendEmail(e *common_proto.MailEvent) error {
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
-		return
+		return err
 	}
 
 	fmt.Println("Email Sent!")
