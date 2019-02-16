@@ -82,8 +82,8 @@ jobs:
             
             kops export kubecfg --name ${K8S_CLUSTER}.k8s.ankr.network --state s3://kops.${K8S_CLUSTER}.config
             for ((i=0; i<arrlen; i++)); do
-              kubectl set image --local -o yaml -f ./kubernetes/${dockerfile_arr[$i]}.yml ${name_arr[$i]}='${AWS_ACCOUNT}'.dkr.ecr.'${AWS_REGION}'.amazonaws.com/'${component_arr[$i]}':'${BRANCH_NAME}''${DATE}' > ./kubernetes/tmp/${dockerfile_arr[$i]}.yml
-              kubectl apply -f ./kubernetes/tmp/${dockerfile_arr[$i]}.yml
+              kubectl set image --local -o yaml -f ./kubernetes/${dockerfile_arr[$i]}.yml ${name_arr[$i]}='${AWS_ACCOUNT}'.dkr.ecr.'${AWS_REGION}'.amazonaws.com/'${component_arr[$i]}':'${BRANCH_NAME}''${DATE}' > ./kubernetes/${dockerfile_arr[$i]}.yml
+              kubectl apply -f ./kubernetes/${dockerfile_arr[$i]}.yml
               if ! kubectl rollout status deploy/${deployment_arr[$i]} --watch=true --timeout=60s; then
                 echo "Deploy failed, roll back to previous version"
                 kubectl rollout undo deploy/${deployment_arr[$i]} 

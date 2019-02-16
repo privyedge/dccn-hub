@@ -1,6 +1,8 @@
 package handler
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestVerifyEmailPattern(t *testing.T) {
 	okEmails := []string{
@@ -77,6 +79,44 @@ func TestVerifyPasswordPattern(t *testing.T) {
 	for _, pw := range errPasswords {
 		if matchPattern(OpPasswordMatch, pw) {
 			t.Fatal("verify password pattern failed ", pw)
+		}
+	}
+}
+
+func TestPattern(t *testing.T) {
+	// re := regexp.MustCompilePOSIX(`^[0-9A-Za-z_]{3,5}$`)
+	// re := regexp.MustCompile(`^[0-9A-Za-z_]{3,5}$`)
+	// var re *regexp.Regexp
+	// re = regexp.MustCompile(`^(\w){3,5}$`)
+	okStr := []string{
+		"abc",
+		"_____",
+		"0000",
+		"0abc",
+		"0abc_",
+		"_abc9",
+		"ab_c9",
+	}
+	for _, str := range okStr {
+		// if !re.MatchString(str) {
+		if !matchPattern(OpTestMatch, str) {
+			t.Fatal("error")
+		}
+	}
+
+	errStrs := []string{
+		"",
+		"0",
+		"a",
+		"_",
+		"000000",
+		"______",
+		"aaaaaaa",
+	}
+	for _, str := range errStrs {
+		// if re.MatchString(str) {
+		if matchPattern(OpTestMatch, str) {
+			t.Fatal("error ", str)
 		}
 	}
 }
