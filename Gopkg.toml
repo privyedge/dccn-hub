@@ -26,7 +26,6 @@
 
 
 [[constraint]]
-  # branch = "develop"
   branch = "feature/SWDEV-142-activate-user"
   name = "github.com/Ankr-network/dccn-common"
 
