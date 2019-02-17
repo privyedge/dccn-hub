@@ -13,7 +13,7 @@ import (
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 )
 
-var heartbeat = &common_proto.Event{EventType: common_proto.Operation_HEARTBEAT}
+var heartbeat = &common_proto.DCResponse{OpType: common_proto.DCOperation_HEARTBEAT}
 
 type DataCenterStreamCaches struct {
 	mu *sync.RWMutex
@@ -126,10 +126,10 @@ func (p *DataCenterStreamCaches) checkHealthy() {
 				p.Remove(dc)
 				log.Println(stream.Close())
 				log.Println()
-				p.db.UpdateStatus(dc, common_proto.Status_UNAVAILABLE)
+				p.db.UpdateStatus(dc, common_proto.DCStatus_UNAVAILABLE)
 				log.Printf("datacenter %s unavailable ", dc)
 			} else {
-				p.db.UpdateStatus(dc, common_proto.Status_AVAILABLE)
+				p.db.UpdateStatus(dc, common_proto.DCStatus_AVAILABLE)
 				log.Printf("datacenter %s available ", dc)
 			}
 		}

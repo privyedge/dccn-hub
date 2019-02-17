@@ -51,14 +51,11 @@ func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.Request, r
 	return nil
 }
 
-
 type Token struct {
 	Exp int64
 	Jti string
 	Iss string
 }
-
-
 
 func getUserID(ctx context.Context) string{
 	meta, ok := metadata.FromContext(ctx)
@@ -67,7 +64,6 @@ func getUserID(ctx context.Context) string{
 	if ok {
 		token = meta["token"]
 	}
-
 
 	parts := strings.Split(token, ".")
 
@@ -83,7 +79,6 @@ func getUserID(ctx context.Context) string{
 	if err := json.Unmarshal(decoded, &dat); err != nil {
 		panic(err)
 	}
-
 
 	return string(dat.Jti)
 }
@@ -107,9 +102,6 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		req.Task.Replica = 1
 	}
 
-
-
-
 	if req.Task.Type == common_proto.TaskType_CRONJOB { // check schudule filed
 		_ , err := cronexpr.Parse(req.Task.Schedule)
 		if err != nil {
@@ -118,9 +110,6 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		}
 
 	}
-
-
-
 
 	req.Task.Status = 0
 	req.Task.UserId = req.UserId

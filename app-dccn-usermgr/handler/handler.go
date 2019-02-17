@@ -124,23 +124,23 @@ func (p *UserHandler) Logout(ctx context.Context, in *usermgr.LogoutRequest, out
 	return nil
 }
 
-func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *usermgr.NewTokenResponse) error {
+// func (p *UserHandler) NewToken(ctx context.Context, req *usermgr.User, rsp *usermgr.NewTokenResponse) error {
 
-	log.Println("Debug into NewToken")
-	req, err := p.db.Get(strings.ToLower(req.Email))
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
+// 	log.Println("Debug into NewToken")
+// 	req, err := p.db.Get(strings.ToLower(req.Email))
+// 	if err != nil {
+// 		log.Println(err.Error())
+// 		return err
+// 	}
 
-	rsp.Token, err = p.token.New(req)
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
+// 	rsp.Token, err = p.token.New(req)
+// 	if err != nil {
+// 		log.Println(err.Error())
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (p *UserHandler) VerifyToken(ctx context.Context, req *usermgr.Token, rsp *common_proto.Error) error {
 

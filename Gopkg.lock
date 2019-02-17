@@ -2,8 +2,8 @@
 
 
 [[projects]]
-  branch = "develop"
-  digest = "1:89b07fe853181c748585c3ffcb5031c48ca15bf42b7aed80fbca3d6402d1b3eb"
+  branch = "feature/SWDEV-149-restructure-proto"
+  digest = "1:d0c9212f07f85dede60b7323430e699de4d90c898669ebb4f48b2000fc0a1313"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -18,7 +18,7 @@
     "protos/usermgr/v1/micro",
   ]
   pruneopts = "UT"
-  revision = "15998e8f244cc43242ff73c660160683e8a09dd3"
+  revision = "53fa3e0e0c8fe61bb86f951f8dfc406ede0b64b0"
 
 [[projects]]
   branch = "master"
@@ -137,7 +137,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:a54ada9beb59fdc35b69322979e870ff0b780e03f4dc309c4c8674b94927df75"
+  digest = "1:75ed48e676c79393be368f0272b6ee0ba489dc1ef7f0807eaed5bf8527c69c60"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
   pruneopts = "UT"
@@ -369,11 +369,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:525ac3364813b4688df380594e562133e07830dfce0722effda64b37634c13d0"
+  digest = "1:dbd2b63224b02f9c7fd0631edaf6588dfb05fc20608f548fb603ef096fa87474"
   name = "github.com/streadway/amqp"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a314942b2fd9dde7a3f70ba3f1062848ce6eb392"
+  revision = "884228600bc96c993ab12fb81ba78bf0c280e88a"
 
 [[projects]]
   branch = "master"
@@ -416,7 +416,7 @@
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "983097b1a8a340cd1cc7df17d735154d89e10b1a"
+  revision = "d0b11bdaac8adb652bff00e49bcacf992835621a"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -447,7 +447,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
+  revision = "bd968387e4aa590b3c6e4ba38ecac1ed314d43ad"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
