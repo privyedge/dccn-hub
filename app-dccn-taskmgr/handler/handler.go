@@ -34,14 +34,13 @@ func New(db db.DBService, deployTask micro.Publisher) *TaskMgrHandler {
 
 
 
-
 type Token struct {
 	Exp int64
 	Jti string
 	Iss string
 }
 
-
+	
 func getUserID(ctx context.Context) string{
 	meta, ok := metadata.FromContext(ctx)
 	// Note this is now uppercase (not entirely sure why this is...)
@@ -49,7 +48,6 @@ func getUserID(ctx context.Context) string{
 	if ok {
 		token = meta["token"]
 	}
-
 
 	parts := strings.Split(token, ".")
 
@@ -65,7 +63,6 @@ func getUserID(ctx context.Context) string{
 	if err := json.Unmarshal(decoded, &dat); err != nil {
 		panic(err)
 	}
-
 
 	return string(dat.Jti)
 }
@@ -85,9 +82,6 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		req.Task.Attributes.Replica = 1
 	}
 
-
-
-
 	if req.Task.Type == common_proto.TaskType_CRONJOB { // check schudule filed
 		_ , err := cronexpr.Parse(req.Task.GetTypeCronJob().Schedule)
 		if err != nil {
@@ -96,7 +90,6 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		}
 
 	}
-
 
 	req.Task.Status = common_proto.TaskStatus_STARTING
 	req.Task.Id = uuid.New().String()

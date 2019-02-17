@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"os"
 
 	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
@@ -12,7 +11,6 @@ import (
 	"github.com/micro/go-micro/server"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
@@ -79,18 +77,21 @@ func startHandler() {
 	srv.Init()
 
 	// Register User Handler
+	log.Println("Registering User Handler")
 	userClient = apihandler.NewApiUser(srv.Client())
 	if err := usermgr.RegisterUserMgrHandler(srv.Server(), userClient); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Register Task Handler
+	log.Println("Registering Task Handler")
 	taskClient = apihandler.NewApiTask(srv.Client())
 	if err := taskmgr.RegisterTaskMgrHandler(srv.Server(), taskClient); err != nil {
 		log.Fatal(err.Error())
 	}
 
-	       // Register Task Handler
+	// Register Task Handler
+	log.Println("Registering DC Handler")
 	dcClient := handler.NewAPIHandler(db)
 	if err := dcmgr.RegisterDCAPIHandler(srv.Server(), dcClient); err != nil {
 	    log.Fatal(err.Error())
@@ -140,15 +141,15 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			token = meta["token"]
 		}
 
-		if os.Getenv("DISABLE_AUTH") == "true" || !needAuth(req.Method()) {
-			if ok && token != "" {
-				if err := userClient.RefreshToken(ctx, &usermgr.Token{Token: token}, &common_proto.Error{}); err != nil {
-					log.Println(err.Error())
-					return err
-				}
-			}
-			return fn(ctx, req, resp)
-		}
+		// if os.Getenv("DISABLE_AUTH") == "true" || !needAuth(req.Method()) {
+		// 	if ok && token != "" {
+		// 		if err := userClient.RefreshToken(ctx, &usermgr.Token{Token: token}, &common_proto.Error{}); err != nil {
+		// 			log.Println(err.Error())
+		// 			return err
+		// 		}
+		// 	}
+		// 	return fn(ctx, req, resp)
+		// }
 
 		if !ok {
 			log.Println("no auth meta-data found in request")
