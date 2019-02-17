@@ -12,15 +12,13 @@ import (
 
 type DBService interface {
 	// Get gets a task item by taskmgr's id.
-	Get(id string) (*common_proto.Task, error)
+	Get(id string) (TaskRecord, error)
 	// GetAll gets all task related to user id.
-	GetAll(userId string) (*[]*common_proto.Task, error)
-	// GetByEventId gets task by event id.
-	GetByEventId(eventId string) (task *[]*common_proto.Task, err error)
+	GetAll(userId string) ([]TaskRecord, error)
 	// Cancel sets task status CANCEL
 	Cancel(taskId string) error
 	// Create Creates a new dc item if not exits.
-	Create(task *common_proto.Task) error
+	Create(task *common_proto.Task, uid string) error
 	// Update updates dc item
 	Update(taskId string, update bson.M) error
 	// UpdateTask updates dc item
@@ -37,6 +35,23 @@ type DB struct {
 	collectionName      string
 	eventCollectionName string
 	session             *mgo.Session
+}
+
+type TaskRecord struct {
+	ID           string
+	Userid       string
+	Name         string
+	Image        string
+	Datacenter   string
+	Type         common_proto.TaskType
+	Replica      int32
+	Datacenterid string  // mongodb name is low field
+	Status       common_proto.TaskStatus // 1 new 2 running 3. done 4 cancelling 5.canceled 6. updating 7. updateFailed
+	Hidden       bool
+	Schedule     string
+	Last_modified_date uint64
+	Creation_date uint64
+
 }
 
 // New returns DBService.
@@ -58,13 +73,13 @@ func (p *DB) collection(session *mgo.Session) *mgo.Collection {
 }
 
 // Get gets task item by id.
-func (p *DB) Get(taskId string) (*common_proto.Task, error) {
+func (p *DB) Get(taskId string) (TaskRecord, error) {
 	session := p.session.Clone()
 	defer session.Close()
 
-	var task common_proto.Task
+	var task TaskRecord
 	err := p.collection(session).Find(bson.M{"id": taskId}).One(&task)
-	return &task, err
+	return task, err
 }
 
 func (p *DB) GetAll(userId string) (*[]*common_proto.Task, error) {
@@ -94,13 +109,42 @@ func (p *DB) GetByEventId(eventId string) (*[]*common_proto.Task, error) {
 }
 
 // Create creates a new task item if it not exists
-func (p *DB) Create(task *common_proto.Task) error {
+func (p *DB) Create(task *common_proto.Task, uid string) error {
 	session := p.session.Copy()
 	defer session.Close()
 
 	log.Printf("create task %+v\n", task)
-	return p.collection(session).Insert(task)
+	taskRecord := TaskRecord{}
+	taskRecord.ID = task.Id
+	taskRecord.Userid = uid
+	taskRecord.Name = task.Name
+	taskRecord.Image = getTaskImage(task)
+	taskRecord.Type = task.Type
+	taskRecord.Status = task.Status
+	taskRecord.Replica = task.Attributes.Replica
+	taskRecord.Schedule = task.GetTypeCronJob().Schedule
+	taskRecord.Last_modified_date = task.Attributes.LastModifiedDate
+	taskRecord.Creation_date = task.Attributes.CreationDate
+
+	return p.collection(session).Insert(taskRecord)
 }
+
+func getTaskImage(task *common_proto.Task) string{
+	if task.Type == common_proto.TaskType_DEPLOYMENT {
+		return task.GetTypeDeployment().Image
+	}
+
+	if task.Type == common_proto.TaskType_JOB {
+		return task.GetTypeJob().Image
+	}
+
+	if task.Type == common_proto.TaskType_CRONJOB {
+		return task.GetTypeCronJob().Image
+	}
+
+	return ""
+}
+
 
 // Update updates task item.
 func (p *DB) Update(taskId string, update bson.M) error {
@@ -120,30 +164,28 @@ func (p *DB) UpdateTask(taskId string, task *common_proto.Task) error {
 		fields["name"] = task.Name
 	}
 
-	if task.Replica > 0 {
-		fields["replica"] = task.Replica
+	if task.Attributes.Replica > 0 {
+		fields["replica"] = task.Attributes.Replica
 	}
 
 	if task.Status > 0 {
 		fields["status"] = task.Status
 	}
 
-	if task.Hidden {
-		fields["hidden"] = task.Hidden
+	if task.Attributes.Hidden {
+		fields["hidden"] = task.Attributes.Hidden
 	}
 
-	if len(task.Image) > 0 {
-		fields["image"] = task.Image
+	image := getTaskImage(task)
+
+	if len(image) > 0 {
+		fields["image"] = image
 	}
 
-	if len(task.DataCenter) > 0 {
-		fields["datacenter"] = task.DataCenter
+	if len(task.DataCenterName) > 0 {
+		fields["datacenter"] = task.DataCenterName
 	}
 
-
-	if len(task.Url) > 0 {
-		fields["url"] = task.Url
-	}
 
 	return p.collection(session).Update(bson.M{"id": taskId}, bson.M{"$set": fields})
 

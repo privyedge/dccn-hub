@@ -20,25 +20,23 @@ func New(db db.DBService) *TaskStatusFeedback {
 // UpdateTaskByFeedback receives task result from data center, returns to v1
 // UpdateTaskStatusByFeedback updates database status by performing feedback from the data center of the task.
 // sets executor's id, updates task status.
-func (p *TaskStatusFeedback) HandlerFeedbackEventFromDataCenter(ctx context.Context, event *common_proto.Event) error {
+func (p *TaskStatusFeedback) HandlerFeedbackEventFromDataCenter(ctx context.Context, dcMessage *common_proto.DCRequest) error {
 
-	feedback := event.GetTaskFeedback()
+	feedback := dcMessage.GetTask()
 	log.Printf("HandlerFeedbackEventFromDataCenter: Receive New Event: %+v", *feedback)
 	var update bson.M
-	switch event.EventType {
-	case common_proto.Operation_TASK_CREATE:  // feedback  TaskStatus_START_FAILED  TaskStatus_START_SUCCESS => TaskStatus_RUNNING
+	switch dcMessage.OpType {
+	case common_proto.DCOperation_TASK_CREATE:  // feedback  TaskStatus_START_FAILED  TaskStatus_START_SUCCESS => TaskStatus_RUNNING
 		status := common_proto.TaskStatus_RUNNING
 		if feedback.Status == common_proto.TaskStatus_START_FAILED {
 			status = common_proto.TaskStatus_START_FAILED
 		}
 		update = bson.M{"$set": bson.M{"status": status, "datacenter": feedback.DataCenter}}
-		if event.GetTaskFeedback().Url != "" {
-			update = bson.M{"$set": bson.M{"status": status, "datacenter": feedback.DataCenter, "url": feedback.Url, "report": feedback.Report}}
-		}
-	case common_proto.Operation_TASK_UPDATE:
+
+	case common_proto.DCOperation_TASK_UPDATE:
 		status := common_proto.TaskStatus_RUNNING
 		update = bson.M{"$set": bson.M{"status": status}}
-	case common_proto.Operation_TASK_CANCEL:
+	case common_proto.DCOperation_TASK_CANCEL:
 		status := common_proto.TaskStatus_CANCELLED
 		if feedback.Status == common_proto.TaskStatus_CANCEL_FAILED {
 			status = common_proto.TaskStatus_CANCEL_FAILED
