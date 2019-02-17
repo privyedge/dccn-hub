@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"google.golang.org/grpc/metadata"
+	"time"
+
 	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
 
 	//	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
@@ -37,20 +40,72 @@ func main() {
 //	taskClient := taskmgr.NewTaskMgrClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
 
-	user := &usermgr.User{
-		Email:    `1231@Gmail.com`,
-		Password: "12345678901",
-	}
+	req := &usermgr.LoginRequest{}
+	req.Email = "12111@Gmail.com"
+    req.Password = "11111111"
+
 
 
 	//var token string
 	//var userId string
-	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
+	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
 		log.Fatal(err.Error())
 	} else {
-		log.Printf("login Success: id : %s toke : %s\n", rsp.UserId ,rsp.Token)
+		log.Printf("response %+v \n", rsp)
+		//log.Printf("login Success: id : %s name : %s , email %s  refresh_token : %s  access_token %s \n", rsp.User.Id, rsp.User.Attributes.Name, rsp.User.Email ,rsp.AuthenticationResult.RefreshToken, rsp.AuthenticationResult.AccessToken)
 		//token = rsp.Token
 		//userId = rsp.UserId
+		refresh_token := rsp.AuthenticationResult.RefreshToken
+		access_token := rsp.AuthenticationResult.AccessToken
+
+		md := metadata.New(map[string]string{
+			"token": access_token,
+		})
+
+		log.Printf("get access_token after login %s \n", access_token)
+		ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+
+
+		if _, err := userClient.VerifyEmail(tokenContext, &usermgr.VerifyEmailRequst{ConfirmationCode:"this is a test"}); err != nil {
+			//log.Println("detail create %+v " + rsp)
+			log.Printf(">>>>>>>>VerifyEmail result :  %s   \n", err)
+		}else{
+			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
+		}
+
+
+		new_access_token := ""
+		if rsp, err := userClient.RefreshSession(tokenContext, &usermgr.RefreshToken{RefreshToken:refresh_token}); err != nil {
+
+			//log.Println("detail create %+v " + rsp)
+			log.Printf("receive error %s \n", err)
+		} else {
+			new_access_token = rsp.AccessToken
+			log.Printf("get new fresh token and access token : %s %s  \n" , rsp.AccessToken, rsp.RefreshToken)
+		}
+
+
+		md2 := metadata.New(map[string]string{
+			"token": new_access_token,
+		})
+		ctx2 := metadata.NewOutgoingContext(context.Background(), md2)
+
+		tokenContext2, cancel2 := context.WithTimeout(ctx2, 10*time.Second)
+		defer cancel2()
+
+
+		if _, err := userClient.VerifyEmail(tokenContext2, &usermgr.VerifyEmailRequst{ConfirmationCode:"this is a test"}); err != nil {
+			//log.Println("detail create %+v " + rsp)
+			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
+		}else{
+			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
+		}
+
+
+
 	}
 
 

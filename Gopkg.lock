@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "feature/SWDEV-149-restructure-proto"
-  digest = "1:d0c9212f07f85dede60b7323430e699de4d90c898669ebb4f48b2000fc0a1313"
+  digest = "1:e65c4cba236146dcd9d36021f033836e8ddb2c1467d2159c87a0dae6fdf3c367"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -18,7 +18,7 @@
     "protos/usermgr/v1/micro",
   ]
   pruneopts = "UT"
-  revision = "53fa3e0e0c8fe61bb86f951f8dfc406ede0b64b0"
+  revision = "679f0a5cbe6b8540ba7eb9d1e6b31aadc44e2dcd"
 
 [[projects]]
   branch = "master"
@@ -137,7 +137,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:75ed48e676c79393be368f0272b6ee0ba489dc1ef7f0807eaed5bf8527c69c60"
+  digest = "1:a54ada9beb59fdc35b69322979e870ff0b780e03f4dc309c4c8674b94927df75"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
   pruneopts = "UT"

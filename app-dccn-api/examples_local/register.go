@@ -1,4 +1,4 @@
-package apiCommon
+package main
 
 import (
 	"context"
@@ -18,8 +18,8 @@ import (
 //	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-//var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "localhost:50051"
+//var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 
@@ -38,32 +38,18 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 
-	user := &usermgr.User{
-		Name:     "user_test1",
-		Nickname: "test1",
-		Email:    `12111@Gmail.com`,
-		Password: "12345678901",
-		Balance:  199,
-	}
-	if rps, err := userClient.Register(context.Background(), user); err != nil {
+	req := usermgr.RegisterRequest{}
+	req.User = &usermgr.User{}
+	req.User.Email = `12111@Gmail.com`
+	req.User.Attributes = &usermgr.UserAttributes{}
+	req.User.Attributes.Name = "user_test1"
+	req.Password = "11111111"
+
+	if _, err := userClient.Register(context.Background(), &req); err != nil {
 	//	log.Fatal(err.Error())
-		log.Print("receive === error")
+		log.Printf("receive have some error : %s \n", err.Error())
 	} else {
-		log.Printf("Register result no error :  %s %s ", rps.Status.String(), rps.Details)
+		log.Printf("Register result no error  ")
 	}
 
-	//var token string
-	//var userId string
-	// if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
-	// 	log.Fatal(err.Error())
-	// } else {
-	// 	log.Printf("login Success: id : %s toke : %s\n", rsp.UserId ,rsp.Token)
-	// 	//token = rsp.Token
-	// 	//userId = rsp.UserId
-	// }
-
-
-
-
-	log.Println("END")
 }
