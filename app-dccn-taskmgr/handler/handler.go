@@ -40,7 +40,7 @@ type Token struct {
 	Iss string
 }
 
-	
+
 func getUserID(ctx context.Context) string{
 	meta, ok := metadata.FromContext(ctx)
 	// Note this is now uppercase (not entirely sure why this is...)

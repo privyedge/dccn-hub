@@ -5,16 +5,16 @@ import (
 	"log"
 	"time"
 
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"github.com/dgrijalva/jwt-go"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	"github.com/Ankr-network/dccn-common/protos"
 )
 
 var secret = []byte("14444749c1ecc982cd0f91113db98211")
 
 type IToken interface {
-	New(user *usermgr.User) (string, error)
+	NewToken(uid string) (int64, string, error)
 	Verify(tokenString string) (*UserPayload, error)
 	VerifyAndRefresh(tokenString string) (string, error)
 }
@@ -40,17 +40,17 @@ func New() *Token {
 }
 
 // New returns JWT string.
-func (p *Token) New(user *usermgr.User) (string, error) {
+func (p *Token) NewToken(uid string) (int64, string, error) {
 
 	expireTime := time.Now().Add(time.Minute * time.Duration(p.RefreshTokenValidTime)).Unix()
 
 	// Create the Claims
 	payload := UserPayload{
-		user,
+		nil,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime,
 			Issuer:    "ankr.network",
-			Id: user.Id,
+			Id: uid,
 		},
 	}
 
@@ -58,7 +58,8 @@ func (p *Token) New(user *usermgr.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
 	// Sign token and return
-	return token.SignedString(secret)
+	tokenString, err := token.SignedString(secret)
+	return expireTime, tokenString, err
 }
 
 // Verify a token string into a token object

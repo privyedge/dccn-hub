@@ -3,6 +3,7 @@ package dbservice
 import (
 	dbcommon "github.com/Ankr-network/dccn-common/db"
 	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"time"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -11,11 +12,15 @@ import (
 // mysql or mongodb. who is better.
 type DBService interface {
 	// Get get a user item by go_micro_srv_user mgr's email
-	Get(email string) (*pb.User, error)
+	Get(email string) (*UserRecord, error)
+
+	GetUserByID(id string)(*UserRecord, error)
 	// Create Creates a new user item if not exits
-	Create(user *pb.User) error
+	Create(user *pb.User, password string) error
 	// Update updates dc item
 	Update(user *pb.User) error
+
+	UpdateToken(uid string, tokens []string) error
 	// Close closes db connection
 	Close()
 	// dropCollection for testing usage
@@ -27,6 +32,18 @@ type DB struct {
 	dbName         string
 	collectionName string
 	session        *mgo.Session
+}
+
+type UserRecord struct {
+	ID           string
+	Email        string
+	Password     string
+	Name         string
+	Tokens       []string   // refresh token
+	varified     bool     // email varified
+	Last_modified_date uint64
+	Creation_date uint64
+
 }
 
 // New returns DBService.
@@ -48,21 +65,37 @@ func (p *DB) collection(session *mgo.Session) *mgo.Collection {
 }
 
 // Get gets user item by email.
-func (p *DB) Get(email string) (*pb.User, error) {
+func (p *DB) Get(email string) (*UserRecord, error) {
 	session := p.session.Clone()
 	defer session.Close()
 
-	var user pb.User
+	var user UserRecord
 	err := p.collection(session).Find(bson.M{"email": email}).One(&user)
+	return &user, err
+}
+
+func (p *DB) GetUserByID(id string)(*UserRecord, error){
+	session := p.session.Clone()
+	defer session.Close()
+
+	var user UserRecord
+	err := p.collection(session).Find(bson.M{"id": id}).One(&user)
 	return &user, err
 }
 
 // Create creates a new user item if it not exists
 // TODO: batch operations through bulk
-func (p *DB) Create(user *pb.User) error {
+func (p *DB) Create(user *pb.User, password string) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Insert(user)
+	userRecord := UserRecord{}
+	userRecord.ID = user.Id
+	userRecord.Email = user.Email
+	userRecord.Name = user.Attributes.Name
+	userRecord.Password = password
+	userRecord.Last_modified_date = uint64(time.Now().Unix())
+	userRecord.Creation_date = uint64(time.Now().Unix())
+	return p.collection(session).Insert(userRecord)
 }
 
 // Update updates user item.
@@ -70,6 +103,13 @@ func (p *DB) Update(user *pb.User) error {
 	session := p.session.Clone()
 	defer session.Close()
 	return p.collection(session).Update(bson.M{"email": user.Email}, user)
+}
+
+// Update updates user item.
+func (p *DB) UpdateToken(uid string, tokens []string) error {
+	session := p.session.Clone()
+	defer session.Close()
+	return p.collection(session).Update(bson.M{"id": uid}, bson.M{"$set":  bson.M{"tokens": tokens}})
 }
 
 // Close closes the db connection.
