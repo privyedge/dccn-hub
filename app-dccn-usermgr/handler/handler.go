@@ -38,14 +38,10 @@ func (p *UserHandler) Register(ctx context.Context, user *usermgr.User, rsp *com
 	email_error := ValidateEmailFormat(user.Email)
 	if email_error != nil {
 		log.Println(email_error.Error())
-		rsp.Status = common_proto.Status_FAILURE
-		rsp.Details = email_error.Error()
 		return email_error
 	}
 
 	if len(user.Password) < 6 {
-		rsp.Status = common_proto.Status_FAILURE
-		rsp.Details = ankr_default.ErrPasswordLength.Error()
 		return ankr_default.ErrPasswordLength
 	}
 
