@@ -137,20 +137,20 @@ func (p *DB) UpdateEmail(userId, email string) error {
 func (p *DB) UpdateUserAttributes(id string, attr *usermgr.UserAttribute) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"id": id}, bson.M{"$set": bson.M{"attributes": attr}})
+	return p.collection(session).Update(bson.M{"id": id}, bson.M{"$set": bson.M{"attribute": attr}})
 }
 
 func (p *DB) UpdatePassword(email, newPassword string) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"password": newPassword}})
+	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"attribute.hashpassword": newPassword}})
 }
 
 // Update updates user item.
 func (p *DB) UpdateToken(uid string, tokens []string) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"id": uid}, bson.M{"$set": bson.M{"tokens": tokens}})
+	return p.collection(session).Update(bson.M{"id": uid}, bson.M{"$set": bson.M{"attribute.tokens": tokens}})
 }
 
 // Close closes the db connection.
