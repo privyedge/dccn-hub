@@ -409,13 +409,6 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 
 	log.Println("Debug ChangePassword")
 
-	// verify code if is expired
-	_, err := p.token.Verify(req.ChangePasswordCode)
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-
 	// hash password, TODO: equal return err
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -432,20 +425,9 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 	return nil
 }
 
-func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsp *usermgr.User) error {
+func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug UpdateAttributes")
-
-	user, err := p.db.GetById(req.UserId)
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-
-	if user.ID == "" {
-		log.Println("user not exists")
-		return errors.New("user not exists")
-	}
 
 	if err := p.db.UpdateUserAttributes(req.UserId, req.UserAttribute); err != nil {
 		log.Println(err.Error())
@@ -465,45 +447,10 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 		return email_error
 	}
 
-	_, changeEmailCode, err := p.token.NewToken(req.UserId)
-	if err != nil {
+	if err := p.db.UpdateEmail(req.UserId, req.NewEmail); err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	e := &mail.MailEvent{
-		Type: mail.EmailType_CONFIRM_REGISTRATION,
-		From: ankr_default.AnkrEmailAddress,
-		To:   []string{strings.ToLower(req.NewEmail)},
-		OpMail: &mail.MailEvent_ChangeEmail{
-			ChangeEmail: &mail.ChangeEmail{
-				UserId:   req.UserId,
-				NewEmail: req.NewEmail,
-				Code:     changeEmailCode,
-			},
-		},
-	}
-
-	if err := p.pubEmail.Publish(context.TODO(), e); err != nil {
-		log.Println(err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func (p *UserHandler) VerifyEmail(ctx context.Context, req *usermgr.VerifyEmailRequest, rsp *usermgr.User) error {
-
-	log.Println("Debug VerifyEmail")
-
-	if _, err := p.token.Verify(req.ConfirmationCode); err != nil {
-		log.Println(err.Error())
-		return err
-	}
-
-	if err := p.db.UpdateEmail(req.UserId, strings.ToLower(req.NewEmail)); err != nil {
-		log.Println(err.Error())
-		return err
-	}
 	return nil
 }
