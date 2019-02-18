@@ -1,9 +1,11 @@
 package dbservice
 
 import (
+	"time"
+
 	dbcommon "github.com/Ankr-network/dccn-common/db"
 	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-	"time"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -13,13 +15,17 @@ import (
 type DBService interface {
 	// Get get a user item by go_micro_srv_user mgr's email
 	Get(email string) (*UserRecord, error)
-
-	GetUserByID(id string)(*UserRecord, error)
+	GetById(id string) (*UserRecord, error)
+	GetUserByID(id string) (*UserRecord, error)
 	// Create Creates a new user item if not exits
 	Create(user *pb.User, password string) error
 	// Update updates dc item
 	Update(user *pb.User) error
-
+	UpdateUserAttributes(id string, attr *usermgr.UserAttribute) error
+	// UpdateStatus update user status in db
+	UpdateStatus(email string, status usermgr.UserStatus) error
+	UpdateEmail(userId, newEmail string) error
+	UpdatePassword(email, newPassword string) error
 	UpdateToken(uid string, tokens []string) error
 	// Close closes db connection
 	Close()
@@ -35,15 +41,14 @@ type DB struct {
 }
 
 type UserRecord struct {
-	ID           string
-	Email        string
-	Password     string
-	Name         string
-	Tokens       []string   // refresh token
-	varified     bool     // email varified
+	ID                 string
+	Email              string
+	Password           string
+	Name               string
+	Tokens             []string // refresh token
+	varified           bool     // email varified
 	Last_modified_date uint64
-	Creation_date uint64
-
+	Creation_date      uint64
 }
 
 // New returns DBService.
@@ -74,7 +79,17 @@ func (p *DB) Get(email string) (*UserRecord, error) {
 	return &user, err
 }
 
-func (p *DB) GetUserByID(id string)(*UserRecord, error){
+// GetById gets user item by email.
+func (p *DB) GetById(id string) (*UserRecord, error) {
+	session := p.session.Clone()
+	defer session.Close()
+
+	var user UserRecord
+	err := p.collection(session).Find(bson.M{"id": id}).One(&user)
+	return &user, err
+}
+
+func (p *DB) GetUserByID(id string) (*UserRecord, error) {
 	session := p.session.Clone()
 	defer session.Close()
 
@@ -91,7 +106,7 @@ func (p *DB) Create(user *pb.User, password string) error {
 	userRecord := UserRecord{}
 	userRecord.ID = user.Id
 	userRecord.Email = user.Email
-	userRecord.Name = user.Attributes.Name
+	userRecord.Name = user.Attribute.Name
 	userRecord.Password = password
 	userRecord.Last_modified_date = uint64(time.Now().Unix())
 	userRecord.Creation_date = uint64(time.Now().Unix())
@@ -105,11 +120,37 @@ func (p *DB) Update(user *pb.User) error {
 	return p.collection(session).Update(bson.M{"email": user.Email}, user)
 }
 
+func (p *DB) UpdateStatus(email string, status usermgr.UserStatus) error {
+	session := p.session.Clone()
+	defer session.Close()
+	// TODO: check if ok
+	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"status": status}})
+}
+
+func (p *DB) UpdateEmail(userId, email string) error {
+	session := p.session.Clone()
+	defer session.Close()
+	// TODO: check if ok
+	return p.collection(session).Update(bson.M{"id": userId}, bson.M{"$set": bson.M{"email": email}})
+}
+
+func (p *DB) UpdateUserAttributes(id string, attr *usermgr.UserAttribute) error {
+	session := p.session.Clone()
+	defer session.Close()
+	return p.collection(session).Update(bson.M{"id": id}, bson.M{"$set": bson.M{"attributes": attr}})
+}
+
+func (p *DB) UpdatePassword(email, newPassword string) error {
+	session := p.session.Clone()
+	defer session.Close()
+	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"password": newPassword}})
+}
+
 // Update updates user item.
 func (p *DB) UpdateToken(uid string, tokens []string) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"id": uid}, bson.M{"$set":  bson.M{"tokens": tokens}})
+	return p.collection(session).Update(bson.M{"id": uid}, bson.M{"$set": bson.M{"tokens": tokens}})
 }
 
 // Close closes the db connection.
