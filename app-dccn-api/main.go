@@ -2,24 +2,25 @@ package main
 
 import (
 	"context"
-	"github.com/Ankr-network/dccn-common/protos/common"
-	"github.com/micro/go-micro/metadata"
 	"log"
 
-	"github.com/micro/go-grpc"
-	"github.com/micro/go-micro"
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	"github.com/micro/go-micro/metadata"
+
+	grpc "github.com/micro/go-grpc"
+	micro "github.com/micro/go-micro"
 	"github.com/micro/go-micro/server"
 
-	"github.com/Ankr-network/dccn-common/protos"
-	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
-	"github.com/Ankr-network/dccn-common/protos/email/v1/micro"
-	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
+	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
+	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app-dccn-api/apihandler"
 
-	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
+	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/subscriber"
 
-	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/config"
@@ -32,7 +33,7 @@ var (
 	conf       config.Config
 	db         dbservice.DBService
 	err        error
-	noAuthList   map[string]struct{}
+	noAuthList map[string]struct{}
 	userClient *apihandler.ApiUser
 	taskClient *apihandler.ApiTask
 )
@@ -57,12 +58,15 @@ func Init() {
 	}
 	log.Printf("Load config %+v\n", conf)
 
+	// TODO: define scope accord OAuth2.0
 	noAuthList = map[string]struct{}{
-		"UserMgr.Register": struct{}{},
-		"UserMgr.Login":   struct{}{},
-		"UserMgr.RefreshSession": struct{}{},
-		"DCStreamer.ServerStream":struct{}{},
-
+		"UserMgr.Register":            struct{}{},
+		"UserMgr.ConfirmRegistration": struct{}{},
+		"UserMgr.ForgotPassword":      struct{}{},
+		"UserMgr.ConfirmPassword":     struct{}{},
+		"UserMgr.Login":               struct{}{},
+		"UserMgr.RefreshSession":      struct{}{},
+		"DCStreamer.ServerStream":     struct{}{},
 	}
 }
 
@@ -93,7 +97,7 @@ func startHandler() {
 	log.Println("Registering DC Handler")
 	dcClient := handler.NewAPIHandler(db)
 	if err := dcmgr.RegisterDCAPIHandler(srv.Server(), dcClient); err != nil {
-	    log.Fatal(err.Error())
+		log.Fatal(err.Error())
 	}
 	// Dc Manager register handler
 	// New Publisher to deploy new task action.
@@ -134,12 +138,12 @@ func needAuth(method string) bool {
 func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, resp interface{}) error {
 		log.Printf("path %s\n", req.Method())
-		if needAuth(req.Method()){
+		if needAuth(req.Method()) {
 			log.Println("Authenticating need check ")
 			meta, ok := metadata.FromContext(ctx)
 			// Note this is now uppercase (not entirely sure why this is...)
 			var access_token string
-			if ok  {
+			if ok {
 				access_token = meta["token"]
 			}
 
@@ -157,6 +161,5 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 
 		return fn(ctx, req, resp)
 	}
-
 
 }

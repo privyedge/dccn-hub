@@ -36,16 +36,14 @@ func main() {
 
 	userClient := usermgr.NewUserMgrClient(conn)
 
-	req := usermgr.RegisterRequest{}
-	req.User = &usermgr.User{}
-	req.User.Email = `12112@Gmail.com`
-	req.User.Attributes = &usermgr.UserAttributes{}
-	req.User.Attributes.Name = "ankrtest_sang"
-	req.Password = "11111111"
+	req := usermgr.ConfirmRegistrationRequest{
+		Email:            "xuexiacm@163.com",
+		ConfirmationCode: "",
+	}
 
-	if _, err := userClient.Register(context.Background(), &req); err != nil {
+	if _, err := userClient.ConfirmRegistration(context.Background(), &req); err != nil {
 		//	log.Fatal(err.Error())
-		log.Printf("receive have some error : %s \n", err.Error())
+		log.Fatal("receive have some error : %s \n", err.Error())
 	} else {
 		log.Printf("Register result no error  ")
 	}

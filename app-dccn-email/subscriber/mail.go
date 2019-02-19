@@ -2,13 +2,15 @@ package subscriber
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
-	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+
+	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 )
 
 const (
@@ -50,18 +52,22 @@ func (p *Sender) htmlBody() string {
 		code := p.GetConfirmRegistration().Code
 		id := p.GetConfirmRegistration().UserId
 		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
+		log.Printf("user: %s, code: %s", id, code)
 	case mail.EmailType_FORGET_PASSWORD:
 		code := p.GetForgetPassword().Code
 		email := p.GetForgetPassword().Email
 		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, email)
+		log.Printf("user: %s, code: %s", email, code)
 	case mail.EmailType_CHANGE_PASSWORD:
 		id := p.GetChangePassword().UserId
 		code := p.GetChangePassword().Code
 		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
+		log.Printf("user: %s, code: %s", id, code)
 	case mail.EmailType_CONFIRM_EMAIL:
 		id := p.GetChangeEmail().UserId
 		code := p.GetChangeEmail().Code
 		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
+		log.Printf("user: %s, code: %s", id, code)
 	}
 
 	return html

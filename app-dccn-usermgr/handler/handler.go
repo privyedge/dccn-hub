@@ -15,9 +15,9 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	ankr_util "github.com/Ankr-network/dccn-common/util"
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	ankr_util "github.com/Ankr-network/dccn-common/util"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
@@ -41,8 +41,6 @@ func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micr
 	}
 }
 
-
-
 func getUserIDByRefreshToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
 	if len(parts) != 3 {
@@ -62,8 +60,6 @@ func getUserIDByRefreshToken(refreshToken string) (string, error) {
 
 	return string(dat.Jti), nil
 }
-
-
 
 func VerifyAccessToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
@@ -108,7 +104,7 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 		return errors.New("GenerateFromPassword error")
 	}
 
-	_, dbErr := p.db.Get(strings.ToLower(user.Email))
+	_, dbErr := p.db.GetUserByEmail(strings.ToLower(user.Email))
 	if dbErr == nil {
 		log.Println("email exist")
 		return ankr_default.ErrEmailExit
@@ -119,10 +115,10 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 	user.Id = uuid.New().String()
 	user.Status = usermgr.UserStatus_CONFIRMING
 
-	if user.Attributes.Name == "ankrtest"{ // for debug
+	if user.Attributes.Name == "ankrtest" { // for debug
 		user.Status = usermgr.UserStatus_CONFIRMED
 
-	}else{
+	} else {
 		_, confirmRegistrationCode, err := p.token.NewToken(user.Id, false)
 		if err != nil {
 			log.Println(err.Error())
@@ -149,8 +145,7 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	}
 
-
-	if err := p.db.Create(user, hashPassword); err != nil {
+	if err := p.db.CreateUser(user, hashPassword); err != nil {
 		log.Println(err.Error())
 		return errors.New("data add user error")
 	}
@@ -168,8 +163,15 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 		return err
 	}
 
+	attr := []*usermgr.UserAttribute{
+		{
+			Key: "status", Value: &usermgr.UserAttribute_IntValue{
+				IntValue: int64(usermgr.UserStatus_CONFIRMED),
+			},
+		},
+	}
 	// update password. if not exist, db return not found
-	if err := p.db.UpdateStatus(req.Email, usermgr.UserStatus_CONFIRMED); err != nil {
+	if err := p.db.UpdateUserByEmail(req.Email, attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -180,7 +182,7 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
 
 	log.Println("Debug Login")
-	user, err := p.db.Get(strings.ToLower(req.Email))
+	user, err := p.db.GetUserByEmail(strings.ToLower(req.Email))
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -188,7 +190,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 
 	// Compares our given password against the hashed password
 	// stored in the database
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password)); err != nil {
 		err = ankr_default.ErrPasswordError
 		log.Println(err.Error())
 		return ankr_default.ErrPasswordError
@@ -213,18 +215,25 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	rsp.User.Id = user.ID
 	rsp.User.Email = user.Email
 	rsp.User.Attributes.Name = user.Name
-	rsp.User.Attributes.CreationDate = user.Creation_date
-	rsp.User.Attributes.LastModifiedDate = user.Last_modified_date
+	rsp.User.Attributes.CreationDate = user.CreationDate
+	rsp.User.Attributes.LastModifiedDate = user.LastModifiedDate
 
 	rsp.AuthenticationResult.AccessToken = token
 	rsp.AuthenticationResult.Expiration = uint64(expired)
 	rsp.AuthenticationResult.IssuedAt = uint64(time.Now().Unix())
 	_, refreshToken, _ := p.token.NewToken(user.ID, true)
-		rsp.AuthenticationResult.RefreshToken = refreshToken
+	rsp.AuthenticationResult.RefreshToken = refreshToken
 
 	//tokens := append(user.Tokens, refreshToken)
 
-	if err := p.db.UpdateRefreshToken(user.ID, refreshToken); err != nil {
+	attr := []*usermgr.UserAttribute{
+		{
+			Key:   "token",
+			Value: &usermgr.UserAttribute_StringValue{StringValue: refreshToken},
+		},
+	}
+
+	if err := p.db.UpdateUser(user.ID, attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -243,7 +252,7 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 		return err
 	}
 
-	user, err := p.db.GetUserByID(uid)
+	user, err := p.db.GetUser(uid)
 
 	//if !containsToken(user.Tokens, req.RefreshToken) {
 	//	return ankr_default.ErrRefreshToken
@@ -252,7 +261,14 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 	//index := indexOfToken(user.Tokens, req.RefreshToken)
 	//
 	//newTokens := append(user.Tokens[:index], user.Tokens[index+1:]...)
-	if err := p.db.UpdateRefreshToken(user.ID, ""); err != nil {
+	attr := []*usermgr.UserAttribute{
+		{
+			Key:   "token",
+			Value: &usermgr.UserAttribute_StringValue{StringValue: ""},
+		},
+	}
+
+	if err := p.db.UpdateUser(user.ID, attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -284,7 +300,7 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 		return err
 	}
 
-	user, err := p.db.GetUserByID(uid)
+	user, err := p.db.GetUser(uid)
 
 	if user.Token != req.RefreshToken {
 		return ankr_default.ErrRefreshToken
@@ -309,7 +325,15 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 	//
 	//index := indexOfToken(user.Tokens, req.RefreshToken)
 	//user.Tokens[index] = refreshToken
-	if err := p.db.UpdateRefreshToken(user.ID, refreshToken); err != nil {
+
+	attr := []*usermgr.UserAttribute{
+		{
+			Key:   "token",
+			Value: &usermgr.UserAttribute_StringValue{StringValue: refreshToken},
+		},
+	}
+
+	if err := p.db.UpdateUser(user.ID, attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -402,7 +426,14 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 	}
 
 	// update password. if not exist, db return not found
-	if err := p.db.UpdatePassword(req.Email, string(hashedPwd)); err != nil {
+	attr := []*usermgr.UserAttribute{
+		{
+			Key:   "hashedpassword",
+			Value: &usermgr.UserAttribute_StringValue{StringValue: string(hashedPwd)},
+		},
+	}
+
+	if err := p.db.UpdateUserByEmail(req.Email, attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -415,7 +446,7 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 }
 
 func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePasswordRequest, rsp *common_proto.Empty) error {
-    uid := ankr_util.GetUserID(ctx)
+	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangePassword")
 
 	// hash password, TODO: equal return err
@@ -425,8 +456,15 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 		return err
 	}
 
+	attr := []*usermgr.UserAttribute{
+		{
+			Key:   "hashedpassword",
+			Value: &usermgr.UserAttribute_StringValue{StringValue: string(hashedPwd)},
+		},
+	}
+
 	// update password. if not exist, db return not found
-	if err := p.db.UpdatePassword(uid, string(hashedPwd)); err != nil {
+	if err := p.db.UpdateUser(uid, attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -438,8 +476,7 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug UpdateAttributes")
 
-   //todo
-	if err := p.db.UpdateUserAttributes(uid, req.UserAttributes); err != nil {
+	if err := p.db.UpdateUser(uid, req.UserAttributes); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -457,7 +494,14 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 		return email_error
 	}
 
-	if err := p.db.UpdateEmail(uid, req.NewEmail); err != nil {
+	attr := []*usermgr.UserAttribute{
+		{
+			Key:   "email",
+			Value: &usermgr.UserAttribute_StringValue{StringValue: string(req.NewEmail)},
+		},
+	}
+
+	if err := p.db.UpdateUser(uid, attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}
