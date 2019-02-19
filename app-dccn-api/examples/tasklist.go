@@ -12,11 +12,11 @@ import (
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-//var addr = "localhost:50051"
+//var addr = "192.168.1.115:50051"
 var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
@@ -35,60 +35,46 @@ func main() {
 	taskClient := taskmgr.NewTaskMgrClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
 
-	user := &usermgr.User{
-		Name:     "user_test1",
-		Nickname: "test1",
-		Email:    `1231@Gmail.com`,
-		Password: "12345678901",
-		Balance:  199,
-	}
-	//if _, err := userClient.Register(context.Background(), user); err != nil {
-	//	log.Fatal(err.Error())
-	//} else {
-	//	log.Println("Register Ok")
-	//}
+	req := &usermgr.LoginRequest{}
+	req.Email = "12112@Gmail.com"
+	req.Password = "11111111"
 
-	var token string
-	var userId string
-	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
+	//var userId string
+	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
 		log.Fatal(err.Error())
 	} else {
-		log.Printf("login Success: %s\n", rsp.Token)
-		token = rsp.Token
-		userId = rsp.UserId
-	}
+		log.Printf("response %+v \n", rsp)
+		//log.Printf("login Success: id : %s name : %s , email %s  refresh_token : %s  access_token %s \n", rsp.User.Id, rsp.User.Attributes.Name, rsp.User.Email ,rsp.AuthenticationResult.RefreshToken, rsp.AuthenticationResult.AccessToken)
+		//token = rsp.Token
+		//userId = rsp.UserId
+		//_ := rsp.AuthenticationResult.RefreshToken
+		access_token := rsp.AuthenticationResult.AccessToken
 
-	md := metadata.New(map[string]string{
-		"token": token,
-	})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+		//log.Printf("refresh_token  %s  access_token %s", refresh_token, access_token)
 
-	tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-	//task := apiCommon.MockTasks()[0]
-	//log.Println("Test CreateTask")
-	//if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{UserId: userId, Task: &task}); err != nil {
-	//	log.Fatal(err.Error())
-	//} else {
-	//	log.Println(*rsp)
-	//}
+		md := metadata.New(map[string]string{
+			"token": access_token,
+		})
 
-	// var userTasks []*common_proto.Task
-	userTasks := make([]*common_proto.Task, 0)
-	if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.ID{UserId: userId}); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		userTasks = append(userTasks, rsp.Tasks...)
-		if len(userTasks) == 0 {
-			log.Fatalf("no tasks belongs to %s", userId)
+		log.Printf("get access_token after login %s \n", access_token)
+		ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+
+		filter := taskmgr.TaskFilter{TaskId: ""}
+
+		if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.TaskListRequest{TaskFilter: &filter}); err != nil {
+
+			//log.Println("detail create %+v " + rsp)
+			log.Fatal(err)
 		} else {
-			log.Println(len(userTasks), "tasks belongs to ", user.Email)
-			for i := 0; i < len(userTasks); i++ {
-				log.Println(userTasks[i])
+
+			for i := 0; i < len(rsp.Tasks); i++ {
+				log.Printf("task list %+v   %+v \n", rsp.Tasks[i], rsp.Tasks[i].Attributes)
 			}
-
 		}
-	}
 
-	log.Println("END")
+	}
 }
+
