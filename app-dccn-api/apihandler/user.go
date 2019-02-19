@@ -111,9 +111,11 @@ func (p *ApiUser) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPassw
 func (p *ApiUser) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsp *usermgr.User) error {
 
 	log.Println("Debug into UpdateAttributes")
-	if _, err := p.api.UpdateAttributes(ctx, req); err != nil {
+	if out, err := p.api.UpdateAttributes(ctx, req); err != nil {
 		log.Println(err.Error())
 		return err
+	} else {
+		*rsp = *out
 	}
 
 	return nil
