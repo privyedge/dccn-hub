@@ -138,7 +138,7 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 			},
 		}
 
-		if err := p.pubEmail.Publish(context.TODO(), e); err != nil {
+		if err := p.pubEmail.Publish(context.Background(), e); err != nil {
 			log.Println(err.Error())
 			return err
 		}
@@ -428,7 +428,7 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 	// update password. if not exist, db return not found
 	attr := []*usermgr.UserAttribute{
 		{
-			Key:   "hashedpassword",
+			Key:   "HashedPassword",
 			Value: &usermgr.UserAttribute_StringValue{StringValue: string(hashedPwd)},
 		},
 	}
@@ -505,15 +505,15 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangeEmail")
 
-	email_error := ValidateEmailFormat(req.NewEmail)
-	if email_error != nil {
-		log.Println(email_error.Error())
-		return email_error
+	emailError := ValidateEmailFormat(req.NewEmail)
+	if emailError != nil {
+		log.Println(emailError.Error())
+		return emailError
 	}
 
 	attr := []*usermgr.UserAttribute{
 		{
-			Key:   "email",
+			Key:   "Email",
 			Value: &usermgr.UserAttribute_StringValue{StringValue: string(req.NewEmail)},
 		},
 	}

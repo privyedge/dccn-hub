@@ -11,6 +11,11 @@ build: proto
 
 	go build -o app_dccn_email main.go plugin.go
 
+.PHONY: local
+local:
+	MICRO_REGISTRY=consul MICRO_BROKER="rabbitmq" go run main.go
+
+
 .PHONY: test
 test:
 	go test -v ./... -cover
