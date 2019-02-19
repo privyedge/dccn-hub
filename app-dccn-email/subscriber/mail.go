@@ -1,7 +1,9 @@
 package subscriber
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"log"
 	"strings"
 
@@ -11,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
+	email_templates "github.com/Ankr-network/dccn-hub/app-dccn-email/templates"
 )
 
 const (
@@ -21,12 +24,6 @@ const (
 	// The character encoding for the email.
 	CharSet = "UTF-8"
 )
-
-// var eventToSender = map[mail.EmailType]string {
-// 	mail.EmailType_CONFIRM_REGISTRATION: fmt.Sprintf("%s/registration.html", ),
-// 	mail.EmailType_FORGET_PASSWORD: ,
-// 	mail.EmailType_CHANGE_PASSWORD: ,
-// }
 
 type Sender struct {
 	*mail.MailEvent
@@ -44,29 +41,39 @@ func (p *Sender) textBody() string {
 	return "Welcome"
 }
 
+var emailTemplates = map[string]*template.Template{
+	"registeration": template.Must(template.New("registration").Parse(email_templates.RegistrationTemplate)),
+}
+
 func (p *Sender) htmlBody() string {
 	// The HTML body for the email.
-	html := ""
+	var tpl bytes.Buffer
+	var html string
 	switch p.Type {
 	case mail.EmailType_CONFIRM_REGISTRATION:
-		code := p.GetConfirmRegistration().Code
-		id := p.GetConfirmRegistration().UserId
-		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
-		log.Printf("user: %s, code: %s", id, code)
+		t := emailTemplates["registeration.html"]
+		data := struct {
+			Code string
+			ID   string
+		}{p.GetConfirmRegistration().Code, p.GetConfirmRegistration().UserId}
+		t.Execute(&tpl, data)
+		html = tpl.String()
+		// log.Print(data)
+		// log.Printf("html: %s", html)
 	case mail.EmailType_FORGET_PASSWORD:
 		code := p.GetForgetPassword().Code
 		email := p.GetForgetPassword().Email
-		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, email)
+		html = fmt.Sprintf("<h1>FORGET_PASSWORD %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, email)
 		log.Printf("user: %s, code: %s", email, code)
 	case mail.EmailType_CHANGE_PASSWORD:
 		id := p.GetChangePassword().UserId
 		code := p.GetChangePassword().Code
-		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
+		html = fmt.Sprintf("<h1>CHANGE_PASSWORD %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
 		log.Printf("user: %s, code: %s", id, code)
 	case mail.EmailType_CONFIRM_EMAIL:
 		id := p.GetChangeEmail().UserId
 		code := p.GetChangeEmail().Code
-		html = fmt.Sprintf("<h1>Validate %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
+		html = fmt.Sprintf("<h1>CONFIRM_EMAIL %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
 		log.Printf("user: %s, code: %s", id, code)
 	}
 
