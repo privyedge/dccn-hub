@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"regexp"
 	"strings"
 	"time"
 
@@ -23,6 +22,7 @@ import (
 
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/token"
+	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
 )
 
 type UserHandler struct {
@@ -88,25 +88,24 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	log.Println("Debug Register")
 	user := req.User
-	emailError := ValidateEmailFormat(user.Email)
-	if emailError != nil {
-		log.Println(emailError.Error())
-		return emailError
-	}
 
-	if len(req.Password) < 6 {
-		return ankr_default.ErrPasswordLength
+	log.Println("Debug Register")
+	// verify email and password
+	if !user_util.MatchPattern(user_util.OpUserNameMatch, user.Attributes.Name) || !user_util.MatchPattern(user_util.OpPasswordMatch, req.Password) || !user_util.MatchPattern(user_util.OpEmailMatch, user.Email) {
+		err := errors.New("name or email or password invalid")
+		log.Println(err.Error())
+		return err
 	}
 
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(err.Error())
-		return errors.New("GenerateFromPassword error")
+		log.Println(ankr_default.ErrHashPassword)
+		return ankr_default.ErrHashPassword
 	}
 
 	_, dbErr := p.db.GetUserByEmail(strings.ToLower(user.Email))
 	if dbErr == nil {
-		log.Println("email exist")
+		log.Println(ankr_default.ErrEmailExit)
 		return ankr_default.ErrEmailExit
 	}
 
@@ -157,6 +156,11 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 
 	log.Println("Debug into ConfirmRegistration")
 
+	if !user_util.MatchPattern(user_util.OpEmailMatch, req.Email) {
+		log.Println(ankr_default.ErrEmailFormat)
+		return ankr_default.ErrEmailFormat
+	}
+
 	// verify code if is expired
 	_, err := p.token.Verify(req.ConfirmationCode)
 	if err != nil {
@@ -197,13 +201,9 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		return ankr_default.ErrPasswordError
 	}
 
-	log.Printf("user token %+v", user.Token)
+	log.Printf("user userToken %+v", user.Token)
 
-	//if len(user.Tokens) > 100 { //todo just for test
-	//	return ankr_default.ErrTokenPassedMax
-	//}
-
-	expired, token, err2 := p.token.NewToken(user.ID, false)
+	expired, userToken, err2 := p.token.NewToken(user.ID, false)
 
 	if err2 != nil {
 		log.Println(err2.Error())
@@ -219,13 +219,11 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	rsp.User.Attributes.CreationDate = user.CreationDate
 	rsp.User.Attributes.LastModifiedDate = user.LastModifiedDate
 
-	rsp.AuthenticationResult.AccessToken = token
+	rsp.AuthenticationResult.AccessToken = userToken
 	rsp.AuthenticationResult.Expiration = uint64(expired)
 	rsp.AuthenticationResult.IssuedAt = uint64(time.Now().Unix())
 	_, refreshToken, _ := p.token.NewToken(user.ID, true)
 	rsp.AuthenticationResult.RefreshToken = refreshToken
-
-	//tokens := append(user.Tokens, refreshToken)
 
 	attr := []*usermgr.UserAttribute{
 		{
@@ -239,9 +237,6 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 		return err
 	}
 
-	//
-	////for token reflesh
-	//p.blacklist.Add(rsp.Token)
 	return nil
 }
 
@@ -254,13 +249,6 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 
 	user, err := p.db.GetUser(uid)
 
-	//if !containsToken(user.Tokens, req.RefreshToken) {
-	//	return ankr_default.ErrRefreshToken
-	//}
-	//
-	//index := indexOfToken(user.Tokens, req.RefreshToken)
-	//
-	//newTokens := append(user.Tokens[:index], user.Tokens[index+1:]...)
 	attr := []*usermgr.UserAttribute{
 		{
 			Key:   "Token",
@@ -276,24 +264,6 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 	return nil
 }
 
-func containsToken(tokens []string, token string) bool {
-	for _, t := range tokens {
-		if t == token {
-			return true
-		}
-	}
-	return false
-}
-
-func indexOfToken(tokens []string, token string) int {
-	for k, v := range tokens {
-		if token == v {
-			return k
-		}
-	}
-	return -1 //not found.
-}
-
 func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshToken, rsp *usermgr.AuthenticationResult) error {
 	uid, err := getUserIDByRefreshToken(req.RefreshToken)
 	if err != nil {
@@ -306,25 +276,18 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 		return ankr_default.ErrRefreshToken
 	}
 
-	expired, token, err2 := p.token.NewToken(user.ID, false)
+	expired, newToken, err2 := p.token.NewToken(user.ID, false)
 
 	if err2 != nil {
 		log.Println(err2.Error())
 		return err2
 	}
 
-	//rsp = usermgr.AuthenticationResult{}
-
-	rsp.AccessToken = token
+	rsp.AccessToken = newToken
 	rsp.Expiration = uint64(expired)
 	rsp.IssuedAt = uint64(time.Now().Unix())
 	_, refreshToken, _ := p.token.NewToken(user.ID, true)
 	rsp.RefreshToken = refreshToken
-
-	//tokens := append(user.Tokens, refreshToken)
-	//
-	//index := indexOfToken(user.Tokens, req.RefreshToken)
-	//user.Tokens[index] = refreshToken
 
 	attr := []*usermgr.UserAttribute{
 		{
@@ -344,31 +307,23 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 func (p *UserHandler) VerifyAccessToken(ctx context.Context, req *common_proto.Empty, rsp *common_proto.Empty) error {
 	meta, ok := metadata.FromContext(ctx)
 	// Note this is now uppercase (not entirely sure why this is...)
-	var access_token string
+	var accessToken string
 	if ok {
-		access_token = meta["token"]
+		accessToken = meta["token"]
 	}
 
-	log.Printf("find token %s \n", access_token)
+	log.Printf("find token %s \n", accessToken)
 
-	if len(access_token) == 0 {
+	if len(accessToken) == 0 {
 		return ankr_default.ErrTokenParseFailed
 	}
-	_, err := VerifyAccessToken(access_token)
+	_, err := VerifyAccessToken(accessToken)
 
 	if err != nil {
 		return err
 	}
 	return nil
 
-}
-
-func ValidateEmailFormat(email string) error {
-	emailRegexp := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	if !emailRegexp.MatchString(email) {
-		return ankr_default.ErrEmailFormat
-	}
-	return nil
 }
 
 func (p *UserHandler) Destroy() {
@@ -411,9 +366,9 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 
 	log.Println("Debug ConfirmPassword")
 
-	if len(req.NewPassword) < 6 {
-		log.Println("password len invalid")
-		return errors.New("password len invalid")
+	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.NewPassword) {
+		log.Println(ankr_default.ErrPasswordFormat.Error())
+		return ankr_default.ErrPasswordError
 	}
 
 	// verify code if is expired
@@ -454,9 +409,9 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangePassword")
 
-	if len(req.NewPassword) < 6 {
-		log.Println("password len invalid")
-		return errors.New("password len invalid")
+	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.NewPassword) {
+		log.Println(ankr_default.ErrPasswordFormat.Error())
+		return ankr_default.ErrPasswordError
 	}
 
 	// hash password, TODO: equal return err
@@ -510,10 +465,9 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangeEmail")
 
-	emailError := ValidateEmailFormat(req.NewEmail)
-	if emailError != nil {
-		log.Println(emailError.Error())
-		return emailError
+	if !user_util.MatchPattern(user_util.OpEmailMatch, req.NewEmail) {
+		log.Println(ankr_default.ErrEmailFormat)
+		return ankr_default.ErrEmailFormat
 	}
 
 	attr := []*usermgr.UserAttribute{

@@ -3,6 +3,9 @@ package dbservice
 import (
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"gopkg.in/mgo.v2/bson"
+
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
 )
 
 type UserRecord struct {
@@ -29,17 +32,26 @@ var feileds = map[string]string{
 	"PubKey":           "pub_key",
 }
 
-func getUpdate(fields []*usermgr.UserAttribute) bson.M {
+func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
 	update := bson.M{}
 	for _, attr := range fields {
 		switch attr.Key {
 		case "Id":
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Email":
+			if !user_util.MatchPattern(user_util.OpEmailMatch, attr.GetStringValue()) {
+				return nil, ankr_default.ErrEmailFormat
+			}
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "HashedPassword":
+			if !user_util.MatchPattern(user_util.OpPasswordMatch, attr.GetStringValue()) {
+				return nil, ankr_default.ErrPasswordFormat
+			}
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Name":
+			if !user_util.MatchPattern(user_util.OpUserNameMatch, attr.GetStringValue()) {
+				return nil, ankr_default.ErrUserNameFormat
+			}
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Token":
 			update[feileds[attr.Key]] = attr.GetStringValue()
