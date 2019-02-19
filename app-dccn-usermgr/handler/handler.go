@@ -123,7 +123,7 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 		user.Status = usermgr.UserStatus_CONFIRMED
 
 	}else{
-		_, confirmRegistrationCode, err := p.token.NewToken(user.Id)
+		_, confirmRegistrationCode, err := p.token.NewToken(user.Id, false)
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -355,7 +355,7 @@ func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPas
 
 	log.Println("Debug into ForgetPassword")
 	// generate new authorization token for reset password
-	_, forgetPasswordCode, err := p.token.NewToken(req.Email)
+	_, forgetPasswordCode, err := p.token.NewToken(req.Email, false)
 	if err != nil {
 		log.Println(err.Error())
 		return err
