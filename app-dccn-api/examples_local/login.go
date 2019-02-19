@@ -41,7 +41,7 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "12111@Gmail.com"
+	req.Email = "12112@Gmail.com"
     req.Password = "11111111"
 
 
@@ -68,8 +68,13 @@ func main() {
 		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 
+		v := usermgr.UserAttribute_StringValue{StringValue:"zys"}
+		a := usermgr.UserAttribute{Key:"name", Value : &v}
+		arributes := make([](*usermgr.UserAttribute), 1)
+		arributes[0] = &a
+		request :=usermgr.UpdateAttributesRequest{UserAttributes:arributes}
 
-		if _, err := userClient.VerifyEmail(tokenContext, &usermgr.VerifyEmailRequst{ConfirmationCode:"this is a test"}); err != nil {
+		if _, err := userClient.UpdateAttributes(tokenContext, &request); err != nil {
 			//log.Println("detail create %+v " + rsp)
 			log.Printf(">>>>>>>>VerifyEmail result :  %s   \n", err)
 		}else{
@@ -97,7 +102,7 @@ func main() {
 		defer cancel2()
 
 
-		if _, err := userClient.VerifyEmail(tokenContext2, &usermgr.VerifyEmailRequst{ConfirmationCode:"this is a test"}); err != nil {
+		if _, err := userClient.UpdateAttributes(tokenContext2, &request); err != nil {
 			//log.Println("detail create %+v " + rsp)
 			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
 		}else{

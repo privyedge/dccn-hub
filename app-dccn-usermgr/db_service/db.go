@@ -21,12 +21,12 @@ type DBService interface {
 	Create(user *pb.User, password string) error
 	// Update updates dc item
 	Update(user *pb.User) error
-	UpdateUserAttributes(id string, attr *usermgr.UserAttribute) error
+	UpdateUserAttributes(id string, attr [](*usermgr.UserAttribute)) error
 	// UpdateStatus update user status in db
 	UpdateStatus(email string, status usermgr.UserStatus) error
 	UpdateEmail(userId, newEmail string) error
 	UpdatePassword(email, newPassword string) error
-	UpdateToken(uid string, tokens []string) error
+	UpdateRefreshToken(uid string, token string) error
 	// Close closes db connection
 	Close()
 	// dropCollection for testing usage
@@ -45,7 +45,7 @@ type UserRecord struct {
 	Email              string
 	Password           string
 	Name               string
-	Tokens             []string // refresh token
+	Token              string // refresh token
 	varified           bool     // email varified
 	Last_modified_date uint64
 	Creation_date      uint64
@@ -106,7 +106,7 @@ func (p *DB) Create(user *pb.User, password string) error {
 	userRecord := UserRecord{}
 	userRecord.ID = user.Id
 	userRecord.Email = user.Email
-	userRecord.Name = user.Attribute.Name
+	userRecord.Name = user.Attributes.Name
 	userRecord.Password = password
 	userRecord.Last_modified_date = uint64(time.Now().Unix())
 	userRecord.Creation_date = uint64(time.Now().Unix())
@@ -134,23 +134,24 @@ func (p *DB) UpdateEmail(userId, email string) error {
 	return p.collection(session).Update(bson.M{"id": userId}, bson.M{"$set": bson.M{"email": email}})
 }
 
-func (p *DB) UpdateUserAttributes(id string, attr *usermgr.UserAttribute) error {
+func (p *DB) UpdateUserAttributes(id string, attr [](*usermgr.UserAttribute)) error {
 	session := p.session.Clone()
 	defer session.Close()
+	//todo
 	return p.collection(session).Update(bson.M{"id": id}, bson.M{"$set": bson.M{"attribute": attr}})
 }
 
 func (p *DB) UpdatePassword(email, newPassword string) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"attribute.hashpassword": newPassword}})
+	return p.collection(session).Update(bson.M{"email": email}, bson.M{"$set": bson.M{"attributes.hashpassword": newPassword}})
 }
 
 // Update updates user item.
-func (p *DB) UpdateToken(uid string, tokens []string) error {
+func (p *DB) UpdateRefreshToken(uid string, token string) error {
 	session := p.session.Clone()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"id": uid}, bson.M{"$set": bson.M{"attribute.tokens": tokens}})
+	return p.collection(session).Update(bson.M{"id": uid}, bson.M{"$set": bson.M{"token": token}})
 }
 
 // Close closes the db connection.

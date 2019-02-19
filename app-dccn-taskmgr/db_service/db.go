@@ -2,6 +2,7 @@ package dbservice
 
 import (
 	"log"
+	"time"
 
 	dbcommon "github.com/Ankr-network/dccn-common/db"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
@@ -82,18 +83,18 @@ func (p *DB) Get(taskId string) (TaskRecord, error) {
 	return task, err
 }
 
-func (p *DB) GetAll(userId string) (*[]*common_proto.Task, error) {
+func (p *DB) GetAll(userId string) ([]TaskRecord, error) {
 	session := p.session.Clone()
 	defer session.Close()
 
-	var tasks []*common_proto.Task
+	var tasks []TaskRecord
 
 	log.Printf("find tasks with uid %s", userId)
 
 	if err := p.collection(session).Find(bson.M{"userid": userId}).All(&tasks); err != nil {
 		return nil, err
 	}
-	return &tasks, nil
+	return tasks, nil
 }
 
 // GetByEventId gets task by event id.
@@ -110,10 +111,11 @@ func (p *DB) GetByEventId(eventId string) (*[]*common_proto.Task, error) {
 
 // Create creates a new task item if it not exists
 func (p *DB) Create(task *common_proto.Task, uid string) error {
+	log.Printf("I am here ")
 	session := p.session.Copy()
 	defer session.Close()
 
-	log.Printf("create task %+v\n", task)
+	log.Printf(">>>>>>create task %+v\n", task)
 	taskRecord := TaskRecord{}
 	taskRecord.ID = task.Id
 	taskRecord.Userid = uid
@@ -122,10 +124,14 @@ func (p *DB) Create(task *common_proto.Task, uid string) error {
 	taskRecord.Type = task.Type
 	taskRecord.Status = task.Status
 	taskRecord.Replica = task.Attributes.Replica
-	taskRecord.Schedule = task.GetTypeCronJob().Schedule
-	taskRecord.Last_modified_date = task.Attributes.LastModifiedDate
-	taskRecord.Creation_date = task.Attributes.CreationDate
+	if task.Type == common_proto.TaskType_CRONJOB {
+		taskRecord.Schedule = task.GetTypeCronJob().Schedule
+	}
 
+	now := time.Now().Unix()
+	taskRecord.Last_modified_date = uint64(now)
+	taskRecord.Creation_date = uint64(now)
+	log.Printf("I am here >>>>>> ")
 	return p.collection(session).Insert(taskRecord)
 }
 
@@ -176,6 +182,10 @@ func (p *DB) UpdateTask(taskId string, task *common_proto.Task) error {
 		fields["hidden"] = task.Attributes.Hidden
 	}
 
+	if task.Type == common_proto.TaskType_CRONJOB {
+		fields["schedule"] = task.GetTypeCronJob().Schedule
+	}
+
 	image := getTaskImage(task)
 
 	if len(image) > 0 {
@@ -185,6 +195,9 @@ func (p *DB) UpdateTask(taskId string, task *common_proto.Task) error {
 	if len(task.DataCenterName) > 0 {
 		fields["datacenter"] = task.DataCenterName
 	}
+
+	now := time.Now().Unix()
+	fields["Last_modified_date"] = now
 
 
 	return p.collection(session).Update(bson.M{"id": taskId}, bson.M{"$set": fields})
@@ -198,7 +211,8 @@ func (p *DB) Cancel(taskId string) error {
 	session := p.session.Copy()
 	defer session.Close()
 
-	return p.collection(session).Update(bson.M{"id": taskId}, bson.M{"$set": bson.M{"status": common_proto.TaskStatus_CANCELLED}})
+	now := time.Now().Unix()
+	return p.collection(session).Update(bson.M{"id": taskId}, bson.M{"$set": bson.M{"status": common_proto.TaskStatus_CANCELLED, "Last_modified_date" : now}})
 }
 
 // Close closes the db connection.

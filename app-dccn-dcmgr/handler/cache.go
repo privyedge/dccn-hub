@@ -13,7 +13,7 @@ import (
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 )
 
-var heartbeat = &common_proto.DCResponse{OpType: common_proto.DCOperation_HEARTBEAT}
+var heartbeat = &common_proto.DCStream{OpType: common_proto.DCOperation_HEARTBEAT}
 
 type DataCenterStreamCaches struct {
 	mu *sync.RWMutex

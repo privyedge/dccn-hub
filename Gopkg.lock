@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "feature/SWDEV-149-restructure-proto"
-  digest = "1:e65c4cba236146dcd9d36021f033836e8ddb2c1467d2159c87a0dae6fdf3c367"
+  digest = "1:be1a3df19701bc7adf158955a52c19b1a8a20ee22b4d950d3219410dab1d6a64"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -16,9 +16,10 @@
     "protos/taskmgr/v1/micro",
     "protos/usermgr/v1/grpc",
     "protos/usermgr/v1/micro",
+    "util",
   ]
   pruneopts = "UT"
-  revision = "679f0a5cbe6b8540ba7eb9d1e6b31aadc44e2dcd"
+  revision = "6c279a5072c9cee17bcfcf0f2a29c7a49fe936f0"
 
 [[projects]]
   branch = "master"
@@ -27,6 +28,45 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
+
+[[projects]]
+  digest = "1:16df25e1d320b94ecfdd8b6eba402855923239692dfe431a1dacccd484aecd72"
+  name = "github.com/aws/aws-sdk-go"
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/processcreds",
+    "aws/credentials/stscreds",
+    "aws/csm",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/ini",
+    "internal/sdkio",
+    "internal/sdkrand",
+    "internal/sdkuri",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/xml/xmlutil",
+    "service/ses",
+    "service/sts",
+  ]
+  pruneopts = "UT"
+  revision = "33f1087245887dc9a8090de089808120b299bbec"
+  version = "v1.17.0"
 
 [[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
@@ -175,6 +215,13 @@
   pruneopts = "UT"
   revision = "b89a09ebd4b1b570e0076d5097272e67c10ac4f6"
   version = "v0.8.2"
+
+[[projects]]
+  digest = "1:bb81097a5b62634f3e9fec1014657855610c82d19b9a40c17612e32651e35dca"
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c2b33e84"
 
 [[projects]]
   digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
@@ -490,22 +537,6 @@
   version = "v1.18.0"
 
 [[projects]]
-  branch = "v3"
-  digest = "1:7388652e2215a3f45d341d58766ed58317971030eb1cbd75f005f96ace8e9196"
-  name = "gopkg.in/alexcesaro/quotedprintable.v3"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "2caba252f4dc53eaf6b553000885530023f54623"
-
-[[projects]]
-  digest = "1:eebd52aee67d9f1e0af1859a584e14b1817581dd5f90d4585418c27b6a93c966"
-  name = "gopkg.in/gomail.v2"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "41f3572897373c5538c50a2402db15db079fa4fd"
-  version = "2.0.0"
-
-[[projects]]
   branch = "v2"
   digest = "1:988de7520a09024d5d94cd99bd545afbf194893994ec759b1cda0a0bbb6adb80"
   name = "gopkg.in/mgo.v2"
@@ -533,6 +564,11 @@
     "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro",
+    "github.com/Ankr-network/dccn-common/util",
+    "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/awserr",
+    "github.com/aws/aws-sdk-go/aws/session",
+    "github.com/aws/aws-sdk-go/service/ses",
     "github.com/dgrijalva/jwt-go",
     "github.com/google/uuid",
     "github.com/gorhill/cronexpr",
@@ -545,7 +581,6 @@
     "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
     "google.golang.org/grpc/metadata",
-    "gopkg.in/gomail.v2",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",
   ]

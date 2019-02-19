@@ -61,6 +61,7 @@ func Init() {
 		"UserMgr.Register": struct{}{},
 		"UserMgr.Login":   struct{}{},
 		"UserMgr.RefreshSession": struct{}{},
+		"DCStreamer.ServerStream":struct{}{},
 
 	}
 }

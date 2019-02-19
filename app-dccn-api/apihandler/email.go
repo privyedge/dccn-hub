@@ -17,7 +17,7 @@ type ApiEmail struct {
 	api mail.MailService
 }
 
-func (p *ApiEmail) Send(ctx context.Context, req *common_proto.Mail, rsp *common_proto.Empty) error {
+func (p *ApiEmail) Send(ctx context.Context, req *mail.MailEvent, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into Send")
 	if _, err := p.api.Send(ctx, req); err != nil {

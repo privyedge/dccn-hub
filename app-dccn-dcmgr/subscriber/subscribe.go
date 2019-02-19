@@ -21,7 +21,7 @@ func New(c *handler.DataCenterStreamCaches) *Subscriber {
 // UpdateTaskByFeedback receives task result from data center, returns to v1
 // UpdateTaskStatusByFeedback updates database status by performing feedback from the data center of the task.
 // sets executor's id, updates task status.
-func (p *Subscriber) HandlerDeploymentRequestFromTaskMgr(ctx context.Context, req *common_proto.DCRequest) error {
+func (p *Subscriber) HandlerDeploymentRequestFromTaskMgr(ctx context.Context, req *common_proto.DCStream) error {
 
 	task := req.GetTask()
 	log.Printf("dc manager service(hub) HandlerDeployEvnetFromTaskMgr: Receive New Event: %+v", *task)
@@ -34,9 +34,9 @@ func (p *Subscriber) HandlerDeploymentRequestFromTaskMgr(ctx context.Context, re
 			log.Println(err.Error())
 			return err
 		}
-		resp := &common_proto.DCResponse{
+		resp := &common_proto.DCStream{
 			OpType:    req.OpType,
-			OpPayload: &common_proto.DCResponse_Task{Task: task}}
+			OpPayload: &common_proto.DCStream_Task{Task: task}}
 		if err := stream.Send(resp); err != nil {
 			log.Println(err.Error())
 			return err

@@ -9,6 +9,7 @@ import (
 	"github.com/Ankr-network/dccn-common/protos"
 	"github.com/Ankr-network/dccn-common/protos/common"
 	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"errors"
 )
 
 type ApiUser struct {
@@ -66,47 +67,52 @@ func (p *ApiUser) RefreshSession(
 
 
 
-func (p *ApiUser)  ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequst, rsp *common_proto.Empty) error{
+func (p *ApiUser)  ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequest, rsp *common_proto.Empty) error{
 	//todo
 	return nil
 }
 
-func (p *ApiUser)  ForgotPassword(ctx context.Context, req *usermgr.ForgotPasswordRequst, rsp *common_proto.Empty) error {
+func (p *ApiUser)  ForgotPassword(ctx context.Context, req *usermgr.ForgotPasswordRequest, rsp *common_proto.Empty) error {
 	//todo
 	return nil
 }
 
-func (p *ApiUser)  ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequst, rsp *common_proto.Empty) error {
+func (p *ApiUser)  ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Empty) error {
 	//todo
 	return nil
 }
 
-func (p *ApiUser) ChangePasword(ctx context.Context, req *usermgr.ChangePasswordRequst, rsp *common_proto.Empty) error {
+func (p *ApiUser) ChangePasword(ctx context.Context, req *usermgr.ChangePasswordRequest, rsp *common_proto.Empty) error {
 	//todo
 	return nil
 }
 
 func (p *ApiUser) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsp *usermgr.User) error {
-	//todo
-	return nil
+	log.Printf("UpdateAttributes pass auth check\n")
+	return errors.New("UpdateAttributes pass auth check")
 }
 
 
-func (p *ApiUser) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailRequst, rsp *common_proto.Empty) error {
+func (p *ApiUser) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailRequest, rsp *common_proto.Empty) error {
 	//todo
 	return nil
 }
+//
+//func (p *ApiUser) VerifyEmail(ctx context.Context, req *usermgr., rsp *usermgr.User) error {
+//
+//		out, err := p.api.VerifyEmail(ctx, req)
+//		if err != nil {
+//		log.Println(err.Error())
+//		return err
+//	}
+//		*rsp = *out
+//		return nil
+//
+//}
 
-func (p *ApiUser) VerifyEmail(ctx context.Context, req *usermgr.VerifyEmailRequst, rsp *usermgr.User) error {
 
-		out, err := p.api.VerifyEmail(ctx, req)
-		if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-		*rsp = *out
-		return nil
-
+func (p *ApiUser) ChangePassword(ctx context.Context, req *usermgr.ChangePasswordRequest, rsp *common_proto.Empty) error {
+ return nil
 }
 
 

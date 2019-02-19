@@ -156,6 +156,11 @@ func convertToTaskMessage(task db.TaskRecord) common_proto.Task {
 	message.Name = task.Name
 	message.Type = task.Type
 	message.Status = task.Status
+	message.Attributes = &common_proto.TaskAttributes{}
+	message.Attributes.Replica = task.Replica
+	message.Attributes.LastModifiedDate = task.Last_modified_date
+	message.Attributes.CreationDate = task.Creation_date
+
 	//deployMessage := common_proto.TaskTypeDeployment{Image : task.Image}
 	if task.Type == common_proto.TaskType_DEPLOYMENT {
 		t := common_proto.Task_TypeDeployment{TypeDeployment: &common_proto.TaskTypeDeployment{Image:task.Image}}
@@ -181,6 +186,7 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.TaskListRequ
 	log.Println("task service into TaskList")
 
 	tasks, err := p.db.GetAll(userId)
+	log.Printf(">>>>>>taskMessage  %+v \n", tasks)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -191,6 +197,7 @@ func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.TaskListRequ
 	for i := 0; i < len(tasks); i++ {
 		if tasks[i].Hidden != true {
 			taskMessage := convertToTaskMessage(tasks[i])
+			log.Printf("taskMessage  %+v \n", taskMessage)
 			tasksWithoutHidden = append(tasksWithoutHidden, &taskMessage)
 		}
 	}
@@ -226,8 +233,8 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 
 	if task.Status == common_proto.TaskStatus_CANCELLED ||
 		task.Status == common_proto.TaskStatus_DONE {
-		log.Println(ankr_default.ErrStatusNotSupportOperation.Error())
-		return ankr_default.ErrStatusNotSupportOperation
+		log.Println(ankr_default.ErrTaskStatusCanNotUpdate.Error())
+		return ankr_default.ErrTaskStatusCanNotUpdate
 	}
 
 	event := common_proto.DCResponse{

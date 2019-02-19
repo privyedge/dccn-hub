@@ -1,8 +1,11 @@
+
 package main
 
 import (
 	"context"
-	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//"github.com/Ankr-network/dccn-hub/app-dccn-api/examples_local/common"
+
+	//"github.com/Ankr-network/dccn-common/protos/common"
 
 	"log"
 	"time"
@@ -13,16 +16,17 @@ import (
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
-//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
-
 var addr = "localhost:50051"
 //var addr = "client-dev.dccn.ankr.network:50051"
 
+//var addr = "afcac29ea274711e99cb106bbae7419f-1982485008.us-west-1.elb.amazonaws.com:50051"
+
 func main() {
 
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Llongfile)
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err.Error())
@@ -36,52 +40,47 @@ func main() {
 	taskClient := taskmgr.NewTaskMgrClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
 
-	user := &usermgr.User{
-		Name:     "user_test1",
-		Nickname: "test1",
-		Email:    `1231@Gmail.com`,
-		Password: "12345678901",
-		Balance:  199,
-	}
-	//if _, err := userClient.Register(context.Background(), user); err != nil {
-	//	log.Fatal(err.Error())
-	//} else {
-	//	log.Println("Register Ok")
-	//}
+	req := &usermgr.LoginRequest{}
+	req.Email = "12112@Gmail.com"
+	req.Password = "11111111"
 
-	var token string
-	var userId string
-	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
+	//var userId string
+	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
 		log.Fatal(err.Error())
 	} else {
-		log.Printf("login Success: %s\n", rsp.Token)
-		token = rsp.Token
-		userId = rsp.UserId
+		log.Printf("response %+v \n", rsp)
+		//log.Printf("login Success: id : %s name : %s , email %s  refresh_token : %s  access_token %s \n", rsp.User.Id, rsp.User.Attributes.Name, rsp.User.Email ,rsp.AuthenticationResult.RefreshToken, rsp.AuthenticationResult.AccessToken)
+		//token = rsp.Token
+		//userId = rsp.UserId
+		refresh_token := rsp.AuthenticationResult.RefreshToken
+		access_token := rsp.AuthenticationResult.AccessToken
+
+		log.Printf("refresh_token  %s  access_token %s", refresh_token, access_token)
+
+		md := metadata.New(map[string]string{
+			"token": access_token,
+		})
+
+		log.Printf("get access_token after login %s \n", access_token)
+		ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+
+		taskId := "a7e222d5-a0ac-48c1-8eca-ee8e547d169d"
+
+		if _, err := taskClient.PurgeTask(tokenContext, &taskmgr.TaskID{TaskId: taskId}); err != nil {
+			log.Fatal(err.Error())
+		} else {
+
+			log.Printf(" purge result success");
+		}
+
 	}
-
-	md := metadata.New(map[string]string{
-		"token": token,
-	})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-
-	tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-
-
-
-	task := apiCommon.MockTasks()[0]
-	task.Image = "web02"
-	log.Println("Test PurgeTask")
-	taskId := "d7a93e80-058e-4637-93a4-0b8b7dd7d211"
-	if rsp, err := taskClient.PurgeTask(tokenContext, &taskmgr.Request{UserId: userId, TaskId:taskId}); err != nil {
-		log.Fatal(err.Error())
-	} else {
-		log.Printf("purge task status  %s    detail : %s " , rsp.Status ,rsp.Details)
-	}
-
-	// var userTasks []*common_proto.Task
-
-	//
-	//log.Println("END")
 }
+
+
+
+
+
+
