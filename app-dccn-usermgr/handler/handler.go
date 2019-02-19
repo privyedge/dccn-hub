@@ -15,9 +15,9 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	ankr_util "github.com/Ankr-network/dccn-common/util"
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	ankr_util "github.com/Ankr-network/dccn-common/util"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
@@ -104,7 +104,7 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 		return errors.New("GenerateFromPassword error")
 	}
 
-	_, dbErr := p.db.Get(strings.ToLower(user.Email))
+	_, dbErr := p.db.GetUserByEmail(strings.ToLower(user.Email))
 	if dbErr == nil {
 		log.Println("email exist")
 		return ankr_default.ErrEmailExit
@@ -115,11 +115,11 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 	user.Id = uuid.New().String()
 	user.Status = usermgr.UserStatus_CONFIRMING
 
-	if user.Attributes.Name == "ankrtest"{ // for debug
+	if user.Attributes.Name == "ankrtest" { // for debug
 		user.Status = usermgr.UserStatus_CONFIRMED
 
-	}else{
-		_, confirmRegistrationCode, err := p.token.NewToken(user.Id)
+	} else {
+		_, confirmRegistrationCode, err := p.token.NewToken(user.Id, false)
 		if err != nil {
 			log.Println(err.Error())
 			return err
@@ -222,7 +222,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	rsp.AuthenticationResult.Expiration = uint64(expired)
 	rsp.AuthenticationResult.IssuedAt = uint64(time.Now().Unix())
 	_, refreshToken, _ := p.token.NewToken(user.ID, true)
-		rsp.AuthenticationResult.RefreshToken = refreshToken
+	rsp.AuthenticationResult.RefreshToken = refreshToken
 
 	//tokens := append(user.Tokens, refreshToken)
 
