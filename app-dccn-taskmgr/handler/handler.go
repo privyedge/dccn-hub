@@ -96,9 +96,9 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 	rsp.TaskId = req.Task.Id
 
 
-	event := common_proto.DCResponse{
+	event := common_proto.DCStream{
 		OpType: common_proto.DCOperation_TASK_CREATE,
-		OpPayload: &common_proto.DCResponse_Task{Task: req.Task},
+		OpPayload: &common_proto.DCStream_Task{Task: req.Task},
 	}
 
 
@@ -135,9 +135,9 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.TaskID, rs
 		return ankr_default.ErrCanceledTwice
 	}
 
-	event := common_proto.DCResponse{
+	event := common_proto.DCStream{
 		OpType: common_proto.DCOperation_TASK_CANCEL,
-		OpPayload: &common_proto.DCResponse_Task{Task: task},
+		OpPayload: &common_proto.DCStream_Task{Task: task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
@@ -244,9 +244,9 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 		return ankr_default.ErrTaskStatusCanNotUpdate
 	}
 
-	event := common_proto.DCResponse{
+	event := common_proto.DCStream{
 		OpType: common_proto.DCOperation_TASK_UPDATE,
-		OpPayload: &common_proto.DCResponse_Task{Task: task},
+		OpPayload: &common_proto.DCStream_Task{Task: task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {

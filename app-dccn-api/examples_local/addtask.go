@@ -44,7 +44,7 @@ func main() {
 
 	req := &usermgr.LoginRequest{}
 	req.Email = "12112@Gmail.com"
-	req.Password = "11111111111"
+	req.Password = "11111111"
 
 
 
@@ -96,22 +96,4 @@ func main() {
 
 	}
 
-	//// var userTasks []*common_proto.Task
-	//userTasks := make([]*common_proto.Task, 0)
-	//if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.ID{UserId: userId}); err != nil {
-	//	log.Fatal(err.Error())
-	//} else {
-	//	userTasks = append(userTasks, rsp.Tasks...)
-	//	if len(userTasks) == 0 {
-	//		log.Fatalf("no tasks belongs to %s", userId)
-	//	} else {
-	//		log.Println(len(userTasks), "tasks belongs to ", user.Email)
-	//		for i := 0; i < len(userTasks); i++ {
-	//			log.Println(userTasks[i])
-	//		}
-	//
-	//	}
-	//}
-	//
-	//log.Println("END")
 }
