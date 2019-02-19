@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "feature/SWDEV-149-restructure-proto"
-  digest = "1:be1a3df19701bc7adf158955a52c19b1a8a20ee22b4d950d3219410dab1d6a64"
+  digest = "1:e55c3f3a7f057ad77cb6fe5092224e534690be431113222fe2b299c7120a5372"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -19,7 +19,7 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "6c279a5072c9cee17bcfcf0f2a29c7a49fe936f0"
+  revision = "2025bca060b14d3b385bf6e060f711bc4bbfcada"
 
 [[projects]]
   branch = "master"
