@@ -131,6 +131,9 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.TaskID, rs
 		return err
 	}
 
+	if task.Status == common_proto.TaskStatus_CANCELLED {
+		return ankr_default.ErrCanceledTwice
+	}
 
 	event := common_proto.DCResponse{
 		OpType: common_proto.DCOperation_TASK_CANCEL,
@@ -160,6 +163,7 @@ func convertToTaskMessage(task db.TaskRecord) common_proto.Task {
 	message.Attributes.Replica = task.Replica
 	message.Attributes.LastModifiedDate = task.Last_modified_date
 	message.Attributes.CreationDate = task.Creation_date
+
 
 	//deployMessage := common_proto.TaskTypeDeployment{Image : task.Image}
 	if task.Type == common_proto.TaskType_DEPLOYMENT {
@@ -222,6 +226,9 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 		return err
 	}
 
+
+	req.Task.Name = strings.ToLower(req.Task.Name)
+
 	if req.Task.Attributes.Replica == 0 {
 		req.Task.Attributes.Replica = task.Attributes.Replica
 	}
@@ -257,6 +264,11 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 
 func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.TaskID, rsp *common_proto.Empty) error {
 	error := p.CancelTask(ctx, req, rsp)
+
+	if error == ankr_default.ErrCanceledTwice {
+		return ankr_default.ErrPurgedTwice
+	}
+
 	if error == nil {
 		log.Printf(" PurgeTask  %s \n", req.TaskId)
 		p.db.Update(req.TaskId, bson.M{"$set": bson.M{"hidden": true}})

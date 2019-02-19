@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Ankr-network/dccn-common/protos"
 	"github.com/Ankr-network/dccn-common/protos/common"
 
 	"log"
@@ -21,6 +22,10 @@ var addr = "localhost:50051"
 
 //var addr = "afcac29ea274711e99cb106bbae7419f-1982485008.us-west-1.elb.amazonaws.com:50051"
 
+//func parseError(err string) string{
+//
+//}
+
 func main() {
 
 	log.SetFlags(log.LstdFlags | log.Llongfile)
@@ -39,13 +44,20 @@ func main() {
 
 	req := &usermgr.LoginRequest{}
 	req.Email = "12112@Gmail.com"
-	req.Password = "11111111"
+	req.Password = "11111111111"
 
 
 
 	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
-		log.Fatal(err.Error())
+		if err == ankr_default.ErrPasswordError {
+			log.Printf("password error  %s", err.Error())
+		}
+
+
+		a := err.Error()
+
+		log.Printf(">>>>>%d  %s <<<<", len(a), a)
 	} else {
 		log.Printf("response %+v \n", rsp)
 		//log.Printf("login Success: id : %s name : %s , email %s  refresh_token : %s  access_token %s \n", rsp.User.Id, rsp.User.Attributes.Name, rsp.User.Email ,rsp.AuthenticationResult.RefreshToken, rsp.AuthenticationResult.AccessToken)

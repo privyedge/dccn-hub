@@ -45,6 +45,9 @@ func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micr
 
 func getUserIDByRefreshToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
+	if len(parts) != 3 {
+		return "", ankr_default.ErrTokenParseFailed
+	}
 
 	decoded, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
@@ -197,7 +200,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	//	return ankr_default.ErrTokenPassedMax
 	//}
 
-	expired, token, err2 := p.token.NewToken(user.ID)
+	expired, token, err2 := p.token.NewToken(user.ID, false)
 
 	if err2 != nil {
 		log.Println(err2.Error())
@@ -216,8 +219,8 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	rsp.AuthenticationResult.AccessToken = token
 	rsp.AuthenticationResult.Expiration = uint64(expired)
 	rsp.AuthenticationResult.IssuedAt = uint64(time.Now().Unix())
-	_, refreshToken, _ := p.token.NewToken(user.ID)
-	rsp.AuthenticationResult.RefreshToken = refreshToken
+	_, refreshToken, _ := p.token.NewToken(user.ID, true)
+		rsp.AuthenticationResult.RefreshToken = refreshToken
 
 	//tokens := append(user.Tokens, refreshToken)
 
@@ -287,7 +290,7 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 		return ankr_default.ErrRefreshToken
 	}
 
-	expired, token, err2 := p.token.NewToken(user.ID)
+	expired, token, err2 := p.token.NewToken(user.ID, false)
 
 	if err2 != nil {
 		log.Println(err2.Error())
@@ -299,7 +302,7 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 	rsp.AccessToken = token
 	rsp.Expiration = uint64(expired)
 	rsp.IssuedAt = uint64(time.Now().Unix())
-	_, refreshToken, _ := p.token.NewToken(user.ID)
+	_, refreshToken, _ := p.token.NewToken(user.ID, true)
 	rsp.RefreshToken = refreshToken
 
 	//tokens := append(user.Tokens, refreshToken)
