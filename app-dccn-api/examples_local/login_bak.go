@@ -76,10 +76,60 @@ func main() {
 
 		if _, err := userClient.UpdateAttributes(tokenContext, &request); err != nil {
 			//log.Println("detail create %+v " + rsp)
-			log.Printf(">>>>>>>>VerifyEmail result :  bad %s   \n", err)
+			log.Printf(">>>>>>>>VerifyEmail result :  %s   \n", err)
 		}else{
-			log.Printf(">>>>>>>> VerifyEmail result :  good    \n")
+			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
 		}
+
+
+		new_access_token := ""
+		new_refresh_token := ""
+		if rsp, err := userClient.RefreshSession(tokenContext, &usermgr.RefreshToken{RefreshToken:refresh_token}); err != nil {
+
+			//log.Println("detail create %+v " + rsp)
+			log.Printf("receive error %s \n", err)
+		} else {
+			new_access_token = rsp.AccessToken
+			new_refresh_token = rsp.RefreshToken
+			log.Printf("get new fresh token and access token : %s %s  \n" , rsp.AccessToken, rsp.RefreshToken)
+		}
+
+
+		md2 := metadata.New(map[string]string{
+			"token": new_access_token,
+		})
+		ctx2 := metadata.NewOutgoingContext(context.Background(), md2)
+
+		tokenContext2, cancel2 := context.WithTimeout(ctx2, 10*time.Second)
+		defer cancel2()
+
+
+		if _, err := userClient.UpdateAttributes(tokenContext2, &request); err != nil {
+			//log.Println("detail create %+v " + rsp)
+			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
+		}else{
+			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
+		}
+
+
+		if _, err := userClient.Logout(tokenContext2, &usermgr.RefreshToken{ RefreshToken: new_refresh_token}); err != nil {
+			//log.Println("detail create %+v " + rsp)
+			log.Printf(">>>>>>>> Logout error result :  %s   \n", err)
+		}else{
+			log.Printf(">>>>>>>> Logout no error   \n", err)
+		}
+
+
+		if rsp, err := userClient.RefreshSession(tokenContext, &usermgr.RefreshToken{RefreshToken:new_refresh_token}); err != nil {
+
+			//log.Println("detail create %+v " + rsp)
+			log.Printf("refresh token error receive error %s \n", err)
+		} else {
+			new_access_token = rsp.AccessToken
+			refresh_token = rsp.RefreshToken
+			log.Printf("get new fresh token sucesfully   \n" )
+		}
+
 
 	}
 

@@ -40,7 +40,7 @@ func main() {
 	req.User = &usermgr.User{}
 	req.User.Email = `12112@Gmail.com`
 	req.User.Attributes = &usermgr.UserAttributes{}
-	req.User.Attributes.Name = "ankrtest_sang"
+	req.User.Attributes.Name = "ankrtest"
 	req.Password = "11111111"
 
 	if _, err := userClient.Register(context.Background(), &req); err != nil {

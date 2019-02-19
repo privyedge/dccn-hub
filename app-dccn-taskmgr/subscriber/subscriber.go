@@ -20,12 +20,12 @@ func New(db db.DBService) *TaskStatusFeedback {
 // UpdateTaskByFeedback receives task result from data center, returns to v1
 // UpdateTaskStatusByFeedback updates database status by performing feedback from the data center of the task.
 // sets executor's id, updates task status.
-func (p *TaskStatusFeedback) HandlerFeedbackEventFromDataCenter(ctx context.Context, dcMessage *common_proto.DCStream) error {
+func (p *TaskStatusFeedback) HandlerFeedbackEventFromDataCenter(ctx context.Context, stream *common_proto.DCStream) error {
 
-	task := dcMessage.GetTask()
-	log.Printf(">>>>>>>>HandlerFeedbackEventFromDataCenter: Receive New Event: %+v", *task)
+	task := stream.GetTaskReport().Task
+	log.Printf(">>>>>>>>HandlerFeedbackEventFromDataCenter: Receive New Event: %+v", task)
 	var update bson.M
-	switch dcMessage.OpType {
+	switch stream.OpType {
 	case common_proto.DCOperation_TASK_CREATE:  // feedback  TaskStatus_START_FAILED  TaskStatus_START_SUCCESS => TaskStatus_RUNNING
 		status := common_proto.TaskStatus_RUNNING
 		if task.Status == common_proto.TaskStatus_START_FAILED {

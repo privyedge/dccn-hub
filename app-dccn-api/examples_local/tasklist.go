@@ -16,7 +16,7 @@ import (
 //	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-var addr = "192.168.1.115:50051"
+var addr = "127.0.0.1:50051"
 //var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
