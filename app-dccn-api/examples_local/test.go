@@ -1,39 +1,23 @@
 package main
 
-import (
-	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
-
-	//	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
-	"log"
-	//	"time"
-
-	//	"google.golang.org/grpc/metadata"
-
-	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
-)
+	
+import "strings"
+import "fmt"
 
 
+func parseError(s1 string) string{
+ index := strings.Index(s1, "detail")
+ s2 := s1[index+9:]
+ index2 := strings.Index(s2, "\"")
+ s3 := s2[:index2]
+ return s3
+}
 
 func main() {
-
-	m1 := make(map[string]int, 0)
-	m1["apple"] = 10;
-
-	log.Printf("m1 is %d", m1["apple"])
-
-	// Using a composite literal to initialize a map.
-	m2 := map[string]int{}
-	m2["apple"] = 20;
-
-	log.Printf("m2 is %d", m2["apple"])
+ s1 := "rpc error: code = Unknown desc = {\"id\":\"\",\"code\":0,\"detail\":\"password does not match\",\"status\":\"\"}"
 
 
-	m3 := new(int)
-	(*m3) = 10;
+ fmt.Printf("%s\n", parseError(s1) )
 
-	log.Printf("m3 is %d", (*m3))
-
-
-	log.Println("END")
 }
+

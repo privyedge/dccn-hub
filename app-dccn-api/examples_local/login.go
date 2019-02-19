@@ -62,7 +62,7 @@ func main() {
 			"token": access_token,
 		})
 
-		log.Printf("get access_token after login %s \n", access_token)
+		log.Printf("get access_token after login %s  refresh_token %s \n", access_token, refresh_token)
 		ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -83,12 +83,14 @@ func main() {
 
 
 		new_access_token := ""
+		new_refresh_token := ""
 		if rsp, err := userClient.RefreshSession(tokenContext, &usermgr.RefreshToken{RefreshToken:refresh_token}); err != nil {
 
 			//log.Println("detail create %+v " + rsp)
 			log.Printf("receive error %s \n", err)
 		} else {
 			new_access_token = rsp.AccessToken
+			new_refresh_token = rsp.RefreshToken
 			log.Printf("get new fresh token and access token : %s %s  \n" , rsp.AccessToken, rsp.RefreshToken)
 		}
 
@@ -109,6 +111,24 @@ func main() {
 			log.Printf(">>>>>>>> VerifyEmail result :  %s   \n", err)
 		}
 
+
+		if _, err := userClient.Logout(tokenContext2, &usermgr.RefreshToken{ RefreshToken: new_refresh_token}); err != nil {
+			//log.Println("detail create %+v " + rsp)
+			log.Printf(">>>>>>>> Logout error result :  %s   \n", err)
+		}else{
+			log.Printf(">>>>>>>> Logout no error   \n", err)
+		}
+
+
+		if rsp, err := userClient.RefreshSession(tokenContext, &usermgr.RefreshToken{RefreshToken:new_refresh_token}); err != nil {
+
+			//log.Println("detail create %+v " + rsp)
+			log.Printf("refresh token error receive error %s \n", err)
+		} else {
+			new_access_token = rsp.AccessToken
+			refresh_token = rsp.RefreshToken
+			log.Printf("get new fresh token sucesfully   \n" )
+		}
 
 
 	}

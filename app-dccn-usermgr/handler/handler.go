@@ -15,9 +15,9 @@ import (
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	ankr_util "github.com/Ankr-network/dccn-common/util"
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-	ankr_util "github.com/Ankr-network/dccn-common/util"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
@@ -43,6 +43,9 @@ func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micr
 
 func getUserIDByRefreshToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
+	if len(parts) != 3 {
+		return "", ankr_default.ErrTokenParseFailed
+	}
 
 	decoded, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
@@ -85,11 +88,10 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	log.Println("Debug Register")
 	user := req.User
-	user.Email = strings.ToLower(user.Email)
-	emailError := ValidateEmailFormat(user.Email)
-	if emailError != nil {
-		log.Println(emailError.Error())
-		return emailError
+	email_error := ValidateEmailFormat(user.Email)
+	if email_error != nil {
+		log.Println(email_error.Error())
+		return email_error
 	}
 
 	if len(req.Password) < 6 {
@@ -102,20 +104,21 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 		return errors.New("GenerateFromPassword error")
 	}
 
-	_, dbErr := p.db.GetUserByEmail(user.Email)
+	_, dbErr := p.db.Get(strings.ToLower(user.Email))
 	if dbErr == nil {
 		log.Println("email exist")
 		return ankr_default.ErrEmailExit
 	}
 
 	hashPassword := string(hashedPwd)
+	user.Email = strings.ToLower(user.Email)
 	user.Id = uuid.New().String()
 	user.Status = usermgr.UserStatus_CONFIRMING
 
-	if user.Attributes.Name == "ankrtest" { // for debug
+	if user.Attributes.Name == "ankrtest"{ // for debug
 		user.Status = usermgr.UserStatus_CONFIRMED
 
-	} else {
+	}else{
 		_, confirmRegistrationCode, err := p.token.NewToken(user.Id)
 		if err != nil {
 			log.Println(err.Error())
@@ -199,7 +202,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	//	return ankr_default.ErrTokenPassedMax
 	//}
 
-	expired, token, err2 := p.token.NewToken(user.ID)
+	expired, token, err2 := p.token.NewToken(user.ID, false)
 
 	if err2 != nil {
 		log.Println(err2.Error())
@@ -218,8 +221,8 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	rsp.AuthenticationResult.AccessToken = token
 	rsp.AuthenticationResult.Expiration = uint64(expired)
 	rsp.AuthenticationResult.IssuedAt = uint64(time.Now().Unix())
-	_, refreshToken, _ := p.token.NewToken(user.ID)
-	rsp.AuthenticationResult.RefreshToken = refreshToken
+	_, refreshToken, _ := p.token.NewToken(user.ID, true)
+		rsp.AuthenticationResult.RefreshToken = refreshToken
 
 	//tokens := append(user.Tokens, refreshToken)
 
@@ -303,7 +306,7 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 		return ankr_default.ErrRefreshToken
 	}
 
-	expired, token, err2 := p.token.NewToken(user.ID)
+	expired, token, err2 := p.token.NewToken(user.ID, false)
 
 	if err2 != nil {
 		log.Println(err2.Error())
@@ -315,7 +318,7 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 	rsp.AccessToken = token
 	rsp.Expiration = uint64(expired)
 	rsp.IssuedAt = uint64(time.Now().Unix())
-	_, refreshToken, _ := p.token.NewToken(user.ID)
+	_, refreshToken, _ := p.token.NewToken(user.ID, true)
 	rsp.RefreshToken = refreshToken
 
 	//tokens := append(user.Tokens, refreshToken)
@@ -376,7 +379,7 @@ func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPas
 
 	log.Println("Debug into ForgetPassword")
 	// generate new authorization token for reset password
-	_, forgetPasswordCode, err := p.token.NewToken(req.Email)
+	_, forgetPasswordCode, err := p.token.NewToken(req.Email, false)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -473,7 +476,6 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug UpdateAttributes")
 
-	//todo
 	if err := p.db.UpdateUser(uid, req.UserAttributes); err != nil {
 		log.Println(err.Error())
 		return err

@@ -14,7 +14,7 @@ import (
 var secret = []byte("14444749c1ecc982cd0f91113db98211")
 
 type IToken interface {
-	NewToken(uid string) (int64, string, error)
+	NewToken(uid string, is_refrsh_token bool) (int64, string, error)
 	Verify(tokenString string) (*UserPayload, error)
 	VerifyAndRefresh(tokenString string) (string, error)
 }
@@ -40,9 +40,12 @@ func New() *Token {
 }
 
 // New returns JWT string.
-func (p *Token) NewToken(uid string) (int64, string, error) {
-
-	expireTime := time.Now().Add(time.Minute * time.Duration(p.RefreshTokenValidTime)).Unix()
+func (p *Token) NewToken(uid string, is_refrsh_token bool) (int64, string, error) {
+	var expireTime int64
+	expireTime = time.Now().Add(time.Minute * time.Duration(p.RefreshTokenValidTime)).Unix()
+	if is_refrsh_token {
+		expireTime = 0
+	}
 
 	// Create the Claims
 	payload := UserPayload{
