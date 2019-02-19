@@ -10,7 +10,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -i -o cmd/email app-
 
 FROM scratch
 
-COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /go/src/github.com/Ankr-network/dccn-hub/cmd/email /
 
