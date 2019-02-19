@@ -66,5 +66,5 @@ func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
 		}
 	}
 
-	return bson.M{"$set": update}
+	return bson.M{"$set": update}, nil
 }
