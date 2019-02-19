@@ -51,11 +51,7 @@ func (p *Sender) htmlBody() string {
 	var html string
 	switch p.Type {
 	case mail.EmailType_CONFIRM_REGISTRATION:
-<<<<<<< HEAD
-		t := emailTemplates["registeration.html"]
-=======
 		t := emailTemplates["registeration"]
->>>>>>> f2970ea8e2887d3244c6fad220a19379eca8dc05
 		data := struct {
 			Code string
 			ID   string
