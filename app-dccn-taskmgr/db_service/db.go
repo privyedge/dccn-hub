@@ -111,11 +111,9 @@ func (p *DB) GetByEventId(eventId string) (*[]*common_proto.Task, error) {
 
 // Create creates a new task item if it not exists
 func (p *DB) Create(task *common_proto.Task, uid string) error {
-	log.Printf("I am here ")
 	session := p.session.Copy()
 	defer session.Close()
 
-	log.Printf(">>>>>>create task %+v\n", task)
 	taskRecord := TaskRecord{}
 	taskRecord.ID = task.Id
 	taskRecord.Userid = uid
@@ -131,7 +129,6 @@ func (p *DB) Create(task *common_proto.Task, uid string) error {
 	now := time.Now().Unix()
 	taskRecord.Last_modified_date = uint64(now)
 	taskRecord.Creation_date = uint64(now)
-	log.Printf("I am here >>>>>> ")
 	return p.collection(session).Insert(taskRecord)
 }
 

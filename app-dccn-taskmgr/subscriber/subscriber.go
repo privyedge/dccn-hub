@@ -23,7 +23,7 @@ func New(db db.DBService) *TaskStatusFeedback {
 func (p *TaskStatusFeedback) HandlerFeedbackEventFromDataCenter(ctx context.Context, dcMessage *common_proto.DCStream) error {
 
 	task := dcMessage.GetTask()
-	log.Printf("HandlerFeedbackEventFromDataCenter: Receive New Event: %+v", *task)
+	log.Printf(">>>>>>>>HandlerFeedbackEventFromDataCenter: Receive New Event: %+v", *task)
 	var update bson.M
 	switch dcMessage.OpType {
 	case common_proto.DCOperation_TASK_CREATE:  // feedback  TaskStatus_START_FAILED  TaskStatus_START_SUCCESS => TaskStatus_RUNNING
