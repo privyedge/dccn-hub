@@ -88,10 +88,10 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	log.Println("Debug Register")
 	user := req.User
-	email_error := ValidateEmailFormat(user.Email)
-	if email_error != nil {
-		log.Println(email_error.Error())
-		return email_error
+	emailError := ValidateEmailFormat(user.Email)
+	if emailError != nil {
+		log.Println(emailError.Error())
+		return emailError
 	}
 
 	if len(req.Password) < 6 {
@@ -145,10 +145,16 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	}
 
+	err = p.db.CreateUser(user, hashPassword)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
 	if err := p.db.CreateUser(user, hashPassword); err != nil {
 		log.Println(err.Error())
 		return errors.New("data add user error")
 	}
+
 	return nil
 }
 
@@ -165,7 +171,7 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 
 	attr := []*usermgr.UserAttribute{
 		{
-			Key: "status", Value: &usermgr.UserAttribute_IntValue{
+			Key: "Status", Value: &usermgr.UserAttribute_IntValue{
 				IntValue: int64(usermgr.UserStatus_CONFIRMED),
 			},
 		},
@@ -228,7 +234,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 
 	attr := []*usermgr.UserAttribute{
 		{
-			Key:   "token",
+			Key:   "Token",
 			Value: &usermgr.UserAttribute_StringValue{StringValue: refreshToken},
 		},
 	}
@@ -263,7 +269,7 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 	//newTokens := append(user.Tokens[:index], user.Tokens[index+1:]...)
 	attr := []*usermgr.UserAttribute{
 		{
-			Key:   "token",
+			Key:   "Token",
 			Value: &usermgr.UserAttribute_StringValue{StringValue: ""},
 		},
 	}
@@ -328,7 +334,7 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 
 	attr := []*usermgr.UserAttribute{
 		{
-			Key:   "token",
+			Key:   "Token",
 			Value: &usermgr.UserAttribute_StringValue{StringValue: refreshToken},
 		},
 	}
@@ -449,6 +455,11 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangePassword")
 
+	if len(req.NewPassword) < 6 {
+		log.Println("password len invalid")
+		return errors.New("password len invalid")
+	}
+
 	// hash password, TODO: equal return err
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -458,7 +469,7 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 
 	attr := []*usermgr.UserAttribute{
 		{
-			Key:   "hashedpassword",
+			Key:   "HashedPassword",
 			Value: &usermgr.UserAttribute_StringValue{StringValue: string(hashedPwd)},
 		},
 	}
