@@ -36,8 +36,6 @@ func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
 	update := bson.M{}
 	for _, attr := range fields {
 		switch attr.Key {
-		case "Id":
-			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Email":
 			if !user_util.MatchPattern(user_util.OpEmailMatch, attr.GetStringValue()) {
 				return nil, ankr_default.ErrEmailFormat
