@@ -62,6 +62,8 @@ func Init() {
 	noAuthList = map[string]struct{}{
 		"UserMgr.Register":            struct{}{},
 		"UserMgr.ConfirmRegistration": struct{}{},
+		"UserMgr.ForgotPassword":      struct{}{},
+		"UserMgr.ConfirmPassword":     struct{}{},
 		"UserMgr.Login":               struct{}{},
 		"UserMgr.RefreshSession":      struct{}{},
 		"DCStreamer.ServerStream":     struct{}{},
