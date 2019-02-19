@@ -246,7 +246,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 }
 
 func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out *common_proto.Empty) error {
-	
+
 	uid, err := getUserIDByRefreshToken(req.RefreshToken)
 	if err != nil {
 		return err
@@ -477,7 +477,7 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 	return nil
 }
 
-func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsq *usermgr.User) error {
+func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsp *usermgr.User) error {
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug UpdateAttributes")
 
@@ -486,12 +486,17 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 		return err
 	}
 
-	// if userRecord, err := p.db.GetUser(uid); err != nil {
-	// rsp.Id = userRecord.ID
-	// userRecord.Name
-	// userRecord.Email
-	// userRecord.Status
-	// }
+	if userRecord, err := p.db.GetUser(uid); err != nil {
+		rsp.Id = userRecord.ID
+		rsp.Email = userRecord.Email
+		rsp.Attributes = &usermgr.UserAttributes{
+			Name:             userRecord.Name,
+			CreationDate:     userRecord.CreationDate,
+			LastModifiedDate: userRecord.LastModifiedDate,
+			PubKey:           userRecord.PubKey,
+		}
+		rsp.Status = userRecord.Status
+	}
 
 	return nil
 }
