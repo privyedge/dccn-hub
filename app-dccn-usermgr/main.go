@@ -52,14 +52,14 @@ func startHandler(db dbservice.DBService) {
 	// Initialise service
 	srv.Init()
 
-	// New Publisher to deploy new task action.
-	pubEmail := micro.NewPublisher(ankr_default.EmailRegistryServerName, srv.Client())
-
 	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
 	opt := srv.Server().Options()
 	if err := opt.Broker.Connect(); err != nil {
 		log.Fatal(err.Error())
 	}
+
+	// New Publisher to deploy new task action.
+	pubEmail := micro.NewPublisher(ankr_default.MQMail, srv.Client())
 
 	userHandler := handler.New(db, token.New(), pubEmail)
 	defer userHandler.Destroy()

@@ -54,9 +54,26 @@ func (p *DB) collection(session *mgo.Session) *mgo.Collection {
 	return session.DB(p.dbName).C(p.collectionName)
 }
 
+// CreateUser creates a new user item if it not exists
+// TODO: batch operations through bulk
+func (p *DB) CreateUser(user *pb.User, hashedPassword string) error {
+	session := p.session.Copy()
+	defer session.Close()
+
+	err := p.collection(session).Insert(&UserRecord{
+		ID:               user.Id,
+		Email:            user.Email,
+		Name:             user.Attributes.Name,
+		HashedPassword:   hashedPassword,
+		LastModifiedDate: uint64(time.Now().Unix()),
+		CreationDate:     uint64(time.Now().Unix()),
+	})
+	return err
+}
+
 // Get gets user item by email.
 func (p *DB) GetUser(id string) (*UserRecord, error) {
-	session := p.session.Clone()
+	session := p.session.Copy()
 	defer session.Close()
 
 	var user UserRecord
@@ -66,7 +83,7 @@ func (p *DB) GetUser(id string) (*UserRecord, error) {
 
 // GetUserByEmail gets user item by email.
 func (p *DB) GetUserByEmail(email string) (*UserRecord, error) {
-	session := p.session.Clone()
+	session := p.session.Copy()
 	defer session.Close()
 
 	var user UserRecord
@@ -74,32 +91,18 @@ func (p *DB) GetUserByEmail(email string) (*UserRecord, error) {
 	return &user, err
 }
 
-// CreateUser creates a new user item if it not exists
-// TODO: batch operations through bulk
-func (p *DB) CreateUser(user *pb.User, hashedPassword string) error {
-	session := p.session.Clone()
-	defer session.Close()
-	userRecord := UserRecord{}
-	userRecord.ID = user.Id
-	userRecord.Email = user.Email
-	userRecord.Name = user.Attributes.Name
-	userRecord.HashedPassword = hashedPassword
-	userRecord.LastModifiedDate = uint64(time.Now().Unix())
-	userRecord.CreationDate = uint64(time.Now().Unix())
-	return p.collection(session).Insert(userRecord)
-}
-
 // UpdateUser updates user item.
 func (p *DB) UpdateUser(id string, fields []*usermgr.UserAttribute) error {
-	session := p.session.Clone()
+	session := p.session.Copy()
 	defer session.Close()
 
 	return p.collection(session).Update(bson.M{"id": id}, getUpdate(fields))
 }
 
 // UpdateUserByEmail updates user item.
+// UpdateUserByEmail updates user item.
 func (p *DB) UpdateUserByEmail(email string, fields []*usermgr.UserAttribute) error {
-	session := p.session.Clone()
+	session := p.session.Copy()
 	defer session.Close()
 
 	return p.collection(session).Update(bson.M{"email": email}, getUpdate(fields))

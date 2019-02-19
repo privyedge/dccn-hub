@@ -18,9 +18,11 @@ type ApiUser struct {
 func (p *ApiUser) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into Register")
-	if _, err := p.api.Register(ctx, req); err != nil {
+	if out, err := p.api.Register(ctx, req); err != nil {
 		log.Println(err.Error())
 		return err
+	} else {
+		*rsp = *out
 	}
 
 	return nil

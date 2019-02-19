@@ -14,30 +14,30 @@ type UserRecord struct {
 	Status           usermgr.UserStatus // user status
 	LastModifiedDate uint64
 	CreationDate     uint64
-	PublicKeys       string
+	PubKey           string
 }
 
 func getUpdate(fields []*usermgr.UserAttribute) bson.M {
 	update := bson.M{}
 	for _, attr := range fields {
 		switch attr.Key {
-		case "id":
+		case "ID":
 			update[attr.Key] = attr.GetStringValue()
-		case "email":
+		case "Email":
 			update[attr.Key] = attr.GetStringValue()
-		case "hashedpassword":
+		case "HashedPassword":
 			update[attr.Key] = attr.GetStringValue()
-		case "name":
+		case "Name":
 			update[attr.Key] = attr.GetStringValue()
-		case "token":
+		case "Token":
 			update[attr.Key] = attr.GetStringValue()
-		case "status":
+		case "Status":
 			update[attr.Key] = usermgr.UserStatus(attr.GetIntValue())
-		case "lastmodifieddate":
+		case "LastModifiedDate":
 			update[attr.Key] = attr.GetIntValue()
-		case "creationdate":
+		case "CreationDate":
 			update[attr.Key] = attr.GetIntValue()
-		case "publickeys":
+		case "PubKey":
 			update[attr.Key] = attr.GetStringValue()
 		}
 	}
