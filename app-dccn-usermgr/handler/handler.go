@@ -246,8 +246,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 }
 
 func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out *common_proto.Empty) error {
-
-	log.Println("Debug into Logout")
+	
 	uid, err := getUserIDByRefreshToken(req.RefreshToken)
 	if err != nil {
 		return err

@@ -44,7 +44,7 @@ func (p *Token) NewToken(uid string, is_refrsh_token bool) (int64, string, error
 	var expireTime int64
 	expireTime = time.Now().Add(time.Minute * time.Duration(p.RefreshTokenValidTime)).Unix()
 	if is_refrsh_token {
-		expireTime = 0
+		expireTime = time.Now().Unix() + 86400
 	}
 
 	// Create the Claims
