@@ -29,7 +29,12 @@ jobs:
             sudo mv ./kops /usr/local/bin/kops
             wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl      
+            sudo mv ./kubectl /usr/local/bin/kubectl
+      - run:
+          name: patch k8s yaml for email
+          command: |
+            kubectl set env deployment/email AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --local -f kubernetes/email.yml -o yaml > kubernetes/email_patch.yml
+            mv kubernetes/email_patch.yml kubernetes/email.yml
       - run:
           name: "Build & Push Docker Image"
           command: |
@@ -77,12 +82,9 @@ jobs:
             declare -a name_arr=("app-dccn-taskmgr" "app-dccn-api" "app-dccn-usermgr" "app-dccn-email")
             
             kops export kubecfg --name ${K8S_CLUSTER}.k8s.ankr.network --state s3://kops.${K8S_CLUSTER}.config
-            mkdir ./kubernetes/tmp
             for ((i=0; i<arrlen; i++)); do
-              kubectl patch --local -o yaml -p \
-              '{"spec":{"template":{"spec":{"containers":[{"name":"'${name_arr[$i]}'","image":"'${AWS_ACCOUNT}'.dkr.ecr.'${AWS_REGION}'.amazonaws.com/'${component_arr[$i]}':'${BRANCH_NAME}''${DATE}'"}]}}}}' \
-              -f ./kubernetes/${dockerfile_arr[$i]}.yml > ./kubernetes/tmp/${dockerfile_arr[$i]}.yml
-              kubectl apply -f ./kubernetes/tmp/${dockerfile_arr[$i]}.yml
+              kubectl set image ${name_arr[$i]}=$AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/${component_arr[$i]}:${BRANCH_NAME}${DATE} --local -f kubernetes/${dockerfile_arr[$i]}.yml -o yaml > kubernetes/${dockerfile_arr[$i]}_patch.yml
+              kubectl apply -f kubernetes/${dockerfile_arr[$i]}_patch.yml
               if ! kubectl rollout status deploy/${deployment_arr[$i]} --watch=true --timeout=60s; then
                 echo "Deploy failed, roll back to previous version"
                 kubectl rollout undo deploy/${deployment_arr[$i]} 

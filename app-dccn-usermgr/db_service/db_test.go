@@ -41,9 +41,8 @@ func mockUserRecord() *UserRecord {
 
 func mockPbUser() *usermgr.User {
 	return &usermgr.User{
-		Id:     "fa010697-b2a2-4ce0-be4b-544f097a6822 ",
-		Email:  "xuexiacm@163.com ",
-		Status: usermgr.UserStatus_CONFIRMING,
+		Id:    "fa010697-b2a2-4ce0-be4b-544f097a6822 ",
+		Email: "xuexiacm@163.com ",
 		Attributes: &usermgr.UserAttributes{
 			Name:             "ankrtest_sang",
 			LastModifiedDate: uint64(time.Now().Unix()),
@@ -54,7 +53,7 @@ func mockPbUser() *usermgr.User {
 
 func TestCreateUser(t *testing.T) {
 	db := mockDbService()
-	defer db.dropCollection()
+	// defer db.dropCollection()
 
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte("12345"), bcrypt.DefaultCost)
 	if err != nil {

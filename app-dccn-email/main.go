@@ -15,7 +15,14 @@ import (
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
+// Init starts handler to listen.
+func Init() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+}
+
 func main() {
+	Init()
+
 	// New Service
 	service := grpc.NewService(
 		micro.Name(ankr_default.EmailRegistryServerName),

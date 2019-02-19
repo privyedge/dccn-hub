@@ -145,14 +145,9 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	}
 
-	err = p.db.CreateUser(user, hashPassword)
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
 	if err := p.db.CreateUser(user, hashPassword); err != nil {
 		log.Println(err.Error())
-		return errors.New("data add user error")
+		return err
 	}
 
 	return nil
@@ -491,6 +486,13 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 		log.Println(err.Error())
 		return err
 	}
+
+	// if userRecord, err := p.db.GetUser(uid); err != nil {
+	// rsp.Id = userRecord.ID
+	// userRecord.Name
+	// userRecord.Email
+	// userRecord.Status
+	// }
 
 	return nil
 }
