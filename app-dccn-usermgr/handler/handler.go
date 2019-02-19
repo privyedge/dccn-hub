@@ -411,6 +411,11 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 
 	log.Println("Debug ConfirmPassword")
 
+	if len(req.NewPassword) < 6 {
+		log.Println("password len invalid")
+		return errors.New("password len invalid")
+	}
+
 	// verify code if is expired
 	_, err := p.token.Verify(req.ConfirmationCode)
 	if err != nil {
@@ -433,7 +438,7 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 		},
 	}
 
-	if err := p.db.UpdateUserByEmail(req.Email, attr); err != nil {
+	if err := p.db.UpdateUserByEmail(strings.ToLower(req.Email), attr); err != nil {
 		log.Println(err.Error())
 		return err
 	}

@@ -98,8 +98,7 @@ func TestUpdateUser(t *testing.T) {
 			Key: "Name",
 		},
 		{
-			Key: "publickeys",
-			// : "xiaowu",
+			Key:   "PubKey",
 			Value: &usermgr.UserAttribute_StringValue{StringValue: "xiaowu"},
 		},
 	}
