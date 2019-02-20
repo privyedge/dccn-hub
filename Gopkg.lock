@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  branch = "feature/SWDEV-149-restructure-proto"
+  branch = "develop"
   digest = "1:858a9023eb40ce632881c759f2c08f9f56ada34f746649a140062fa833c56758"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
@@ -19,7 +19,7 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "40ca24520c5537bf0ea98c075c18e9665bc40d17"
+  revision = "db71ec855cc7229fa526c5f228be3c3b33c0aade"
 
 [[projects]]
   branch = "master"
@@ -177,7 +177,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:a54ada9beb59fdc35b69322979e870ff0b780e03f4dc309c4c8674b94927df75"
+  digest = "1:75ed48e676c79393be368f0272b6ee0ba489dc1ef7f0807eaed5bf8527c69c60"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
   pruneopts = "UT"
@@ -573,7 +573,6 @@
     "github.com/google/uuid",
     "github.com/gorhill/cronexpr",
     "github.com/micro/go-grpc",
-    "github.com/micro/go-log",
     "github.com/micro/go-micro",
     "github.com/micro/go-micro/client",
     "github.com/micro/go-micro/metadata",
