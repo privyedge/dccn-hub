@@ -4,6 +4,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+
+	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
 )
 
 type UserRecord struct {
@@ -30,7 +33,7 @@ var feileds = map[string]string{
 	"PubKey":           "pub_key",
 }
 
-func getUpdate(fields []*usermgr.UserAttribute) bson.M {
+func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
 	update := bson.M{}
 	for _, attr := range fields {
 		switch attr.Key {
@@ -39,6 +42,9 @@ func getUpdate(fields []*usermgr.UserAttribute) bson.M {
 		case "HashedPassword":
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Name":
+			if !user_util.MatchPattern(user_util.OpUserNameMatch, attr.GetStringValue()) {
+				return nil, ankr_default.ErrUserNameFormat
+			}
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Token":
 			update[feileds[attr.Key]] = attr.GetStringValue()
@@ -53,5 +59,5 @@ func getUpdate(fields []*usermgr.UserAttribute) bson.M {
 		}
 	}
 
-	return bson.M{"$set": update}
+	return bson.M{"$set": update}, nil
 }

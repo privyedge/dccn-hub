@@ -452,7 +452,6 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug UpdateAttributes")
 
-	// TODO: sanghai
 	if err := p.db.UpdateUser(uid, req.UserAttributes); err != nil {
 		log.Println(err.Error())
 		return err
