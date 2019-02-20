@@ -96,12 +96,7 @@ func (p *DB) UpdateUser(id string, fields []*usermgr.UserAttribute) error {
 	session := p.session.Copy()
 	defer session.Close()
 
-	update, err := getUpdate(fields)
-	if err != nil {
-		return err
-	}
-
-	return p.collection(session).Update(bson.M{"id": id}, update)
+	return p.collection(session).Update(bson.M{"id": id}, getUpdate(fields))
 }
 
 // UpdateUserByEmail updates user item.
@@ -110,12 +105,7 @@ func (p *DB) UpdateUserByEmail(email string, fields []*usermgr.UserAttribute) er
 	session := p.session.Copy()
 	defer session.Close()
 
-	update, err := getUpdate(fields)
-	if err != nil {
-		return err
-	}
-
-	return p.collection(session).Update(bson.M{"email": email}, update)
+	return p.collection(session).Update(bson.M{"email": email}, getUpdate(fields))
 }
 
 // Close closes the db connection.

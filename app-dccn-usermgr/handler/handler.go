@@ -41,7 +41,7 @@ func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micr
 	}
 }
 
-func getUserIDByRefreshToken(refreshToken string) (string, error) {
+func getIdFromToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
 	if len(parts) != 3 {
 		return "", ankr_default.ErrTokenParseFailed
@@ -242,7 +242,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 
 func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out *common_proto.Empty) error {
 
-	uid, err := getUserIDByRefreshToken(req.RefreshToken)
+	uid, err := getIdFromToken(req.RefreshToken)
 	if err != nil {
 		return err
 	}
@@ -265,7 +265,7 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 }
 
 func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshToken, rsp *usermgr.AuthenticationResult) error {
-	uid, err := getUserIDByRefreshToken(req.RefreshToken)
+	uid, err := getIdFromToken(req.RefreshToken)
 	if err != nil {
 		return err
 	}
@@ -363,12 +363,11 @@ func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPas
 }
 
 func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Empty) error {
-
 	log.Println("Debug ConfirmPassword")
 
 	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.NewPassword) {
 		log.Println(ankr_default.ErrPasswordFormat.Error())
-		return ankr_default.ErrPasswordError
+		return ankr_default.ErrPasswordFormat
 	}
 
 	// verify code if is expired
@@ -376,6 +375,18 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 	if err != nil {
 		log.Println(err.Error())
 		return err
+	}
+
+	// check email auth
+	email, err := getIdFromToken(req.ConfirmationCode)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if strings.ToLower(email) != strings.ToLower(req.Email) || email == "" {
+		log.Println(ankr_default.ErrAuthNotAllowed)
+		return ankr_default.ErrAuthNotAllowed
 	}
 
 	// hash password
@@ -441,6 +452,7 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug UpdateAttributes")
 
+	// TODO: sanghai
 	if err := p.db.UpdateUser(uid, req.UserAttributes); err != nil {
 		log.Println(err.Error())
 		return err
