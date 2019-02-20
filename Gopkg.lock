@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:89b07fe853181c748585c3ffcb5031c48ca15bf42b7aed80fbca3d6402d1b3eb"
+  digest = "1:858a9023eb40ce632881c759f2c08f9f56ada34f746649a140062fa833c56758"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -16,9 +16,10 @@
     "protos/taskmgr/v1/micro",
     "protos/usermgr/v1/grpc",
     "protos/usermgr/v1/micro",
+    "util",
   ]
   pruneopts = "UT"
-  revision = "15998e8f244cc43242ff73c660160683e8a09dd3"
+  revision = "db71ec855cc7229fa526c5f228be3c3b33c0aade"
 
 [[projects]]
   branch = "master"
@@ -27,6 +28,45 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
+
+[[projects]]
+  digest = "1:9bdf889efb9a80d51e864c1cb78cdb6ff888394a511579320563145ab862ed35"
+  name = "github.com/aws/aws-sdk-go"
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/processcreds",
+    "aws/credentials/stscreds",
+    "aws/csm",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/ini",
+    "internal/sdkio",
+    "internal/sdkrand",
+    "internal/sdkuri",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/xml/xmlutil",
+    "service/ses",
+    "service/sts",
+  ]
+  pruneopts = "UT"
+  revision = "de216d45a3df361a2f571b8eb88db86f2b50d82f"
+  version = "v1.17.1"
 
 [[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
@@ -137,7 +177,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:a54ada9beb59fdc35b69322979e870ff0b780e03f4dc309c4c8674b94927df75"
+  digest = "1:75ed48e676c79393be368f0272b6ee0ba489dc1ef7f0807eaed5bf8527c69c60"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
   pruneopts = "UT"
@@ -175,6 +215,13 @@
   pruneopts = "UT"
   revision = "b89a09ebd4b1b570e0076d5097272e67c10ac4f6"
   version = "v0.8.2"
+
+[[projects]]
+  digest = "1:bb81097a5b62634f3e9fec1014657855610c82d19b9a40c17612e32651e35dca"
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c2b33e84"
 
 [[projects]]
   digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
@@ -369,11 +416,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:525ac3364813b4688df380594e562133e07830dfce0722effda64b37634c13d0"
+  digest = "1:dbd2b63224b02f9c7fd0631edaf6588dfb05fc20608f548fb603ef096fa87474"
   name = "github.com/streadway/amqp"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a314942b2fd9dde7a3f70ba3f1062848ce6eb392"
+  revision = "884228600bc96c993ab12fb81ba78bf0c280e88a"
 
 [[projects]]
   branch = "master"
@@ -386,7 +433,7 @@
     "ed25519/internal/edwards25519",
   ]
   pruneopts = "UT"
-  revision = "74369b46fc6756741c016591724fd1cb8e26845f"
+  revision = "a4c6cb3142f211c99e4bf4cd769535b29a9b616f"
 
 [[projects]]
   branch = "master"
@@ -416,7 +463,7 @@
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "983097b1a8a340cd1cc7df17d735154d89e10b1a"
+  revision = "90b0e4468f9980bf79a2290394adaf7f045c5d24"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -447,7 +494,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
+  revision = "082222b4a5c572e33e82ee9162d1352c7cf38682"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
@@ -490,22 +537,6 @@
   version = "v1.18.0"
 
 [[projects]]
-  branch = "v3"
-  digest = "1:7388652e2215a3f45d341d58766ed58317971030eb1cbd75f005f96ace8e9196"
-  name = "gopkg.in/alexcesaro/quotedprintable.v3"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "2caba252f4dc53eaf6b553000885530023f54623"
-
-[[projects]]
-  digest = "1:eebd52aee67d9f1e0af1859a584e14b1817581dd5f90d4585418c27b6a93c966"
-  name = "gopkg.in/gomail.v2"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "41f3572897373c5538c50a2402db15db079fa4fd"
-  version = "2.0.0"
-
-[[projects]]
   branch = "v2"
   digest = "1:988de7520a09024d5d94cd99bd545afbf194893994ec759b1cda0a0bbb6adb80"
   name = "gopkg.in/mgo.v2"
@@ -533,6 +564,11 @@
     "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro",
+    "github.com/Ankr-network/dccn-common/util",
+    "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/awserr",
+    "github.com/aws/aws-sdk-go/aws/session",
+    "github.com/aws/aws-sdk-go/service/ses",
     "github.com/dgrijalva/jwt-go",
     "github.com/google/uuid",
     "github.com/gorhill/cronexpr",
@@ -545,7 +581,6 @@
     "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
     "google.golang.org/grpc/metadata",
-    "gopkg.in/gomail.v2",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",
   ]

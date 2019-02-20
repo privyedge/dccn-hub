@@ -13,6 +13,7 @@ import (
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/token"
 
 	grpc "github.com/micro/go-grpc"
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 var (
@@ -51,7 +52,16 @@ func startHandler(db dbservice.DBService) {
 	// Initialise service
 	srv.Init()
 
-	userHandler := handler.New(db, token.New())
+	// New Publisher to deploy new task action.
+	pubEmail := micro.NewPublisher(ankr_default.MQMail, srv.Client())
+
+	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
+	opt := srv.Server().Options()
+	if err := opt.Broker.Connect(); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	userHandler := handler.New(db, token.New(), pubEmail)
 	defer userHandler.Destroy()
 
 	// Register Handler

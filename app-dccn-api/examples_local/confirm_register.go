@@ -17,9 +17,9 @@ import (
 	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-// var addr = "localhost:50051"
+var addr = "localhost:50051"
 
-var addr = "client-dev.dccn.ankr.network:50051"
+//var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 
@@ -36,16 +36,14 @@ func main() {
 
 	userClient := usermgr.NewUserMgrClient(conn)
 
-	req := usermgr.RegisterRequest{}
-	req.User = &usermgr.User{}
-	req.User.Email = "12331@mailinator.com"
-	req.User.Attributes = &usermgr.UserAttributes{}
-	req.User.Attributes.Name = "ankrtest2"
-	req.Password = "11111122211"
+	req := usermgr.ConfirmRegistrationRequest{
+		Email:            "xuexiacm@163.com",
+		ConfirmationCode: "",
+	}
 
-	if _, err := userClient.Register(context.Background(), &req); err != nil {
+	if _, err := userClient.ConfirmRegistration(context.Background(), &req); err != nil {
 		//	log.Fatal(err.Error())
-		log.Printf("receive have some error : %s \n", err.Error())
+		log.Fatal("receive have some error : %s \n", err.Error())
 	} else {
 		log.Printf("Register result no error  ")
 	}

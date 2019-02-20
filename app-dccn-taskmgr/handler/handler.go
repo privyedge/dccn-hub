@@ -32,24 +32,6 @@ func New(db db.DBService, deployTask micro.Publisher) *TaskMgrHandler {
 	}
 }
 
-func (p *TaskMgrHandler) TaskDetail(ctx context.Context, req *taskmgr.Request, rsp *taskmgr.TaskDetailResponse) error {
-	req.UserId =getUserID(ctx)
-	log.Println("Debug into TaskDetail")
-
-	if err := checkId(req.UserId, req.TaskId); err != nil {
-		log.Println(err.Error())
-		return err
-	}
-	task, err := p.checkOwner(req.UserId, req.TaskId)
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
-
-	rsp.Task = task
-
-	return nil
-}
 
 
 type Token struct {
@@ -59,7 +41,6 @@ type Token struct {
 }
 
 
-
 func getUserID(ctx context.Context) string{
 	meta, ok := metadata.FromContext(ctx)
 	// Note this is now uppercase (not entirely sure why this is...)
@@ -67,7 +48,6 @@ func getUserID(ctx context.Context) string{
 	if ok {
 		token = meta["token"]
 	}
-
 
 	parts := strings.Split(token, ".")
 
@@ -84,34 +64,26 @@ func getUserID(ctx context.Context) string{
 		panic(err)
 	}
 
-
 	return string(dat.Jti)
 }
 
 func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTaskRequest, rsp *taskmgr.CreateTaskResponse) error {
-	req.UserId =getUserID(ctx)
+	uid := getUserID(ctx)
 	log.Println("task manager service CreateTask")
-	if req.UserId == "" {
-		log.Println(ankr_default.ErrUserNotExist.Error())
-		return ankr_default.ErrUserNotExist
-	}
 
-	if req.Task.Replica < 0 || req.Task.Replica >= 100 {
+	if req.Task.Attributes.Replica < 0 || req.Task.Attributes.Replica >= 100 {
 		log.Println(ankr_default.ErrReplicaTooMany)
 		return ankr_default.ErrReplicaTooMany
 	}
 
 	log.Printf("CreateTask task %+v", req)
 
-	if req.Task.Replica == 0 {
-		req.Task.Replica = 1
+	if req.Task.Attributes.Replica == 0 {
+		req.Task.Attributes.Replica = 1
 	}
 
-
-
-
 	if req.Task.Type == common_proto.TaskType_CRONJOB { // check schudule filed
-		_ , err := cronexpr.Parse(req.Task.Schedule)
+		_ , err := cronexpr.Parse(req.Task.GetTypeCronJob().Schedule)
 		if err != nil {
 			log.Printf("check crobjob scheducle fomat error %s \n", err.Error())
 			return ankr_default.ErrCronJobScheduleFormat
@@ -119,18 +91,14 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 
 	}
 
-
-
-
-	req.Task.Status = 0
-	req.Task.UserId = req.UserId
+	req.Task.Status = common_proto.TaskStatus_STARTING
 	req.Task.Id = uuid.New().String()
 	rsp.TaskId = req.Task.Id
 
 
-	event := common_proto.Event{
-		EventType: common_proto.Operation_TASK_CREATE,
-		OpMessage: &common_proto.Event_Task{Task: req.Task},
+	event := common_proto.DCStream{
+		OpType: common_proto.DCOperation_TASK_CREATE,
+		OpPayload: &common_proto.DCStream_Task{Task: req.Task},
 	}
 
 
@@ -141,7 +109,7 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 		log.Println("task manager service send CreateTask MQ message to dc manager service (api)")
 	}
 
-	if err := p.db.Create(req.Task); err != nil {
+	if err := p.db.Create(req.Task, uid); err != nil {
 		log.Println(err.Error())
 		return err
 	}
@@ -150,31 +118,26 @@ func (p *TaskMgrHandler) CreateTask(ctx context.Context, req *taskmgr.CreateTask
 }
 
 // Must return nil for gRPC handler
-func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
-	req.UserId =getUserID(ctx)
+func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.TaskID, rsp *common_proto.Empty) error {
+	userId :=getUserID(ctx)
 	log.Println("Debug into CancelTask")
-	if err := checkId(req.UserId, req.TaskId); err != nil {
+	if err := checkId(userId, req.TaskId); err != nil {
 		log.Println(err.Error())
 		return err
 	}
-	task, err := p.checkOwner(req.UserId, req.TaskId)
+	task, err := p.checkOwner(userId, req.TaskId)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	// cancel will carry out anyway
-	//if task.Status != common_proto.TaskStatus_RUNNING &&
-	//	task.Status != common_proto.TaskStatus_STARTING &&
-	//	task.Status != common_proto.TaskStatus_UPDATING &&
-	//	task.Status != common_proto.TaskStatus_CANCELLED { // canceled can do many times by users
-	//	log.Println(ankr_default.ErrStatusNotSupportOperation)
-	//	return ankr_default.ErrStatusNotSupportOperation
-	//}
+	if task.Status == common_proto.TaskStatus_CANCELLED {
+		return ankr_default.ErrCanceledTwice
+	}
 
-	event := common_proto.Event{
-		EventType: common_proto.Operation_TASK_CANCEL,
-		OpMessage: &common_proto.Event_Task{Task: task},
+	event := common_proto.DCStream{
+		OpType: common_proto.DCOperation_TASK_CANCEL,
+		OpPayload: &common_proto.DCStream_Task{Task: task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
@@ -190,67 +153,100 @@ func (p *TaskMgrHandler) CancelTask(ctx context.Context, req *taskmgr.Request, r
 	return nil
 }
 
-func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.ID, rsp *taskmgr.TaskListResponse) error {
-	req.UserId =getUserID(ctx)
-	log.Println("task service into TaskList")
+func convertToTaskMessage(task db.TaskRecord) common_proto.Task {
+	message := common_proto.Task{}
+	message.Id = task.ID
+	message.Name = task.Name
+	message.Type = task.Type
+	message.Status = task.Status
+	message.Attributes = &common_proto.TaskAttributes{}
+	message.Attributes.Replica = task.Replica
+	message.Attributes.LastModifiedDate = task.Last_modified_date
+	message.Attributes.CreationDate = task.Creation_date
 
-	if req.UserId == "" {
-		log.Println(ankr_default.ErrUserNotExist)
-		return ankr_default.ErrUserNotExist
+
+	//deployMessage := common_proto.TaskTypeDeployment{Image : task.Image}
+	if task.Type == common_proto.TaskType_DEPLOYMENT {
+		t := common_proto.Task_TypeDeployment{TypeDeployment: &common_proto.TaskTypeDeployment{Image:task.Image}}
+		message.TypeData = &t
 	}
 
-	tasks, err := p.db.GetAll(req.UserId)
+	if task.Type == common_proto.TaskType_JOB {
+		t := common_proto.Task_TypeJob{TypeJob: &common_proto.TaskTypeJob{Image:task.Image}}
+		message.TypeData = &t
+	}
+
+	if task.Type == common_proto.TaskType_CRONJOB {
+		t := common_proto.Task_TypeCronJob{TypeCronJob: &common_proto.TaskTypeCronJob{Image:task.Image, Schedule: task.Schedule}}
+		message.TypeData = &t
+	}
+
+	return message
+
+}
+
+func (p *TaskMgrHandler) TaskList(ctx context.Context, req *taskmgr.TaskListRequest, rsp *taskmgr.TaskListResponse) error {
+	userId := getUserID(ctx)
+	log.Println("task service into TaskList")
+
+	tasks, err := p.db.GetAll(userId)
+	log.Printf(">>>>>>taskMessage  %+v \n", tasks)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	tasksWithoutHidden := [](*common_proto.Task){}
+	tasksWithoutHidden := make([]*common_proto.Task, 0)
 
-	for i := 0; i < len(*tasks); i++ {
-		if (*tasks)[i].Hidden != true {
-			tasksWithoutHidden = append(tasksWithoutHidden, (*tasks)[i])
+	for i := 0; i < len(tasks); i++ {
+		if tasks[i].Hidden != true {
+			taskMessage := convertToTaskMessage(tasks[i])
+			log.Printf("taskMessage  %+v \n", taskMessage)
+			tasksWithoutHidden = append(tasksWithoutHidden, &taskMessage)
 		}
 	}
 
-	rsp.Tasks = append(rsp.Tasks, tasksWithoutHidden...)
+	rsp.Tasks = tasksWithoutHidden
 
 	return nil
 }
 
-func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest, rsp *common_proto.Error) error {
-	req.UserId =getUserID(ctx)
+func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest, rsp *common_proto.Empty) error {
+	userId := getUserID(ctx)
 
-	if err := checkId(req.UserId, req.Task.Id); err != nil {
+	if err := checkId(userId, req.Task.Id); err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
 
-	task, err := p.checkOwner(req.UserId, req.Task.Id)
+	task, err := p.checkOwner(userId, req.Task.Id)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	if req.Task.Replica == 0 {
-		req.Task.Replica = task.Replica
+
+	req.Task.Name = strings.ToLower(req.Task.Name)
+
+	if req.Task.Attributes.Replica == 0 {
+		req.Task.Attributes.Replica = task.Attributes.Replica
 	}
 
-	if req.Task.Replica < 0 || req.Task.Replica >= 100 {
+	if req.Task.Attributes.Replica < 0 || req.Task.Attributes.Replica >= 100 {
 		log.Println(ankr_default.ErrReplicaTooMany.Error())
 		return ankr_default.ErrReplicaTooMany
 	}
 
 	if task.Status == common_proto.TaskStatus_CANCELLED ||
 		task.Status == common_proto.TaskStatus_DONE {
-		log.Println(ankr_default.ErrStatusNotSupportOperation.Error())
-		return ankr_default.ErrStatusNotSupportOperation
+		log.Println(ankr_default.ErrTaskStatusCanNotUpdate.Error())
+		return ankr_default.ErrTaskStatusCanNotUpdate
 	}
 
-	event := common_proto.Event{
-		EventType: common_proto.Operation_TASK_UPDATE,
-		OpMessage: &common_proto.Event_Task{Task: task},
+	event := common_proto.DCStream{
+		OpType: common_proto.DCOperation_TASK_UPDATE,
+		OpPayload: &common_proto.DCStream_Task{Task: task},
 	}
 
 	if err := p.deployTask.Publish(context.Background(), &event); err != nil {
@@ -266,8 +262,13 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 	return nil
 }
 
-func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.Request, rsp *common_proto.Error) error {
+func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.TaskID, rsp *common_proto.Empty) error {
 	error := p.CancelTask(ctx, req, rsp)
+
+	if error == ankr_default.ErrCanceledTwice {
+		return ankr_default.ErrPurgedTwice
+	}
+
 	if error == nil {
 		log.Printf(" PurgeTask  %s \n", req.TaskId)
 		p.db.Update(req.TaskId, bson.M{"$set": bson.M{"hidden": true}})
@@ -282,12 +283,15 @@ func (p *TaskMgrHandler) checkOwner(userId, taskId string) (*common_proto.Task, 
 		return nil, err
 	}
 
-	log.Printf("taskid : %s user id -%s-   user_token_id -%s-  ", taskId, task.UserId, userId)
+	log.Printf("taskid : %s user id -%s-   user_token_id -%s-  ", taskId, task.Userid, userId)
 
-	if task.UserId != userId {
+	if task.Userid != userId {
 		return nil, ankr_default.ErrUserNotOwn
 	}
-	return task, nil
+
+	taskMessage := convertToTaskMessage(task)
+
+	return &taskMessage, nil
 }
 
 func checkId(userId, taskId string) error {

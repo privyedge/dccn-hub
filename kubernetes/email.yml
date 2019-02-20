@@ -15,13 +15,15 @@ spec:
         containers:
         - name: app-dccn-email
           image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/dccn-hub-email:feat
-#          imagePullPolicy: Always
-#          不要拉取镜像,Always为默认值
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           command: [ "/email" ]
           env:
           - name: MICRO_REGISTER_INTERVAL
             value: "20"
+          - name: MICRO_BROKER
+            value: rabbitmq
+          - name: MICRO_BROKER_ADDRESS
+            value: amqp://guest:guest@broker:5672
           - name: MICRO_REGISTRY
             value: consul
           - name: MICRO_REGISTRY_ADDRESS

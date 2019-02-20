@@ -15,7 +15,14 @@ import (
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
+// Init starts handler to listen.
+func Init() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+}
+
 func main() {
+	Init()
+
 	// New Service
 	service := grpc.NewService(
 		micro.Name(ankr_default.EmailRegistryServerName),
@@ -25,14 +32,17 @@ func main() {
 	service.Init()
 
 	// Register Handler
-	if err := mail.RegisterMailHandler(service.Server(), new(handler.Mail)); err != nil {
+	if err := mail.RegisterMailHandler(service.Server(), new(handler.MailHandler)); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Register Function as TaskStatusFeedback
 	opt := service.Server().Options()
-	opt.Broker.Connect()
-	if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), subscriber.Handler); err != nil {
+	if err := opt.Broker.Connect(); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	if err := micro.RegisterSubscriber(ankr_default.MQMail, service.Server(), new(subscriber.Subscriber)); err != nil {
 		log.Fatal(err.Error())
 	}
 

@@ -21,18 +21,23 @@ func New(c *handler.DataCenterStreamCaches) *Subscriber {
 // UpdateTaskByFeedback receives task result from data center, returns to v1
 // UpdateTaskStatusByFeedback updates database status by performing feedback from the data center of the task.
 // sets executor's id, updates task status.
-func (p *Subscriber) HandlerDeployEventFromTaskMgr(ctx context.Context, event *common_proto.Event) error {
+func (p *Subscriber) HandlerDeploymentRequestFromTaskMgr(ctx context.Context, req *common_proto.DCStream) error {
 
-	task := event.GetTask()
+	task := req.GetTask()
 	log.Printf("dc manager service(hub) HandlerDeployEvnetFromTaskMgr: Receive New Event: %+v", *task)
-	switch event.EventType {
-	case common_proto.Operation_TASK_CREATE, common_proto.Operation_TASK_CANCEL, common_proto.Operation_TASK_UPDATE:
-		stream, err := p.cache.One(task.DataCenter)
+	switch req.OpType {
+	case common_proto.DCOperation_TASK_CREATE,
+		common_proto.DCOperation_TASK_CANCEL,
+		common_proto.DCOperation_TASK_UPDATE:
+		stream, err := p.cache.One(task.DataCenterName)
 		if err != nil {
 			log.Println(err.Error())
 			return err
 		}
-		if err := stream.Send(event); err != nil {
+		resp := &common_proto.DCStream{
+			OpType:    req.OpType,
+			OpPayload: &common_proto.DCStream_Task{Task: task}}
+		if err := stream.Send(resp); err != nil {
 			log.Println(err.Error())
 			return err
 		}
@@ -40,7 +45,7 @@ func (p *Subscriber) HandlerDeployEventFromTaskMgr(ctx context.Context, event *c
 		log.Println(ankr_default.ErrUnknown.Error())
 		return ankr_default.ErrUnknown
 	}
- log.Printf("send message to DataCenter  %+v", *task)
+	log.Printf("send message to DataCenter  %+v", *task)
 
 	return nil
 }

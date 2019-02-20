@@ -2,17 +2,16 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
-	"os"
+
+	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	"github.com/micro/go-micro/metadata"
 
 	grpc "github.com/micro/go-grpc"
 	micro "github.com/micro/go-micro"
-	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
@@ -34,7 +33,7 @@ var (
 	conf       config.Config
 	db         dbservice.DBService
 	err        error
-	authList   map[string]struct{}
+	noAuthList map[string]struct{}
 	userClient *apihandler.ApiUser
 	taskClient *apihandler.ApiTask
 )
@@ -59,13 +58,15 @@ func Init() {
 	}
 	log.Printf("Load config %+v\n", conf)
 
-	authList = map[string]struct{}{
-		"TaskMgr.CreateTask": struct{}{},
-		"TaskMgr.TaskList":   struct{}{},
-		"TaskMgr.CancelTask": struct{}{},
-		"TaskMgr.PurgeTask":  struct{}{},
-		"TaskMgr.TaskDetail": struct{}{},
-		"TaskMgr.UpdateTask": struct{}{},
+	// TODO: define scope accord OAuth2.0
+	noAuthList = map[string]struct{}{
+		"UserMgr.Register":            struct{}{},
+		"UserMgr.ConfirmRegistration": struct{}{},
+		"UserMgr.ForgotPassword":      struct{}{},
+		"UserMgr.ConfirmPassword":     struct{}{},
+		"UserMgr.Login":               struct{}{},
+		"UserMgr.RefreshSession":      struct{}{},
+		"DCStreamer.ServerStream":     struct{}{},
 	}
 }
 
@@ -79,21 +80,24 @@ func startHandler() {
 	srv.Init()
 
 	// Register User Handler
+	log.Println("Registering User Handler")
 	userClient = apihandler.NewApiUser(srv.Client())
 	if err := usermgr.RegisterUserMgrHandler(srv.Server(), userClient); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Register Task Handler
+	log.Println("Registering Task Handler")
 	taskClient = apihandler.NewApiTask(srv.Client())
 	if err := taskmgr.RegisterTaskMgrHandler(srv.Server(), taskClient); err != nil {
 		log.Fatal(err.Error())
 	}
 
-	       // Register Task Handler
+	// Register Task Handler
+	log.Println("Registering DC Handler")
 	dcClient := handler.NewAPIHandler(db)
 	if err := dcmgr.RegisterDCAPIHandler(srv.Server(), dcClient); err != nil {
-	    log.Fatal(err.Error())
+		log.Fatal(err.Error())
 	}
 	// Dc Manager register handler
 	// New Publisher to deploy new task action.
@@ -127,44 +131,35 @@ func startHandler() {
 }
 
 func needAuth(method string) bool {
-	_, ok := authList[method]
-	return ok
+	_, ok := noAuthList[method]
+	return !ok
 }
 
 func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, resp interface{}) error {
-		meta, ok := metadata.FromContext(ctx)
-		// Note this is now uppercase (not entirely sure why this is...)
-		var token string
-		if ok {
-			token = meta["token"]
-		}
-
-		if os.Getenv("DISABLE_AUTH") == "true" || !needAuth(req.Method()) {
-			if ok && token != "" {
-				if err := userClient.RefreshToken(ctx, &usermgr.Token{Token: token}, &common_proto.Error{}); err != nil {
-					log.Println(err.Error())
-					return err
-				}
+		log.Printf("path %s\n", req.Method())
+		if needAuth(req.Method()) {
+			log.Println("Authenticating need check ")
+			meta, ok := metadata.FromContext(ctx)
+			// Note this is now uppercase (not entirely sure why this is...)
+			var access_token string
+			if ok {
+				access_token = meta["token"]
 			}
-			return fn(ctx, req, resp)
-		}
 
-		if !ok {
-			log.Println("no auth meta-data found in request")
-			return errors.New("no auth meta-data found in request")
-		}
+			log.Printf("find token %s \n", access_token)
+			//Auth here
+			//Really shouldn't be using a global here, find a better way
+			//of doing this, since you can't pass it into a wrapper.
+			userMgrService := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
+			if _, err := userMgrService.VerifyAccessToken(ctx, &common_proto.Empty{}); err != nil {
+				log.Println(err.Error())
+				return err
+			}
 
-		log.Println("Authenticating with token: ", token)
-		// Auth here
-		// Really shouldn't be using a global here, find a better way
-		// of doing this, since you can't pass it into a wrapper.
-		userMgrService := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
-		if _, err := userMgrService.VerifyAndRefreshToken(context.Background(), &usermgr.Token{Token: token}); err != nil {
-			log.Println(err.Error())
-			return err
 		}
 
 		return fn(ctx, req, resp)
 	}
+
 }

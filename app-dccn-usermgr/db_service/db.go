@@ -1,8 +1,11 @@
 package dbservice
 
 import (
+	"time"
+
 	dbcommon "github.com/Ankr-network/dccn-common/db"
 	pb "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -10,12 +13,16 @@ import (
 
 // mysql or mongodb. who is better.
 type DBService interface {
-	// Get get a user item by go_micro_srv_user mgr's email
-	Get(email string) (*pb.User, error)
+	// Get gets a user item by user id
+	GetUser(id string) (*UserRecord, error)
+	// Get get a user item by user email, email unique
+	GetUserByEmail(email string) (*UserRecord, error)
 	// Create Creates a new user item if not exits
-	Create(user *pb.User) error
-	// Update updates dc item
-	Update(user *pb.User) error
+	CreateUser(user *pb.User, hashedPassword string) error
+	// Update updates dc item by id
+	UpdateUser(id string, fields []*usermgr.UserAttribute) error
+	// UpdateByEmail updates dc item by email
+	UpdateUserByEmail(email string, fields []*usermgr.UserAttribute) error
 	// Close closes db connection
 	Close()
 	// dropCollection for testing usage
@@ -47,29 +54,67 @@ func (p *DB) collection(session *mgo.Session) *mgo.Collection {
 	return session.DB(p.dbName).C(p.collectionName)
 }
 
-// Get gets user item by email.
-func (p *DB) Get(email string) (*pb.User, error) {
-	session := p.session.Clone()
+// CreateUser creates a new user item if it not exists
+// TODO: batch operations through bulk
+func (p *DB) CreateUser(user *pb.User, hashedPassword string) error {
+	session := p.session.Copy()
 	defer session.Close()
 
-	var user pb.User
+	err := p.collection(session).Insert(&UserRecord{
+		ID:               user.Id,
+		Email:            user.Email,
+		Name:             user.Attributes.Name,
+		HashedPassword:   hashedPassword,
+		LastModifiedDate: uint64(time.Now().Unix()),
+		CreationDate:     uint64(time.Now().Unix()),
+	})
+	return err
+}
+
+// Get gets user item by email.
+func (p *DB) GetUser(id string) (*UserRecord, error) {
+	session := p.session.Copy()
+	defer session.Close()
+
+	var user UserRecord
+	err := p.collection(session).Find(bson.M{"id": id}).One(&user)
+	return &user, err
+}
+
+// GetUserByEmail gets user item by email.
+func (p *DB) GetUserByEmail(email string) (*UserRecord, error) {
+	session := p.session.Copy()
+	defer session.Close()
+
+	var user UserRecord
 	err := p.collection(session).Find(bson.M{"email": email}).One(&user)
 	return &user, err
 }
 
-// Create creates a new user item if it not exists
-// TODO: batch operations through bulk
-func (p *DB) Create(user *pb.User) error {
-	session := p.session.Clone()
+// UpdateUser updates user item.
+func (p *DB) UpdateUser(id string, fields []*usermgr.UserAttribute) error {
+	session := p.session.Copy()
 	defer session.Close()
-	return p.collection(session).Insert(user)
+
+	update, err := getUpdate(fields)
+	if err != nil {
+		return err
+	}
+
+	return p.collection(session).Update(bson.M{"id": id}, update)
 }
 
-// Update updates user item.
-func (p *DB) Update(user *pb.User) error {
-	session := p.session.Clone()
+// UpdateUserByEmail updates user item.
+// UpdateUserByEmail updates user item.
+func (p *DB) UpdateUserByEmail(email string, fields []*usermgr.UserAttribute) error {
+	session := p.session.Copy()
 	defer session.Close()
-	return p.collection(session).Update(bson.M{"email": user.Email}, user)
+
+	update, err := getUpdate(fields)
+	if err != nil {
+		return err
+	}
+	return p.collection(session).Update(bson.M{"email": email}, update)
 }
 
 // Close closes the db connection.

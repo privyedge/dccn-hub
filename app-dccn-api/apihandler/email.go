@@ -17,14 +17,12 @@ type ApiEmail struct {
 	api mail.MailService
 }
 
-func (p *ApiEmail) Send(ctx context.Context, req *common_proto.MailEvent, rsp *common_proto.Error) error {
+func (p *ApiEmail) Send(ctx context.Context, req *mail.MailEvent, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into Send")
-	if out, err := p.api.Send(ctx, req); err != nil {
+	if _, err := p.api.Send(ctx, req); err != nil {
 		log.Println(err.Error())
 		return err
-	} else {
-		*rsp = *out
 	}
 	return nil
 }

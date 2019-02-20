@@ -2,13 +2,12 @@ package handler
 
 import (
 	"context"
+	"github.com/Ankr-network/dccn-common/protos/common"
 	"log"
-
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 )
 
-func (p *DcMgrHandler) updateTask(event *common_proto.Event) error {
+func (p *DcMgrHandler) updateTask(stream *common_proto.DCStream) error {
 
-	log.Printf("into updateTask from datacenter msg  : %v ", event)
-	return p.taskFeedback.Publish(context.TODO(), event)
+	log.Printf("into updateTask from datacenter msg  : %v ", stream)
+	return p.taskFeedback.Publish(context.TODO(), stream)
 }

@@ -13,12 +13,12 @@ import (
 	//	"google.golang.org/grpc/metadata"
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
+
 	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
 
-// var addr = "localhost:50051"
-
+//var addr = "localhost:50051"
 var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
@@ -34,14 +34,16 @@ func main() {
 		}
 	}(conn)
 
+	//	taskClient := taskmgr.NewTaskMgrClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
+
 
 	req := usermgr.RegisterRequest{}
 	req.User = &usermgr.User{}
-	req.User.Email = "12331@mailinator.com"
+	req.User.Email = `12112@Gmail.com`
 	req.User.Attributes = &usermgr.UserAttributes{}
-	req.User.Attributes.Name = "ankrtest2"
-	req.Password = "11111122211"
+	req.User.Attributes.Name = "ankrtest"
+	req.Password = "11111111"
 
 	if _, err := userClient.Register(context.Background(), &req); err != nil {
 		//	log.Fatal(err.Error())

@@ -37,6 +37,7 @@ devtools:
 
 define MICRO_ENV
 	MICRO_REGISTRY=consul \
+	MICRO_BROKER=rabbitmq \
 	MICRO_SERVER_VERSION="v1.0" \
 	MICRO_REGISTER_INTERVAL=15
 endef
