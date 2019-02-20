@@ -1,8 +1,9 @@
 package dbservice
 
 import (
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	"gopkg.in/mgo.v2/bson"
+
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
@@ -37,14 +38,8 @@ func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
 	for _, attr := range fields {
 		switch attr.Key {
 		case "Email":
-			if !user_util.MatchPattern(user_util.OpEmailMatch, attr.GetStringValue()) {
-				return nil, ankr_default.ErrEmailFormat
-			}
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "HashedPassword":
-			if !user_util.MatchPattern(user_util.OpPasswordMatch, attr.GetStringValue()) {
-				return nil, ankr_default.ErrPasswordFormat
-			}
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Name":
 			if !user_util.MatchPattern(user_util.OpUserNameMatch, attr.GetStringValue()) {

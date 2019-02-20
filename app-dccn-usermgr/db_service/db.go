@@ -114,7 +114,6 @@ func (p *DB) UpdateUserByEmail(email string, fields []*usermgr.UserAttribute) er
 	if err != nil {
 		return err
 	}
-
 	return p.collection(session).Update(bson.M{"email": email}, update)
 }
 

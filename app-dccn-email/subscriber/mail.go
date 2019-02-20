@@ -3,9 +3,8 @@ package subscriber
 import (
 	"bytes"
 	"fmt"
-	template "html/template"
+	"html/template"
 	"log"
-	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
+	email_templates "github.com/Ankr-network/dccn-hub/app-dccn-email/templates"
 )
 
 const (
@@ -41,16 +41,8 @@ func (p *Sender) textBody() string {
 	return "Welcome"
 }
 
-var emailTemplates = make(map[string]*template.Template)
-
-func getTemplate(name string) *template.Template {
-	if val, ok := emailTemplates[name]; ok {
-		return val
-	}
-	p, _ := filepath.Abs("templates/" + name)
-	t := template.Must(template.ParseFiles(p))
-	emailTemplates[name] = t
-	return t
+var emailTemplates = map[string]*template.Template{
+	"registeration": template.Must(template.New("registration").Parse(email_templates.RegistrationTemplate)),
 }
 
 func (p *Sender) htmlBody() string {
@@ -59,7 +51,7 @@ func (p *Sender) htmlBody() string {
 	var html string
 	switch p.Type {
 	case mail.EmailType_CONFIRM_REGISTRATION:
-		t := getTemplate("registeration.html")
+		t := emailTemplates["registeration"]
 		data := struct {
 			Code string
 			ID   string
