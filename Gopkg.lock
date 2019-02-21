@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:858a9023eb40ce632881c759f2c08f9f56ada34f746649a140062fa833c56758"
+  digest = "1:763ae2e31239d76c8f51517175e0751db4e2151865f84deb27f98604c92f4bea"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -19,7 +19,7 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "db71ec855cc7229fa526c5f228be3c3b33c0aade"
+  revision = "9e18aac090051542b5df84624e125c21d7653726"
 
 [[projects]]
   branch = "master"
@@ -30,7 +30,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:9bdf889efb9a80d51e864c1cb78cdb6ff888394a511579320563145ab862ed35"
+  digest = "1:3ab1f965d4def5e14a0942dd961965d103795efe25b601ee529942fe0da0940c"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -65,8 +65,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "de216d45a3df361a2f571b8eb88db86f2b50d82f"
-  version = "v1.17.1"
+  revision = "416a7057457ed9af569ea3682f7319ec3466044d"
+  version = "v1.17.3"
 
 [[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
@@ -463,7 +463,7 @@
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "90b0e4468f9980bf79a2290394adaf7f045c5d24"
+  revision = "b4e8571b14e03cc164df06f72b640ebce3899579"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"

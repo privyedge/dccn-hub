@@ -91,8 +91,8 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	log.Println("Debug Register")
 	// verify email and password
-	if !user_util.MatchPattern(user_util.OpUserNameMatch, user.Attributes.Name) || !user_util.MatchPattern(user_util.OpPasswordMatch, req.Password) || !user_util.MatchPattern(user_util.OpEmailMatch, user.Email) {
-		err := errors.New("name or email or password invalid")
+	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.Password) || !user_util.MatchPattern(user_util.OpEmailMatch, user.Email) {
+		err := errors.New("email or password invalid")
 		log.Println(err.Error())
 		return err
 	}
