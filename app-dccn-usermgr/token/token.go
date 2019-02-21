@@ -42,9 +42,11 @@ func New() *Token {
 // New returns JWT string.
 func (p *Token) NewToken(uid string, is_refrsh_token bool) (int64, string, error) {
 	var expireTime int64
-	expireTime = time.Now().Add(time.Minute * time.Duration(p.RefreshTokenValidTime)).Unix()
+
 	if is_refrsh_token {
-		expireTime = time.Now().Unix() + 86400
+		expireTime = time.Now().Add(time.Second * time.Duration(p.RefreshTokenValidTime)).Unix()
+	}else{
+		expireTime = time.Now().Add(time.Second * time.Duration(p.AccessTokenValidTime)).Unix()
 	}
 
 	// Create the Claims
