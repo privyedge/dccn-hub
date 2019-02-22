@@ -2,9 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"log"
 	"strings"
 	"time"
@@ -16,13 +13,13 @@ import (
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-	ankr_util "github.com/Ankr-network/dccn-common/util"
+	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
+
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
 	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/token"
-	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
 )
 
 type UserHandler struct {
@@ -41,68 +38,25 @@ func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micr
 	}
 }
 
-func getIdFromToken(refreshToken string) (string, error) {
-	parts := strings.Split(refreshToken, ".")
-	if len(parts) != 3 {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	decoded, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	var dat ankr_util.Token
-
-	if err := json.Unmarshal(decoded, &dat); err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	return string(dat.Jti), nil
-}
-
-func VerifyAccessToken(refreshToken string) (string, error) {
-	parts := strings.Split(refreshToken, ".")
-
-	decoded, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	var dat ankr_util.Token
-
-	if err := json.Unmarshal(decoded, &dat); err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	now := time.Now().Unix()
-
-	if now > int64(dat.Exp) {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	return string(dat.Jti), nil
-}
-
 func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug Register")
 	user := req.User
 
-	log.Println("Debug Register")
 	// verify email and password
-	if !user_util.MatchPattern(user_util.OpUserNameMatch, user.Attributes.Name) || !user_util.MatchPattern(user_util.OpPasswordMatch, req.Password) || !user_util.MatchPattern(user_util.OpEmailMatch, user.Email) {
-		err := errors.New("name or email or password invalid")
+	if err := user_util.CheckRegister(user.Attributes.Name, user.Email, req.Password); err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
+	// we store the hashed password
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(ankr_default.ErrHashPassword)
 		return ankr_default.ErrHashPassword
 	}
 
+	// check if email exists already
 	_, dbErr := p.db.GetUserByEmail(strings.ToLower(user.Email))
 	if dbErr == nil {
 		log.Println(ankr_default.ErrEmailExit)
@@ -156,7 +110,7 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 
 	log.Println("Debug into ConfirmRegistration")
 
-	if !user_util.MatchPattern(user_util.OpEmailMatch, req.Email) {
+	if err := user_util.CheckEmail(req.Email); err != nil {
 		log.Println(ankr_default.ErrEmailFormat)
 		return ankr_default.ErrEmailFormat
 	}
@@ -186,8 +140,10 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 
 func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
 
+	req.Email = strings.ToLower(req.Email)
 	log.Println("Debug Login")
-	user, err := p.db.GetUserByEmail(strings.ToLower(req.Email))
+
+	user, err := p.db.GetUserByEmail(req.Email)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -196,18 +152,15 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	// Compares our given password against the hashed password
 	// stored in the database
 	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password)); err != nil {
-		err = ankr_default.ErrPasswordError
-		log.Println(err.Error())
+		log.Println(ankr_default.ErrPasswordError.Error())
 		return ankr_default.ErrPasswordError
 	}
 
-	log.Printf("user userToken %+v", user.Token)
+	expired, userToken, err := p.token.NewToken(user.ID, false)
 
-	expired, userToken, err2 := p.token.NewToken(user.ID, false)
-
-	if err2 != nil {
-		log.Println(err2.Error())
-		return err2
+	if err != nil {
+		log.Println(err.Error())
+		return err
 	}
 
 	rsp.AuthenticationResult = &usermgr.AuthenticationResult{}
@@ -242,7 +195,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 
 func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out *common_proto.Empty) error {
 
-	uid, err := getIdFromToken(req.RefreshToken)
+	uid, err := user_util.GetIdFromToken(req.RefreshToken)
 	if err != nil {
 		return err
 	}
@@ -265,7 +218,7 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 }
 
 func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshToken, rsp *usermgr.AuthenticationResult) error {
-	uid, err := getIdFromToken(req.RefreshToken)
+	uid, err := user_util.GetIdFromToken(req.RefreshToken)
 	if err != nil {
 		return err
 	}
@@ -317,7 +270,7 @@ func (p *UserHandler) VerifyAccessToken(ctx context.Context, req *common_proto.E
 	if len(accessToken) == 0 {
 		return ankr_default.ErrTokenParseFailed
 	}
-	_, err := VerifyAccessToken(accessToken)
+	_, err := user_util.VerifyAccessToken(accessToken)
 
 	if err != nil {
 		return err
@@ -365,7 +318,7 @@ func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPas
 func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Empty) error {
 	log.Println("Debug ConfirmPassword")
 
-	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.NewPassword) {
+	if err := user_util.CheckPassword(req.NewPassword); err != nil {
 		log.Println(ankr_default.ErrPasswordFormat.Error())
 		return ankr_default.ErrPasswordFormat
 	}
@@ -378,7 +331,7 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 	}
 
 	// check email auth
-	email, err := getIdFromToken(req.ConfirmationCode)
+	email, err := user_util.GetIdFromToken(req.ConfirmationCode)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -426,10 +379,10 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 }
 
 func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePasswordRequest, rsp *common_proto.Empty) error {
-	uid := ankr_util.GetUserID(ctx)
+	uid := user_util.GetUserID(ctx)
 	log.Println("Debug ChangePassword")
 
-	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.NewPassword) {
+	if err := user_util.CheckPassword(req.NewPassword); err != nil {
 		log.Println(ankr_default.ErrPasswordFormat.Error())
 		return ankr_default.ErrPasswordError
 	}
@@ -458,7 +411,7 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 }
 
 func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsp *usermgr.User) error {
-	uid := ankr_util.GetUserID(ctx)
+	uid := user_util.GetUserID(ctx)
 	log.Println("Debug UpdateAttributes")
 
 	if err := p.db.UpdateUser(uid, req.UserAttributes); err != nil {
@@ -487,10 +440,11 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 
 func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailRequest, rsp *common_proto.Empty) error {
 
-	uid := ankr_util.GetUserID(ctx)
+	uid := user_util.GetUserID(ctx)
+	req.NewEmail = strings.ToLower(req.NewEmail)
 	log.Println("Debug ChangeEmail")
 
-	if !user_util.MatchPattern(user_util.OpEmailMatch, req.NewEmail) {
+	if err := user_util.CheckEmail(req.NewEmail); err != nil {
 		log.Println(ankr_default.ErrEmailFormat)
 		return ankr_default.ErrEmailFormat
 	}
@@ -498,7 +452,7 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 	if userRecord, err := p.db.GetUser(uid); err != nil {
 		log.Println(err.Error())
 		return err
-	} else if userRecord.Email == strings.ToLower(req.NewEmail) {
+	} else if userRecord.Email == req.NewEmail {
 		log.Println(ankr_default.ErrEmailSame)
 		return ankr_default.ErrEmailSame
 	}
@@ -513,7 +467,7 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 		&mail.MailEvent{
 			Type: mail.EmailType_CONFIRM_EMAIL,
 			From: ankr_default.NoReplyEmailAddress,
-			To:   []string{strings.ToLower(req.NewEmail)},
+			To:   []string{req.NewEmail},
 			OpMail: &mail.MailEvent_ChangeEmail{
 				ChangeEmail: &mail.ChangeEmail{
 					UserId:   uid,
@@ -531,7 +485,7 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 
 func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmailRequest, rsp *common_proto.Empty) error {
 
-	uid := ankr_util.GetUserID(ctx)
+	uid := user_util.GetUserID(ctx)
 	log.Println("Debug ChangeEmail")
 
 	if _, err := p.token.Verify(req.ConfirmationCode); err != nil {
@@ -546,7 +500,7 @@ func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmai
 		},
 	}
 
-	tokenUid, err := getIdFromToken(req.ConfirmationCode)
+	tokenUid, err := user_util.GetIdFromToken(req.ConfirmationCode)
 	if err != nil {
 		log.Println(err.Error())
 		return err

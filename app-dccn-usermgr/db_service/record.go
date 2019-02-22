@@ -42,7 +42,7 @@ func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
 		case "HashedPassword":
 			update[feileds[attr.Key]] = attr.GetStringValue()
 		case "Name":
-			if !user_util.MatchPattern(user_util.OpUserNameMatch, attr.GetStringValue()) {
+			if err := user_util.CheckName(attr.GetStringValue()); err != nil {
 				return nil, ankr_default.ErrUserNameFormat
 			}
 			update[feileds[attr.Key]] = attr.GetStringValue()
