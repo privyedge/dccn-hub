@@ -142,15 +142,12 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			log.Println("Authenticating need check ")
 			meta, ok := metadata.FromContext(ctx)
 			// Note this is now uppercase (not entirely sure why this is...)
-			var access_token string
+			var accessToken string
 			if ok {
-				access_token = meta["token"]
+				accessToken = meta["token"]
 			}
 
-			log.Printf("find token %s \n", access_token)
-			//Auth here
-			//Really shouldn't be using a global here, find a better way
-			//of doing this, since you can't pass it into a wrapper.
+			log.Printf("find token %s \n", accessToken)
 			userMgrService := usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, srv.Client())
 			if _, err := userMgrService.VerifyAccessToken(ctx, &common_proto.Empty{}); err != nil {
 				log.Println(err.Error())

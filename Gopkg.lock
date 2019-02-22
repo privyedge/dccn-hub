@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "feature/SWDEV-155-optimize-rules-on-user"
-  digest = "1:1e7fd9ca25ae5b5cbe87e1a677513e0da0b1346a8d92d95ab2f95a89da90b08b"
+  digest = "1:b8bbae20d9f43712a00f0fa61183f9bec72f572e263af2bfcf136271cb8b2510"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -16,10 +16,9 @@
     "protos/taskmgr/v1/micro",
     "protos/usermgr/v1/grpc",
     "protos/usermgr/v1/micro",
-    "util",
   ]
   pruneopts = "UT"
-  revision = "fb4ac11c296cec0397ad62d1fad6529a6af26e8c"
+  revision = "2237bab35f1aa6cd578ab483d9534ace41c2d21a"
 
 [[projects]]
   branch = "master"
@@ -459,11 +458,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:75e12c5cb2efb2da5d7f7054e973f09bd3e28c7da6b76dd7412b8f0151b23605"
+  digest = "1:7a8067e267a25694dd7bdde6e5016053a3f61bb7141448bf8e0025a84eb7d11c"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "ec7b60b042fd2c54ad5ceaac0c891bd88843f4a2"
+  revision = "a9d3bda3a223baa6bba6ef412cb273f0fd163c05"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -564,7 +563,6 @@
     "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc",
     "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro",
-    "github.com/Ankr-network/dccn-common/util",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/awserr",
     "github.com/aws/aws-sdk-go/aws/session",
