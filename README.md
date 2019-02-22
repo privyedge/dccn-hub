@@ -35,7 +35,3 @@
     $docker-compose stop taskmgr-client
     $docker-compose rm taskmgr-client
 
-
-#TODO
-
-    Optimize circleci config with Makefile
