@@ -4,15 +4,21 @@ import (
 	"context"
 	"log"
 
-	"github.com/micro/go-micro/client"
-
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"github.com/micro/go-micro/client"
 )
 
 type ApiUser struct {
 	api usermgr.UserMgrService
+}
+
+func NewApiUser(c client.Client) *ApiUser {
+	return &ApiUser{
+		api: usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, c),
+	}
+
 }
 
 func (p *ApiUser) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
@@ -144,9 +150,15 @@ func (p *ApiUser) VerifyAccessToken(ctx context.Context, req *common_proto.Empty
 
 }
 
-func NewApiUser(c client.Client) *ApiUser {
-	return &ApiUser{
-		api: usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, c),
+func (p *ApiUser) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmailRequest, rsp *common_proto.Empty) error {
+
+	log.Println("Debug into ConfirmEmail")
+	if out, err := p.api.ConfirmEmail(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	} else {
+		*rsp = *out
 	}
 
+	return nil
 }

@@ -389,6 +389,15 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 		return ankr_default.ErrAuthNotAllowed
 	}
 
+	// new password should not same as before
+	if record, err := p.db.GetUserByEmail(strings.ToLower(email)); err != nil {
+		log.Println(err.Error())
+		return err
+	} else if err := bcrypt.CompareHashAndPassword([]byte(record.HashedPassword), []byte(req.NewPassword)); err == nil {
+		log.Println(ankr_default.ErrPasswordSame)
+		return ankr_default.ErrPasswordSame
+	}
+
 	// hash password
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -457,22 +466,27 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 		return err
 	}
 
-	if userRecord, err := p.db.GetUser(uid); err != nil {
-		rsp.Id = userRecord.ID
-		rsp.Email = userRecord.Email
-		rsp.Attributes = &usermgr.UserAttributes{
-			Name:             userRecord.Name,
-			CreationDate:     userRecord.CreationDate,
-			LastModifiedDate: userRecord.LastModifiedDate,
-			PubKey:           userRecord.PubKey,
-		}
-		rsp.Status = userRecord.Status
+	userRecord, err := p.db.GetUser(uid)
+	if err != nil {
+		log.Println(err.Error())
+		return err
 	}
+
+	rsp.Id = userRecord.ID
+	rsp.Email = userRecord.Email
+	rsp.Attributes = &usermgr.UserAttributes{
+		Name:             userRecord.Name,
+		CreationDate:     userRecord.CreationDate,
+		LastModifiedDate: userRecord.LastModifiedDate,
+		PubKey:           userRecord.PubKey,
+	}
+	rsp.Status = userRecord.Status
 
 	return nil
 }
 
 func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailRequest, rsp *common_proto.Empty) error {
+
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangeEmail")
 
@@ -481,11 +495,66 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 		return ankr_default.ErrEmailFormat
 	}
 
+	if userRecord, err := p.db.GetUser(uid); err != nil {
+		log.Println(err.Error())
+		return err
+	} else if userRecord.Email == strings.ToLower(req.NewEmail) {
+		log.Println(ankr_default.ErrEmailSame)
+		return ankr_default.ErrEmailSame
+	}
+
+	_, changeEmailCode, err := p.token.NewToken(uid, false)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if err := p.pubEmail.Publish(context.TODO(),
+		&mail.MailEvent{
+			Type: mail.EmailType_CONFIRM_EMAIL,
+			From: ankr_default.NoReplyEmailAddress,
+			To:   []string{strings.ToLower(req.NewEmail)},
+			OpMail: &mail.MailEvent_ChangeEmail{
+				ChangeEmail: &mail.ChangeEmail{
+					UserId:   uid,
+					NewEmail: req.NewEmail,
+					Code:     changeEmailCode,
+				},
+			},
+		}); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmailRequest, rsp *common_proto.Empty) error {
+
+	uid := ankr_util.GetUserID(ctx)
+	log.Println("Debug ChangeEmail")
+
+	if _, err := p.token.Verify(req.ConfirmationCode); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
 	attr := []*usermgr.UserAttribute{
 		{
 			Key:   "Email",
-			Value: &usermgr.UserAttribute_StringValue{StringValue: string(req.NewEmail)},
+			Value: &usermgr.UserAttribute_StringValue{StringValue: strings.ToLower(req.NewEmail)},
 		},
+	}
+
+	tokenUid, err := getIdFromToken(req.ConfirmationCode)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if uid != tokenUid {
+		log.Println(ankr_default.ErrAuthNotAllowed)
+		return ankr_default.ErrAuthNotAllowed
 	}
 
 	if err := p.db.UpdateUser(uid, attr); err != nil {

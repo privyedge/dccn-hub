@@ -72,9 +72,10 @@ func (p *Sender) htmlBody() string {
 		log.Printf("user: %s, code: %s", id, code)
 	case mail.EmailType_CONFIRM_EMAIL:
 		id := p.GetChangeEmail().UserId
+		email := p.GetChangeEmail().NewEmail
 		code := p.GetChangeEmail().Code
-		html = fmt.Sprintf("<h1>CONFIRM_EMAIL %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
-		log.Printf("user: %s, code: %s", id, code)
+		html = fmt.Sprintf("<h1>CONFIRM_EMAIL </h1><p>url<a href='https://domain.com/verify/id=%s?code=%s?email=%s'></a>", id, code, email)
+		log.Printf("user: %s, code: %s, email: %s", id, code, email)
 	}
 
 	return html

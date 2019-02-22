@@ -18,6 +18,22 @@ spec:
           imagePullPolicy: Always
           command: [ "/api" ]
           env:
+          - name: MICRO_REGISTRY
+            value: consul
+          - name: MICRO_REGISTRY_ADDRESS
+            value: consul:8500
+          - name: MICRO_REGISTER_TTL
+            value: "20"
+          - name: MICRO_REGISTER_INTERVAL
+            value: "10"
+          - name: MICRO_BROKER
+            value: rabbitmq
+          - name: MICRO_BROKER_ADDRESS
+            value: amqp://guest:guest@broker:5672
+          - name: MICRO_SERVER_ADDRESS
+            value: :50051
+          - name: MICRO_SERVER_VERSION
+            value: v1.0
           - name: DB_COLLECTION
             value: datacenter
           - name: DB_HOST
@@ -28,19 +44,5 @@ spec:
             value: "4096"
           - name: DB_TIMEOUT
             value: "5"
-          - name: MICRO_BROKER
-            value: rabbitmq
-          - name: MICRO_BROKER_ADDRESS
-            value: amqp://guest:guest@broker:5672
-          - name: MICRO_REGISTER_INTERVAL
-            value: "20"
-          - name: MICRO_REGISTRY
-            value: consul
-          - name: MICRO_REGISTRY_ADDRESS
-            value: consul:8500
-          - name: MICRO_SERVER_ADDRESS
-            value: :50051
-          - name: MICRO_SERVER_VERSION
-            value: v1.0
           ports:
           - containerPort: 50051

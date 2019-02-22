@@ -2,8 +2,8 @@
 
 
 [[projects]]
-  branch = "develop"
-  digest = "1:858a9023eb40ce632881c759f2c08f9f56ada34f746649a140062fa833c56758"
+  branch = "feature/SWDEV-155-optimize-rules-on-user"
+  digest = "1:1e7fd9ca25ae5b5cbe87e1a677513e0da0b1346a8d92d95ab2f95a89da90b08b"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -19,7 +19,7 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "db71ec855cc7229fa526c5f228be3c3b33c0aade"
+  revision = "fb4ac11c296cec0397ad62d1fad6529a6af26e8c"
 
 [[projects]]
   branch = "master"
@@ -30,7 +30,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:9bdf889efb9a80d51e864c1cb78cdb6ff888394a511579320563145ab862ed35"
+  digest = "1:3ab1f965d4def5e14a0942dd961965d103795efe25b601ee529942fe0da0940c"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -65,8 +65,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "de216d45a3df361a2f571b8eb88db86f2b50d82f"
-  version = "v1.17.1"
+  revision = "416a7057457ed9af569ea3682f7319ec3466044d"
+  version = "v1.17.3"
 
 [[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
@@ -177,7 +177,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:75ed48e676c79393be368f0272b6ee0ba489dc1ef7f0807eaed5bf8527c69c60"
+  digest = "1:a54ada9beb59fdc35b69322979e870ff0b780e03f4dc309c4c8674b94927df75"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
   pruneopts = "UT"
@@ -459,11 +459,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8207c052fb873f83c61a5aa16f6add5feb9881eda2112b56f69fd3b9e7f55c3f"
+  digest = "1:75e12c5cb2efb2da5d7f7054e973f09bd3e28c7da6b76dd7412b8f0151b23605"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "90b0e4468f9980bf79a2290394adaf7f045c5d24"
+  revision = "ec7b60b042fd2c54ad5ceaac0c891bd88843f4a2"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
