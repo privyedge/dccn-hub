@@ -4,8 +4,13 @@ import (
 	"context"
 	"github.com/Ankr-network/dccn-common/protos"
 	"github.com/Ankr-network/dccn-common/protos/common"
+	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
+
 	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
 
+	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
+
+	//"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 	"log"
 	"time"
 
@@ -15,21 +20,16 @@ import (
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
-	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	//common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
-var addr = "localhost:50051"
-//var addr = "client-dev.dccn.ankr.network:50051"
 
-//var addr = "afcac29ea274711e99cb106bbae7419f-1982485008.us-west-1.elb.amazonaws.com:50051"
-
-//func parseError(err string) string{
-//
-//}
+//var addr = "localhost:50051"
+var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 
-	log.SetFlags(log.LstdFlags | log.Llongfile)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err.Error())
@@ -42,19 +42,17 @@ func main() {
 
 	dcClient := dcmgr.NewDCAPIClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
+	taskClient := taskmgr.NewTaskMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
 	req.Email = "12112@Gmail.com"
 	req.Password = "11111111"
-
-
 
 	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
 		if err == ankr_default.ErrPasswordError {
 			log.Printf("password error  %s", err.Error())
 		}
-
 
 		a := err.Error()
 
@@ -80,17 +78,55 @@ func main() {
 		defer cancel()
 
 		// var userTasks []*common_proto.Task
-		if rsp, err := dcClient.DataCenterList(tokenContext, &common_proto.Empty{}); err != nil {
+
+		log.Printf("\n\n")
+		if rsp, err := dcClient.NetworkInfo(tokenContext, &common_proto.Empty{}); err != nil {
 			log.Fatal(err.Error())
 		} else {
-
-			log.Print("this is a new test")
-
-			for i := 0; i < len(rsp.DcList); i++ {
-				d := rsp.DcList[i]
-				log.Printf("task list id %s name %s lat %s lng %s cournty %s \n", d.Id, d.Name, d.GeoLocation.Lng, d.GeoLocation.Lng, d.GeoLocation.Country)
-			}
+			log.Printf("network info host count %+v ", rsp)
 
 		}
+
+		//log.Printf("DataCenterLeaderBoard info >>>")
+		if rsp, err := dcClient.DataCenterLeaderBoard(tokenContext, &common_proto.Empty{}); err != nil {
+			log.Fatal(err.Error())
+		} else {
+			list := rsp.List
+			log.Printf("DataCenterLeaderBoard list : %+v ", list)
+
+		}
+
+
+		//log.Printf("TaskOverview info >>>")
+		if rsp, err := taskClient.TaskOverview(tokenContext, &common_proto.Empty{}); err != nil {
+			log.Fatal(err.Error())
+		} else {
+		  // count := rsp.EnvironmentCount
+			log.Printf("TaskOverview list : %d", rsp)
+
+		}
+
+
+
+		if rsp, err := taskClient.TaskLeaderBoard(tokenContext, &common_proto.Empty{}); err != nil {
+			log.Fatal(err.Error())
+		} else {
+			// count := rsp.EnvironmentCount
+			list := rsp.List
+			log.Printf("TaskLeaderBoard list : %+v", list)
+
+		}
+
+		//log.Printf("tasklist info >>>")
+		//if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.TaskListRequest{}); err != nil {
+		//	log.Fatal(err.Error())
+		//} else {
+		//	// count := rsp.EnvironmentCount
+		//	list := rsp.Tasks
+		//	log.Printf("tasklist list : %+v", list)
+		//
+		//}
+		//
+		//log.Println("END")
 	}
 }

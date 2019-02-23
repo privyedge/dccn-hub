@@ -32,6 +32,8 @@ spec:
             value: rabbitmq
           - name: MICRO_BROKER_ADDRESS
             value: amqp://guest:guest@broker:5672
+          - name: MICRO_REGISTER_TTL
+            value: "30"
           - name: MICRO_REGISTER_INTERVAL
             value: "20"
           - name: MICRO_REGISTRY

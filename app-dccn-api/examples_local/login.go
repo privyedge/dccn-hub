@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"google.golang.org/grpc/metadata"
-	"time"
+//	"google.golang.org/grpc/metadata"
+//	"time"
 
 	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
 
@@ -58,28 +58,10 @@ func main() {
 		refresh_token := rsp.AuthenticationResult.RefreshToken
 		access_token := rsp.AuthenticationResult.AccessToken
 
-		md := metadata.New(map[string]string{
-			"token": access_token,
-		})
+
 
 		log.Printf("get access_token after login %s  refresh_token %s \n", access_token, refresh_token)
-		ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
-		defer cancel()
-
-		v := usermgr.UserAttribute_StringValue{StringValue:"zys"}
-		a := usermgr.UserAttribute{Key:"name", Value : &v}
-		arributes := make([](*usermgr.UserAttribute), 1)
-		arributes[0] = &a
-		request :=usermgr.UpdateAttributesRequest{UserAttributes:arributes}
-
-		if _, err := userClient.UpdateAttributes(tokenContext, &request); err != nil {
-			//log.Println("detail create %+v " + rsp)
-			log.Printf(">>>>>>>>VerifyEmail result :  bad %s   \n", err)
-		}else{
-			log.Printf(">>>>>>>> VerifyEmail result :  good    \n")
-		}
 
 	}
 

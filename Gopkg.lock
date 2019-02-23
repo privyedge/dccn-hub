@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:763ae2e31239d76c8f51517175e0751db4e2151865f84deb27f98604c92f4bea"
+  digest = "1:ed00a57c107989edd7f45a522f1123006ba1dbd382a3e97d89cd2787d4009e15"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -19,7 +19,7 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "9e18aac090051542b5df84624e125c21d7653726"
+  revision = "f7b3d4c04419da810a93911b0a7432ebbd637a4c"
 
 [[projects]]
   branch = "master"
@@ -30,7 +30,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:3ab1f965d4def5e14a0942dd961965d103795efe25b601ee529942fe0da0940c"
+  digest = "1:6ce482db3faa9df51c747dada2b72c419277271dafd9497040646ddb2b33b042"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -65,8 +65,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "416a7057457ed9af569ea3682f7319ec3466044d"
-  version = "v1.17.3"
+  revision = "e8b22c9937cae1fee9bc364a88f3752cc4d1ac2f"
+  version = "v1.17.4"
 
 [[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
@@ -240,7 +240,7 @@
   version = "v0.1.0"
 
 [[projects]]
-  digest = "1:ea66ad5ef6a772db85c9c6eca72136f6f6e7b0d96983ba3bb82d5acf3a71cf11"
+  digest = "1:6c510a03b29fc7e4dfa41a0f2f8c9148f013d1cd8070b3dfdf3d4ee358014e01"
   name = "github.com/micro/go-grpc"
   packages = [
     ".",
@@ -249,8 +249,8 @@
     "server",
   ]
   pruneopts = "UT"
-  revision = "36812a48569422e572be1c9b877e01971410e1ea"
-  version = "v0.9.0"
+  revision = "6021eaa987a24fd3007a17755ea9653e5169f817"
+  version = "v0.11.0"
 
 [[projects]]
   digest = "1:ad887831095e1445d282e25438f7b9d10e42b1e11e6633e29742609312b9e8ed"
@@ -261,7 +261,7 @@
   version = "v0.1.0"
 
 [[projects]]
-  digest = "1:f1ee8aa9243e063c9ac007055c65191ef00c94e32d9ed4a6a9b6f0b704ea715f"
+  digest = "1:45b8777794859d1bd222303dd631c7c7d4ab43c2dde48d23e5643ae9ceb22690"
   name = "github.com/micro/go-micro"
   packages = [
     ".",
@@ -296,11 +296,11 @@
     "transport/memory",
   ]
   pruneopts = "UT"
-  revision = "cead99ac4419cb689fd6c46b57aba45a88b05753"
-  version = "v0.24.1"
+  revision = "e29ca94a9358353a8b7055e8b07e5564b8bb1bd3"
+  version = "v0.26.1"
 
 [[projects]]
-  digest = "1:dd01d5037caed32a14d1311c5fbdc3ad359efef9a177ca51dd90febb594153c9"
+  digest = "1:4b5dd27ac82873319af7a170b5bd4fbe6635ab86edd406ed5ee5429a29a7f38d"
   name = "github.com/micro/go-plugins"
   packages = [
     "broker/grpc",
@@ -310,8 +310,8 @@
     "server/grpc",
   ]
   pruneopts = "UT"
-  revision = "2b2efff55dccf6c4f6fa8d39897b14b9b77543af"
-  version = "v0.22.0"
+  revision = "653beb1cb4df392e533f36b971f9577a0653a094"
+  version = "v0.25.0"
 
 [[projects]]
   digest = "1:baead7e9fa73faf55028ff508e68612d230787c912f64b6533f2d00e37fe835f"
@@ -424,7 +424,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0199120c0958f5c74a2adfb040fd1554156d39df8068e7695e6654e507d08dc5"
+  digest = "1:90dcab715aecdc8aed7c08be63ccb48f6684258f71f8b2798aeeca5a97c5ee58"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -433,7 +433,7 @@
     "ed25519/internal/edwards25519",
   ]
   pruneopts = "UT"
-  revision = "a4c6cb3142f211c99e4bf4cd769535b29a9b616f"
+  revision = "ffb98f73852f696ea2bb21a617a5c4b3e067a439"
 
 [[projects]]
   branch = "master"
@@ -459,11 +459,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8207c052fb873f83c61a5aa16f6add5feb9881eda2112b56f69fd3b9e7f55c3f"
+  digest = "1:d0e9a312c4610a508569ab25e54d34600b1a96d19b1866ece104ffdf1c1b9d2c"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "b4e8571b14e03cc164df06f72b640ebce3899579"
+  revision = "cd391775e71e684db52b63df9affd58269495083"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -581,6 +581,7 @@
     "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
     "google.golang.org/grpc/metadata",
+    "google.golang.org/grpc/peer",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",
   ]

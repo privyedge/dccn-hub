@@ -81,6 +81,29 @@ func (p *ApiTask) UpdateTask(ctx context.Context, req *taskmgr.UpdateTaskRequest
 	return nil
 }
 
+func (p *ApiTask) TaskOverview(ctx context.Context, req *common_proto.Empty, rsp *taskmgr.TaskOverviewResponse) error {
+	log.Println("Debug into TaskOverview")
+	result, err := p.api.TaskOverview(ctx, req)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	*rsp = *result
+	return nil
+}
+
+func (p *ApiTask) TaskLeaderBoard(ctx context.Context, req *common_proto.Empty, rsp *taskmgr.TaskLeaderBoardResponse) error {
+	log.Println("Debug into TaskleaderBoard <<<<< >>>>>")
+	out, err := p.api.TaskLeaderBoard(ctx, req)
+	if  err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	log.Printf("TaskleaderBoard >>>>>>%+v<<<<<<", out)
+	*rsp = *out
+	return nil
+}
+
 func NewApiTask(c client.Client) *ApiTask {
 	return &ApiTask{
 		api: taskmgr.NewTaskMgrService(ankr_default.TaskMgrRegistryServerName, c),
