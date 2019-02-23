@@ -276,6 +276,53 @@ func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.TaskID, rsp
 	return error
 }
 
+
+
+func (p *TaskMgrHandler) TaskOverview(ctx context.Context, req *common_proto.Empty, rsp *taskmgr.TaskOverviewResponse) error {
+	log.Printf("TaskOverview in task manager service\n")
+	//rsp = &taskmgr.TaskOverviewResponse{}
+	rsp.ClusterCount = 5
+	rsp.EnvironmentCount = 3
+	rsp.RegionCount = 3
+	rsp.TotalTaskCount = 100
+	rsp.HealthTaskCount = 98
+
+	return nil
+}
+
+func (p *TaskMgrHandler) TaskLeaderBoard(ctx context.Context, req *common_proto.Empty, rsp *taskmgr.TaskLeaderBoardResponse) error {
+	log.Printf("TaskleaderBoard in task manager service\n")
+	//rsp = &taskmgr.TaskLeaderBoardResponse{}
+	list := make([]*taskmgr.TaskLeaderBoardDetail, 0)
+	{
+		detail := taskmgr.TaskLeaderBoardDetail{}
+		detail.Name = "task_1"
+		detail.Number = 99.34
+		list = append(list, &detail)
+	}
+
+	{
+		detail := taskmgr.TaskLeaderBoardDetail{}
+		detail.Name = "task_2"
+		detail.Number = 98.53
+		list = append(list, &detail)
+	}
+
+	{
+		detail := taskmgr.TaskLeaderBoardDetail{}
+		detail.Name = "task_3"
+		detail.Number = 97.98
+		list = append(list, &detail)
+	}
+
+	rsp.List = list
+
+	log.Printf("TaskleaderBoard  <<<<<>>>>>> %+v", rsp.List)
+
+	return nil
+
+}
+
 func (p *TaskMgrHandler) checkOwner(userId, taskId string) (*common_proto.Task, error) {
 	task, err := p.db.Get(taskId)
 
