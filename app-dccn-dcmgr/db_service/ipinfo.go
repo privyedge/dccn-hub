@@ -35,7 +35,7 @@ func GetLatLng(ip string) (string, string, string)  {
 
 	if err != nil {
 		fmt.Print("ipinfo error :" + err.Error())
-		return "", "", ""
+		return "", "", "US"
 	}
 
 	contents, err := ioutil.ReadAll(resp.Body)

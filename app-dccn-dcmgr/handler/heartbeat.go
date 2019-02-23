@@ -21,7 +21,7 @@ func (p *DcMgrHandler) updateDataCenter(ctx context.Context, dc *common_proto.Da
 
 	if center.Name == "" {
 		// data center dose not exist, register it
-		log.Printf("insert new datacenter  : %v ", dc)
+		log.Printf("insert new datacenter  : %v   from ip : %s", dc, ip)
 		dc.Id = uuid.New().String()
 
 		lat, lng, country := dbservice.GetLatLng(ip)
