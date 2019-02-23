@@ -36,5 +36,43 @@ func (p *DcMgrAPIHandler) DataCenterList(
 }
 
 
+func (p *DcMgrAPIHandler) DataCenterLeaderBoard(ctx context.Context, req *common_proto.Empty,
+	                              rsp *dcmgr.DataCenterLeaderBoardResponse ) error {
+	//rsp = & dcmgr.DataCenterLeaderBoardResponse{}
+	list := make([]*dcmgr.DataCenterLeaderBoardDetail, 0)
+	{
+		detail := dcmgr.DataCenterLeaderBoardDetail{}
+		detail.Name = "us_cloud"
+		detail.Number = 99.81
+		list = append(list, &detail)
+	}
+
+	{
+		detail := dcmgr.DataCenterLeaderBoardDetail{}
+		detail.Name = "asia_cloud"
+		detail.Number = 97.71
+		list = append(list, &detail)
+	}
+
+	{
+		detail := dcmgr.DataCenterLeaderBoardDetail{}
+		detail.Name = "europe_cloud"
+		detail.Number = 96.89
+		list = append(list, &detail)
+	}
+
+	rsp.List = list
+	log.Printf("DataCenterLeaderBoard %+v", rsp.List)
+	return nil
+}
 
 
+func (p *DcMgrAPIHandler) NetworkInfo(ctx context.Context, req *common_proto.Empty,
+	rsp *dcmgr.NetworkInfoResponse) error{
+
+	rsp.UserCount = 299
+	rsp.ContainerCount = 1342
+	rsp.EnvironmentCount = 450
+	rsp.HostCount = 137
+    return nil
+}
