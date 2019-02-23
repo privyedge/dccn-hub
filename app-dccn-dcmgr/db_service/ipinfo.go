@@ -23,6 +23,7 @@ type IPInfo struct {
 
 func GetLatLng(ip string) (string, string, string)  {
 	reader := strings.NewReader(``)
+
 	url := "https://ipinfo.io/"+ip+"?token=05afd766593f88"
 	fmt.Print(url)
 	request, err := http.NewRequest("GET", url, reader)
