@@ -1,86 +1,20 @@
 package user_util
 
 import (
+	"log"
 	"testing"
 )
 
-func TestVerifyEmailPattern(t *testing.T) {
-	okEmails := []string{
-		"162@163.com",
-		"abc@gmail.com",
-	}
-	for _, email := range okEmails {
-		if !MatchPattern(OpEmailMatch, email) {
-			t.Fatal("verify email failed ", email)
-		}
+func TestCheckPassword(t *testing.T) {
+	errPassword := []string{
+		"abceddsf",
+		"xxxxxx",
+		"1234567",
 	}
 
-	errEmails := []string{
-		"123456",
-		"163.com",
-		"@",
-		"123@.com",
-		"@163.com",
-	}
-	for _, email := range errEmails {
-		if MatchPattern(OpEmailMatch, email) {
-			t.Fatal("verify email failed ", email)
-		}
-	}
-}
-
-func TestVerifyUserNamePattern(t *testing.T) {
-	okNames := []string{
-		"a89787asfA_KjKJ",
-		"a23_12kjk",
-		"aaaaaakjl",
-		"a787098070",
-		"a__________",
-		"a9___987",
-		"aa___uio",
-	}
-	for _, name := range okNames {
-		if !MatchPattern(OpUserNameMatch, name) {
-			t.Fatal("verify user pattern failed ", name)
-		}
-	}
-
-	errNames := []string{
-		"",
-		"2222222a_",
-		"_akj9879879",
-		"a2_",
-		"a2_ksjfdklajsfkljaslfjklasjflkasjfkljsklafjklasdjfkljflk",
-	}
-	for _, name := range errNames {
-		if MatchPattern(OpUserNameMatch, name) {
-			t.Fatal("verify user failed ", name)
-		}
-	}
-}
-func TestVerifyPasswordPattern(t *testing.T) {
-	okPasswords := []string{
-		"a2312kjkklsjfalkjflka",
-		"A2312KJKKLSJFALKJFLKA",
-		"AaaaaKJKKLSJFALKJFLKA",
-		"a89787asfAKjKJ",
-	}
-	for _, pw := range okPasswords {
-		if !MatchPattern(OpPasswordMatch, pw) {
-			t.Fatal("verify password pattern failed ", pw)
-		}
-	}
-	errPasswords := []string{
-		"a23aA",
-		"a23aAksAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-		// "12367890765",
-		// "aaaaaaaaaaaa",
-		// "AAAAAAAAAAAAAAAA",
-		// "1AAAAAAAAAAAAAA",
-	}
-	for _, pw := range errPasswords {
-		if MatchPattern(OpPasswordMatch, pw) {
-			t.Fatal("verify password pattern failed ", pw)
+	for _, p := range errPassword {
+		if err := CheckPassword(p); err != nil {
+			log.Fatal(err.Error())
 		}
 	}
 }

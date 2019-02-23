@@ -1,6 +1,7 @@
 package user_util
 
 import (
+	"log"
 	"regexp"
 	"unicode"
 
@@ -42,10 +43,11 @@ func CheckName(name string) error {
 			return ankr_default.ErrUnexpectedChar
 		}
 	}
-	return nil
+	return ankr_default.ErrUserNameFormat
 }
 
 func CheckPassword(password string) error {
+	log.Println("CheckPassword %s", password)
 	var (
 		letter bool
 		digit  bool
@@ -57,6 +59,7 @@ func CheckPassword(password string) error {
 
 	for _, c := range password {
 		if digit && letter {
+			log.Println("sanghai")
 			return nil
 		}
 
@@ -70,7 +73,7 @@ func CheckPassword(password string) error {
 		}
 	}
 
-	return nil
+	return ankr_default.ErrPasswordFormat
 }
 
 func CheckRegister(name, email, password string) error {

@@ -42,7 +42,10 @@ func (p *Sender) textBody() string {
 }
 
 var emailTemplates = map[string]*template.Template{
-	"registeration": template.Must(template.New("registration").Parse(email_templates.RegistrationTemplate)),
+	"registeration":  template.Must(template.New("registration").Parse(email_templates.RegistrationTemplate)),
+	"forgetPassword": template.Must(template.New("forgetPassword").Parse(email_templates.ForgetPasswordTemplate)),
+	"changePassword": template.Must(template.New("changePassword").Parse(email_templates.ForgetPasswordTemplate)),
+	"changeEmail":    template.Must(template.New("changeEmail").Parse(email_templates.ChangeEmailTemplate)),
 }
 
 func (p *Sender) htmlBody() string {
@@ -58,19 +61,30 @@ func (p *Sender) htmlBody() string {
 		}{p.GetConfirmRegistration().Code, p.GetConfirmRegistration().UserId}
 		t.Execute(&tpl, data)
 		html = tpl.String()
-		// log.Print(data)
-		// log.Printf("html: %s", html)
 	case mail.EmailType_FORGET_PASSWORD:
-		code := p.GetForgetPassword().Code
-		email := p.GetForgetPassword().Email
-		html = fmt.Sprintf("<h1>FORGET_PASSWORD %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, email)
-		log.Printf("user: %s, code: %s", email, code)
+		t := emailTemplates["forgetPassword"]
+		data := struct {
+			Code string
+			ID   string
+		}{p.GetForgetPassword().Code, p.GetForgetPassword().Email}
+		t.Execute(&tpl, data)
+		html = tpl.String()
 	case mail.EmailType_CHANGE_PASSWORD:
-		id := p.GetChangePassword().UserId
-		code := p.GetChangePassword().Code
-		html = fmt.Sprintf("<h1>CHANGE_PASSWORD %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
-		log.Printf("user: %s, code: %s", id, code)
+		t := emailTemplates["changePassword"]
+		data := struct {
+			Code string
+			ID   string
+		}{p.GetChangePassword().Code, p.GetChangePassword().UserId}
+		t.Execute(&tpl, data)
+		html = tpl.String()
 	case mail.EmailType_CONFIRM_EMAIL:
+		t := emailTemplates["changeEmail"]
+		data := struct {
+			Code string
+			ID   string
+		}{p.GetChangeEmail().Code, p.GetChangeEmail().UserId}
+		t.Execute(&tpl, data)
+		html = tpl.String()
 		id := p.GetChangeEmail().UserId
 		email := p.GetChangeEmail().NewEmail
 		code := p.GetChangeEmail().Code

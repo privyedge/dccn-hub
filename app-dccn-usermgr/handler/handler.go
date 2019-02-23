@@ -52,8 +52,8 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 	// we store the hashed password
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(ankr_default.ErrHashPassword)
-		return ankr_default.ErrHashPassword
+		log.Println(err.Error())
+		return err
 	}
 
 	// check if email exists already
@@ -111,8 +111,8 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 	log.Println("Debug into ConfirmRegistration")
 
 	if err := user_util.CheckEmail(req.Email); err != nil {
-		log.Println(ankr_default.ErrEmailFormat)
-		return ankr_default.ErrEmailFormat
+		log.Println(err.Error())
+		return err
 	}
 
 	// verify code if is expired
@@ -319,8 +319,8 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 	log.Println("Debug ConfirmPassword")
 
 	if err := user_util.CheckPassword(req.NewPassword); err != nil {
-		log.Println(ankr_default.ErrPasswordFormat.Error())
-		return ankr_default.ErrPasswordFormat
+		log.Println(err.Error())
+		return err
 	}
 
 	// verify code if is expired
@@ -383,11 +383,16 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 	log.Println("Debug ChangePassword")
 
 	if err := user_util.CheckPassword(req.NewPassword); err != nil {
-		log.Println(ankr_default.ErrPasswordFormat.Error())
-		return ankr_default.ErrPasswordError
+		log.Println(err.Error())
+		return err
 	}
 
-	// hash password, TODO: equal return err
+	if req.NewPassword == req.OldPassword {
+		log.Println(ankr_default.ErrPasswordSame)
+		return ankr_default.ErrPasswordSame
+	}
+
+	// hash password
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())

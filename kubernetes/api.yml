@@ -22,10 +22,10 @@ spec:
             value: consul
           - name: MICRO_REGISTRY_ADDRESS
             value: consul:8500
-          - name: MICRO_REGISTER_TTL
-            value: "20"
-          - name: MICRO_REGISTER_INTERVAL
-            value: "10"
+#          - name: MICRO_REGISTER_TTL
+#            value: "20"
+#          - name: MICRO_REGISTER_INTERVAL
+#            value: "10"
           - name: MICRO_BROKER
             value: rabbitmq
           - name: MICRO_BROKER_ADDRESS
