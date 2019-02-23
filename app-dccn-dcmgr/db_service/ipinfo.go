@@ -33,6 +33,11 @@ func GetLatLng(ip string) (string, string, string)  {
 	client := &http.Client{}
 	resp, err := client.Do(request)
 
+	if err != nil {
+		fmt.Print("ipinfo error :" + err.Error())
+		return "", "", ""
+	}
+
 	contents, err := ioutil.ReadAll(resp.Body)
 
 	var ipinfo IPInfo
