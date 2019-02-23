@@ -50,7 +50,7 @@ func (p *DcMgrHandler) ServerStream(
 
 		switch in.OpType {
 		case common_proto.DCOperation_HEARTBEAT: // update data center in cache
-			if err := p.updateDataCenter(in.GetDataCenter(), stream); err != nil {
+			if err := p.updateDataCenter(ctx, in.GetDataCenter(), stream); err != nil {
 				log.Println(err.Error())
 			}
 		case common_proto.DCOperation_TASK_CREATE,

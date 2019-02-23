@@ -2,22 +2,31 @@ package handler
 
 import (
 	"log"
-
+	"context"
 	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
 	"github.com/google/uuid"
+	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 )
 
-func (p *DcMgrHandler) updateDataCenter(dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) error {
+func (p *DcMgrHandler) updateDataCenter(ctx context.Context, dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) error {
 	// first update database
 	log.Printf("into updateDataCenter  : %v ", dc)
 	center , err :=  p.db.GetByName(dc.Name)
+
+
+    ip := dbservice.GetIP(ctx)
+	//ip = "8.8.8.8"
 
 
 	if center.Name == "" {
 		// data center dose not exist, register it
 		log.Printf("insert new datacenter  : %v ", dc)
 		dc.Id = uuid.New().String()
+
+		lat, lng, country := dbservice.GetLatLng(ip)
+		dc.GeoLocation = &common_proto.GeoLocation{Lat:lat, Lng:lng, Country:country}
+
 		if err = p.db.Create(dc); err != nil {
 			log.Println(err.Error(), ", ", *dc)
 			return err
