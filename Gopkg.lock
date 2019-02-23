@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:5356ea36313b98592be80bb5faf1a4d54bf26549c2119537a3ba45ccebb6a2ab"
+  digest = "1:ed00a57c107989edd7f45a522f1123006ba1dbd382a3e97d89cd2787d4009e15"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -19,7 +19,7 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "895071d5daffa25a7377bc3784af50922b0aa103"
+  revision = "f7b3d4c04419da810a93911b0a7432ebbd637a4c"
 
 [[projects]]
   branch = "master"
@@ -177,7 +177,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:a54ada9beb59fdc35b69322979e870ff0b780e03f4dc309c4c8674b94927df75"
+  digest = "1:75ed48e676c79393be368f0272b6ee0ba489dc1ef7f0807eaed5bf8527c69c60"
   name = "github.com/hashicorp/go-rootcerts"
   packages = ["."]
   pruneopts = "UT"
