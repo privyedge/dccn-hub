@@ -11,7 +11,7 @@ import (
 
 func (p *DcMgrHandler) updateDataCenter(ctx context.Context, dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) error {
 	// first update database
-	log.Printf("into updateDataCenter  : %v ", dc)
+	//log.Printf("into updateDataCenter  : %v ", dc)
 	center , err :=  p.db.GetByName(dc.Name)
 
 
@@ -21,7 +21,7 @@ func (p *DcMgrHandler) updateDataCenter(ctx context.Context, dc *common_proto.Da
 
 	if center.Name == "" {
 		// data center dose not exist, register it
-		log.Printf("insert new datacenter  : %v   from ip : %s", dc, ip)
+		log.Printf("insert new datacenter  : %s  from ip : %s", dc.Name, ip)
 		dc.Id = uuid.New().String()
 
 		lat, lng, country := dbservice.GetLatLng(ip)

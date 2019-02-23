@@ -46,6 +46,11 @@ func GetLatLng(ip string) (string, string, string)  {
 
 	values :=  strings.Split(ipinfo.Loc, ",")
 
+	if err != nil  || len(values) < 2{
+		fmt.Printf("GetLatLng eror >>>> for ip %s \n", ip)
+		return "", "", "US"
+	}
+
 
 	log :=fmt.Sprintf("loc lat: %s lng: %s \n", values[0], values[1])
 	fmt.Print(log)
