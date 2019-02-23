@@ -5,7 +5,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -i -o cmd/usermgr app-dccn-usermgr/main.go
 
-FROM scratch
+FROM alpine:3.7
 
 COPY --from=builder /go/src/github.com/Ankr-network/dccn-hub/cmd/usermgr /
 CMD ["/usermgr"]

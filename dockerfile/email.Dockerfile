@@ -8,7 +8,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -i -o cmd/email app-dccn-email/main.go
 
-FROM scratch
+FROM alpine:3.7
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 

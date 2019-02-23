@@ -5,7 +5,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-w' -i  -o cmd/api app-dccn-api/main.go
 
-FROM scratch
+FROM alpine:3.7
 
 COPY --from=builder /go/src/github.com/Ankr-network/dccn-hub/cmd/api /
 CMD ["/api"]
