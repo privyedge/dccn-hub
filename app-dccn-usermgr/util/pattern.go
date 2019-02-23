@@ -30,10 +30,6 @@ func CheckName(name string) error {
 	}
 
 	for _, c := range name {
-		if digit && letter {
-			return nil
-		}
-
 		switch {
 		case unicode.IsNumber(c):
 			digit = true
@@ -41,6 +37,10 @@ func CheckName(name string) error {
 			letter = true
 		default:
 			return ankr_default.ErrUnexpectedChar
+		}
+
+		if digit && letter {
+			return nil
 		}
 	}
 	return ankr_default.ErrUserNameFormat
@@ -58,11 +58,6 @@ func CheckPassword(password string) error {
 	}
 
 	for _, c := range password {
-		if digit && letter {
-			log.Println("sanghai")
-			return nil
-		}
-
 		switch {
 		case unicode.IsNumber(c):
 			digit = true
@@ -71,6 +66,11 @@ func CheckPassword(password string) error {
 		default:
 			return ankr_default.ErrUnexpectedChar
 		}
+
+		if digit && letter {
+			return nil
+		}
+
 	}
 
 	return ankr_default.ErrPasswordFormat
