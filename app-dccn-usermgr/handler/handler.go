@@ -246,14 +246,27 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 
 	if err := user_util.CheckEmail(req.Email); err != nil {
 		log.Println(err.Error())
-		return err
+		return ankr_default.ErrEmailFormat
 	}
 
+
+	user, err := p.db.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Println(err.Error())
+		return ankr_default.ErrEmailNoExit
+	}
+
+
+
 	// verify code if is expired
-	_, err := p.token.Verify(req.ConfirmationCode)
+	playload, err := p.token.Verify(req.ConfirmationCode)
 	if err != nil {
 		log.Println(err.Error())
 		return err
+	}else{
+		if playload.Id != user.ID {
+			return ankr_default.ErrEmailNoMatch
+		}
 	}
 
 	attr := []*usermgr.UserAttribute{
