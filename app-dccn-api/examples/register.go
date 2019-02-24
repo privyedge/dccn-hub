@@ -40,7 +40,7 @@ func main() {
 
 	req := usermgr.RegisterRequest{}
 	req.User = &usermgr.User{}
-	req.User.Email = `12112111@Gmail.com`
+	req.User.Email = `12@Gmail.com`
 	req.User.Attributes = &usermgr.UserAttributes{}
 	req.User.Attributes.Name = "ankrtest"
 	req.Password = "111111"

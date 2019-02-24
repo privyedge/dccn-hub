@@ -109,7 +109,7 @@ func VerifyAccessToken(refreshToken string) (string, error) {
 
 func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
 
-	log.Println("Debug Register")
+	log.Println("Debug new Register")
 	user := req.User
 
 	// verify email and password
