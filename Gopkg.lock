@@ -2,8 +2,8 @@
 
 
 [[projects]]
-  branch = "feature/SWDEV-161-fix-all-bugs"
-  digest = "1:e93bb11d4f82b75a96d3dd500fb4c8220011d43c0e8c8f85010b63c991741732"
+  branch = "develop"
+  digest = "1:efb6f11ef7d62211927cccda3f63cbb01daa5ae62af844e9b0b1eb9820327a3c"
   name = "github.com/Ankr-network/dccn-common"
   packages = [
     "db",
@@ -19,7 +19,7 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "709e070e1f03758162822148ee5600a1c6b6d933"
+  revision = "5a92e1569791b1ef19bbea75749adad04cdaea35"
 
 [[projects]]
   branch = "master"

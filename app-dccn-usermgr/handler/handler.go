@@ -369,7 +369,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	user, err := p.db.GetUserByEmail(req.Email)
 	if err != nil {
 		log.Println(err.Error())
-		return err
+		return ankr_default.ErrEmailNoExit
 	}
 
 	// Compares our given password against the hashed password
@@ -724,6 +724,8 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 	req.NewEmail = strings.ToLower(req.NewEmail)
 	log.Println("Debug ChangeEmail")
 
+
+
 	if err := user_util.CheckEmail(req.NewEmail); err != nil {
 		log.Println(ankr_default.ErrEmailFormat)
 		return ankr_default.ErrEmailFormat
@@ -737,7 +739,9 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 		return ankr_default.ErrEmailSame
 	}
 
-	_, changeEmailCode, err := p.token.NewToken(uid, false)
+
+    // use email as uid
+	_, changeEmailCode, err := p.token.NewToken(req.NewEmail, false)
 	log.Printf("------>comfirm code %s  for email %s\n", changeEmailCode, req.NewEmail)
 	if err != nil {
 		log.Println(err.Error())
@@ -775,16 +779,11 @@ func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmai
 		log.Println(err.Error())
 		return err
 	}else{
-		if playload.Id != uid {
-			log.Println(err.Error())
-			return ankr_default.ErrAuthNotAllowed
+			if playload.Id != req.NewEmail {
+			//log.Println(err.Error())
+			return ankr_default.ErrEmailNoMatch
 		}
 	}
-
-
-
-
-
 
 	attr := []*usermgr.UserAttribute{
 		{

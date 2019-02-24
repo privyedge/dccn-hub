@@ -4,8 +4,9 @@ import (
 	"log"
 	"regexp"
 	"unicode"
+	"errors"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
+	"github.com/Ankr-network/dccn-common/protos"
 )
 
 const (
@@ -14,6 +15,10 @@ const (
 )
 
 func CheckEmail(email string) error {
+	if len(email) < 4 {
+		return errors.New("email too short")
+	}
+
 	_, err := regexp.MatchString(emailPattern, email)
 	return err
 }
