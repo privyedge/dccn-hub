@@ -1,23 +1,26 @@
 package main
 
-	
-import "strings"
-import "fmt"
+import (
+	"encoding/base64"
+	"log"
+    "strings"
 
-
-func parseError(s1 string) string{
- index := strings.Index(s1, "detail")
- s2 := s1[index+9:]
- index2 := strings.Index(s2, "\"")
- s3 := s2[:index2]
- return s3
-}
+)
 
 func main() {
- s1 := "rpc error: code = Unknown desc = {\"id\":\"\",\"code\":0,\"detail\":\"password does not match\",\"status\":\"\"}"
 
 
- fmt.Printf("%s\n", parseError(s1) )
+		s := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTA5ODM0MzcsImp0aSI6IjQyZjQ5Y2FlLTAzYzUtNDgzOS04OWI3LTllMzdjMmZjNTk1ZSIsImlzcyI6ImFua3IubmV0d29yayJ9.qfwSuyfOzWLywUDgKHWp1Ur29Sv50Tf8SRT40IEjkLk"
 
+
+	parts := strings.Split(s, ".")
+
+	log.Printf("pargts ->%s<-", parts[1])
+
+	decoded, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		log.Printf("this is a error %s", err.Error())
+	}
+
+	log.Printf("value %s \n", decoded)
 }
-

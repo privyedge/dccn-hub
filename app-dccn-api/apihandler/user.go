@@ -144,7 +144,17 @@ func (p *ApiUser) VerifyAccessToken(ctx context.Context, req *common_proto.Empty
 
 }
 
-func NewApiUser(c client.Client) *ApiUser {
+func (p *ApiUser) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmailRequest, rsp *common_proto.Empty) error {
+	log.Println("Debug into ConfirmEmail")
+	if _, err := p.api.ConfirmEmail(ctx, req); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+	func NewApiUser(c client.Client) *ApiUser {
 	return &ApiUser{
 		api: usermgr.NewUserMgrService(ankr_default.UserMgrRegistryServerName, c),
 	}

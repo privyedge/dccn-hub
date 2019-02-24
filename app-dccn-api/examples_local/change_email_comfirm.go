@@ -2,34 +2,34 @@ package main
 
 import (
 	"context"
-	"github.com/Ankr-network/dccn-common/protos"
-	"github.com/Ankr-network/dccn-common/protos/common"
-	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
-
-	"log"
+	"google.golang.org/grpc/metadata"
 	"time"
 
-	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/grpc"
+	//	"google.golang.org/grpc/metadata"
+//	"time"
+
+	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
+
+	//	"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	"log"
+//	"time"
+
+//	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
+//	"google.golang.org/grpc/metadata"
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
-	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
+
 var addr = "localhost:50051"
 //var addr = "client-dev.dccn.ankr.network:50051"
 
-//var addr = "afcac29ea274711e99cb106bbae7419f-1982485008.us-west-1.elb.amazonaws.com:50051"
-
-//func parseError(err string) string{
-//
-//}
-
 func main() {
 
-	log.SetFlags(log.LstdFlags | log.Llongfile)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err.Error())
@@ -40,25 +40,19 @@ func main() {
 		}
 	}(conn)
 
-	dcClient := dcmgr.NewDCAPIClient(conn)
+//	taskClient := taskmgr.NewTaskMgrClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
 	req.Email = "yousong.zhang2@gmail.com"
-	req.Password = "1111112c11"
+    req.Password = "1111112c11"
 
 
 
+	//var token string
 	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
-		if err == ankr_default.ErrPasswordError {
-			log.Printf("password error  %s", err.Error())
-		}
-
-
-		a := err.Error()
-
-		log.Printf(">>>>>%d  %s <<<<", len(a), a)
+		log.Fatal(err.Error())
 	} else {
 		log.Printf("response %+v \n", rsp)
 		//log.Printf("login Success: id : %s name : %s , email %s  refresh_token : %s  access_token %s \n", rsp.User.Id, rsp.User.Attributes.Name, rsp.User.Email ,rsp.AuthenticationResult.RefreshToken, rsp.AuthenticationResult.AccessToken)
@@ -67,7 +61,9 @@ func main() {
 		refresh_token := rsp.AuthenticationResult.RefreshToken
 		access_token := rsp.AuthenticationResult.AccessToken
 
-		log.Printf("refresh_token  %s  access_token %s", refresh_token, access_token)
+
+
+		log.Printf("get access_token after login %s  refresh_token %s \n", access_token, refresh_token)
 
 		md := metadata.New(map[string]string{
 			"token": access_token,
@@ -79,18 +75,26 @@ func main() {
 		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 
-		// var userTasks []*common_proto.Task
-		if rsp, err := dcClient.DataCenterList(tokenContext, &common_proto.Empty{}); err != nil {
-			log.Fatal(err.Error())
+
+
+
+		request := &usermgr.ConfirmEmailRequest{}
+		request.NewEmail =  "yousong@ankr.com"
+		request.ConfirmationCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTA5ODM1NDIsImp0aSI6IjQyZjQ5Y2FlLTAzYzUtNDgzOS04OWI3LTllMzdjMmZjNTk1ZSIsImlzcyI6ImFua3IubmV0d29yayJ9.IckQvHs-lse3ZKeEXP-Rf6lu3APoPUPKK8GITM9LLRo"
+
+
+		if rsp, err := userClient.ConfirmEmail(tokenContext, request); err != nil {
+			//	log.Fatal(err.Error())
+			log.Printf("ConfirmEmail have some error : %s \n", err.Error())
 		} else {
-
-			log.Print("this is a new test")
-
-			for i := 0; i < len(rsp.DcList); i++ {
-				d := rsp.DcList[i]
-				log.Printf("task list id %s name %s lat %s lng %s cournty %s \n", d.Id, d.Name, d.GeoLocation.Lng, d.GeoLocation.Lng, d.GeoLocation.Country)
-			}
-
+			log.Printf("ConfirmEmail result no error  %+v", rsp)
 		}
+
+
 	}
+
+
+
+
+	log.Println("END")
 }
