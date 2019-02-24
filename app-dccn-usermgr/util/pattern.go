@@ -1,35 +1,97 @@
 package user_util
 
 import (
+	"log"
 	"regexp"
-)
+	"unicode"
+	"errors"
 
-type PatternType int
+	"github.com/Ankr-network/dccn-common/protos"
+)
 
 const (
 	// email pattern
 	emailPattern = `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
-	// 8-32 chars,  begin with chars, two of {lower case, tower case, digit} at least
-	passwordPattern = `^(\w){6,32}$`
-	// 6-18 chars, begin with chars, [0-9A-Za-z_] is available
-	userNamePattern = `^[A-Za-z]{1}(\w){5,17}$`
 )
 
-const (
-	OpEmailMatch PatternType = iota
-	OpPasswordMatch
-	OpUserNameMatch
-)
-
-func MatchPattern(patternType PatternType, str string) bool {
-	var reg *regexp.Regexp
-	switch patternType {
-	case OpEmailMatch:
-		reg = regexp.MustCompile(emailPattern)
-	case OpPasswordMatch:
-		reg = regexp.MustCompile(passwordPattern)
-	case OpUserNameMatch:
-		reg = regexp.MustCompile(userNamePattern)
+func CheckEmail(email string) error {
+	if len(email) < 4 {
+		return errors.New("email too short")
 	}
-	return reg.MatchString(str)
+
+	_, err := regexp.MatchString(emailPattern, email)
+	return err
+}
+
+// [0-9A-Za-z-]; at least 2, must contain en letter and digit
+func CheckName(name string) error {
+	//var (
+	//	letter bool
+	//	digit  bool
+	//)
+
+	if len(name) < 2 {
+		return ankr_default.ErrUserNameFormat
+	}
+
+	//for _, c := range name {
+	//	switch {
+	//	case unicode.IsNumber(c):
+	//		digit = true
+	//	case unicode.IsLetter(c):
+	//		letter = true
+	//	default:
+	//		return ankr_default.ErrUnexpectedChar
+	//	}
+	//
+	//	if digit && letter {
+	//		return nil
+	//	}
+	//}
+	return nil
+}
+
+func CheckPassword(password string) error {
+	log.Printf("CheckPassword %s \n", password)
+	var (
+		letter bool
+		digit  bool
+	)
+
+	if len(password) < 6 {
+		return ankr_default.ErrPasswordLength
+	}
+
+	for _, c := range password {
+		switch {
+		case unicode.IsNumber(c):
+			digit = true
+		case unicode.IsLetter(c):
+			letter = true
+		default:
+			return ankr_default.ErrUnexpectedChar
+		}
+
+		if digit && letter {
+			return nil
+		}
+
+	}
+
+	return ankr_default.ErrPasswordFormat
+}
+
+func CheckRegister(name, email, password string) error {
+	if err := CheckName(name); err != nil {
+		return err
+	}
+
+	if err := CheckPassword(password); err != nil {
+		return err
+	}
+
+	if err := CheckEmail(email); err != nil {
+		return err
+	}
+	return nil
 }

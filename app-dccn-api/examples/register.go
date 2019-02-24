@@ -40,10 +40,10 @@ func main() {
 
 	req := usermgr.RegisterRequest{}
 	req.User = &usermgr.User{}
-	req.User.Email = `12112111@Gmail.com`
+	req.User.Email = `1223@Gmail.com`
 	req.User.Attributes = &usermgr.UserAttributes{}
 	req.User.Attributes.Name = "ankrtest"
-	req.Password = "111111"
+	req.Password = "111111c"
 
 	if _, err := userClient.Register(context.Background(), &req); err != nil {
 		//	log.Fatal(err.Error())

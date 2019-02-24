@@ -2,27 +2,27 @@ package handler
 
 import (
 	"context"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"log"
 	"strings"
 	"time"
 
-	micro "github.com/micro/go-micro"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/metadata"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos"
+	"github.com/Ankr-network/dccn-common/protos/common"
+	"github.com/Ankr-network/dccn-common/protos/email/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
 	ankr_util "github.com/Ankr-network/dccn-common/util"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
-	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
+	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/token"
-	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
+	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
 )
 
 type UserHandler struct {
@@ -51,12 +51,29 @@ func getIdFromToken(refreshToken string) (string, error) {
 	if err != nil {
 		return "", ankr_default.ErrTokenParseFailed
 	}
+	var dat ankr_util.Token
+
+	if err := json.Unmarshal(decoded, &dat); err != nil {
+		return "", ankr_default.ErrTokenParseFailed
+	}
+	return string(dat.Jti), nil
+}
+
+
+func getIdFromToken2(refreshToken string) (string, error) {
+	parts := strings.Split(refreshToken, ".")
+
+	decoded, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", ankr_default.ErrTokenParseFailed
+	}
 
 	var dat ankr_util.Token
 
 	if err := json.Unmarshal(decoded, &dat); err != nil {
 		return "", ankr_default.ErrTokenParseFailed
 	}
+
 
 	return string(dat.Jti), nil
 }
@@ -78,7 +95,7 @@ func VerifyAccessToken(refreshToken string) (string, error) {
 	now := time.Now().Unix()
 
 	if now > int64(dat.Exp) {
-		return "", ankr_default.ErrTokenParseFailed
+		return "", ankr_default.ErrTokenNeedRefresh
 	}
 
 	return string(dat.Jti), nil
@@ -86,23 +103,23 @@ func VerifyAccessToken(refreshToken string) (string, error) {
 
 func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
 
-	log.Println("Debug Register")
+	log.Println("Debug new Register")
 	user := req.User
 
-	log.Println("Debug Register")
 	// verify email and password
-	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.Password) || !user_util.MatchPattern(user_util.OpEmailMatch, user.Email) {
-		err := errors.New("email or password invalid")
+	if err := user_util.CheckRegister(user.Attributes.Name, user.Email, req.Password); err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
+	// we store the hashed password
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(ankr_default.ErrHashPassword)
-		return ankr_default.ErrHashPassword
+		log.Println(err.Error())
+		return err
 	}
 
+	// check if email exists already
 	_, dbErr := p.db.GetUserByEmail(strings.ToLower(user.Email))
 	if dbErr == nil {
 		log.Println(ankr_default.ErrEmailExit)
@@ -116,6 +133,7 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 
 	if user.Attributes.Name == "ankrtest" { // for debug
 		user.Status = usermgr.UserStatus_CONFIRMED
+		log.Printf("you should see this ")
 
 	} else {
 		_, confirmRegistrationCode, err := p.token.NewToken(user.Id, false)
@@ -123,6 +141,8 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 			log.Println(err.Error())
 			return err
 		}
+
+		log.Printf(">>>>>confirmRegistrationCode for %s   %s \n", user.Email ,confirmRegistrationCode)
 
 		e := &mail.MailEvent{
 			Type: mail.EmailType_CONFIRM_REGISTRATION,
@@ -152,27 +172,108 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 	return nil
 }
 
+//func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
+//
+//	log.Println("Debug Register")
+//	user := req.User
+//
+//	log.Println("Debug Register")
+//	// verify email and password
+//	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.Password) || !user_util.MatchPattern(user_util.OpEmailMatch, user.Email) {
+//		err := errors.New("email or password invalid")
+//		log.Println(err.Error())
+//		return err
+//	}
+//
+//	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+//	if err != nil {
+//		log.Println(ankr_default.ErrHashPassword)
+//		return ankr_default.ErrHashPassword
+//	}
+//
+//	_, dbErr := p.db.GetUserByEmail(strings.ToLower(user.Email))
+//	if dbErr == nil {
+//		log.Println(ankr_default.ErrEmailExit)
+//		return ankr_default.ErrEmailExit
+//	}
+//
+//	hashPassword := string(hashedPwd)
+//	user.Email = strings.ToLower(user.Email)
+//	user.Id = uuid.New().String()
+//	user.Status = usermgr.UserStatus_CONFIRMING
+//
+//	if user.Attributes.Name == "ankrtest" { // for debug
+//		user.Status = usermgr.UserStatus_CONFIRMED
+//
+//	} else {
+//		_, confirmRegistrationCode, err := p.token.NewToken(user.Id, false)
+//		if err != nil {
+//			log.Println(err.Error())
+//			return err
+//		}
+//
+//		e := &mail.MailEvent{
+//			Type: mail.EmailType_CONFIRM_REGISTRATION,
+//			From: ankr_default.NoReplyEmailAddress,
+//			To:   []string{user.Email},
+//			OpMail: &mail.MailEvent_ConfirmRegistration{
+//				ConfirmRegistration: &mail.ConfirmRegistration{
+//					UserName: user.Attributes.Name,
+//					UserId:   user.Id,
+//					Code:     confirmRegistrationCode,
+//				},
+//			},
+//		}
+//
+//		if err := p.pubEmail.Publish(context.Background(), e); err != nil {
+//			log.Println(err.Error())
+//			return err
+//		}
+//
+//	}
+//
+//	if err := p.db.CreateUser(user, hashPassword); err != nil {
+//		log.Println(err.Error())
+//		return err
+//	}
+//
+//	return nil
+//}
+
 func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into ConfirmRegistration")
 
-	if !user_util.MatchPattern(user_util.OpEmailMatch, req.Email) {
-		log.Println(ankr_default.ErrEmailFormat)
+	if err := user_util.CheckEmail(req.Email); err != nil {
+		log.Println(err.Error())
 		return ankr_default.ErrEmailFormat
 	}
 
+
+	user, err := p.db.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Println(err.Error())
+		return ankr_default.ErrEmailNoExit
+	}
+
+
+
 	// verify code if is expired
-	_, err := p.token.Verify(req.ConfirmationCode)
+	playload, err := p.token.Verify(req.ConfirmationCode)
 	if err != nil {
 		log.Println(err.Error())
 		return err
+	}else{
+		if playload.Id != user.ID {
+			return ankr_default.ErrEmailNoMatch
+		}
 	}
 
 	attr := []*usermgr.UserAttribute{
 		{
 			Key: "Status", Value: &usermgr.UserAttribute_IntValue{
-				IntValue: int64(usermgr.UserStatus_CONFIRMED),
-			},
+			IntValue: int64(usermgr.UserStatus_CONFIRMED),
+		},
 		},
 	}
 	// update password. if not exist, db return not found
@@ -184,30 +285,126 @@ func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.Conf
 	return nil
 }
 
+//func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequest, rsp *common_proto.Empty) error {
+//
+//	log.Println("Debug into ConfirmRegistration")
+//
+//	if !user_util.MatchPattern(user_util.OpEmailMatch, req.Email) {
+//		log.Println(ankr_default.ErrEmailFormat)
+//		return ankr_default.ErrEmailFormat
+//	}
+//
+//	// verify code if is expired
+//	_, err := p.token.Verify(req.ConfirmationCode)
+//	if err != nil {
+//		log.Println(err.Error())
+//		return err
+//	}
+//
+//	attr := []*usermgr.UserAttribute{
+//		{
+//			Key: "Status", Value: &usermgr.UserAttribute_IntValue{
+//				IntValue: int64(usermgr.UserStatus_CONFIRMED),
+//			},
+//		},
+//	}
+//	// update password. if not exist, db return not found
+//	if err := p.db.UpdateUserByEmail(req.Email, attr); err != nil {
+//		log.Println(err.Error())
+//		return err
+//	}
+//
+//	return nil
+//}
+
+//func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
+//
+//	log.Println("Debug Login")
+//	user, err := p.db.GetUserByEmail(strings.ToLower(req.Email))
+//	if err != nil {
+//		log.Println(err.Error())
+//		return err
+//	}
+//
+//	// Compares our given password against the hashed password
+//	// stored in the database
+//	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password)); err != nil {
+//		err = ankr_default.ErrPasswordError
+//		log.Println(err.Error())
+//		return ankr_default.ErrPasswordError
+//	}
+//
+//	log.Printf("user userToken %+v", user.Token)
+//
+//	expired, userToken, err2 := p.token.NewToken(user.ID, false)
+//
+//	if err2 != nil {
+//		log.Println(err2.Error())
+//		return err2
+//	}
+//
+//	rsp.AuthenticationResult = &usermgr.AuthenticationResult{}
+//	rsp.User = &usermgr.User{}
+//	rsp.User.Attributes = &usermgr.UserAttributes{}
+//	rsp.User.Id = user.ID
+//	rsp.User.Email = user.Email
+//	rsp.User.Attributes.Name = user.Name
+//	rsp.User.Attributes.CreationDate = user.CreationDate
+//	rsp.User.Attributes.LastModifiedDate = user.LastModifiedDate
+//
+//	rsp.AuthenticationResult.AccessToken = userToken
+//	rsp.AuthenticationResult.Expiration = uint64(expired)
+//	rsp.AuthenticationResult.IssuedAt = uint64(time.Now().Unix())
+//	_, refreshToken, _ := p.token.NewToken(user.ID, true)
+//	rsp.AuthenticationResult.RefreshToken = refreshToken
+//
+//	attr := []*usermgr.UserAttribute{
+//		{
+//			Key:   "Token",
+//			Value: &usermgr.UserAttribute_StringValue{StringValue: refreshToken},
+//		},
+//	}
+//
+//	if err := p.db.UpdateUser(user.ID, attr); err != nil {
+//		log.Println(err.Error())
+//		return err
+//	}
+//
+//	return nil
+//}
+
+
 func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp *usermgr.LoginResponse) error {
 
+	req.Email = strings.ToLower(req.Email)
 	log.Println("Debug Login")
-	user, err := p.db.GetUserByEmail(strings.ToLower(req.Email))
+
+	user, err := p.db.GetUserByEmail(req.Email)
 	if err != nil {
 		log.Println(err.Error())
-		return err
+		return ankr_default.ErrEmailNoExit
 	}
 
 	// Compares our given password against the hashed password
 	// stored in the database
 	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password)); err != nil {
-		err = ankr_default.ErrPasswordError
-		log.Println(err.Error())
+		log.Println(ankr_default.ErrPasswordError.Error())
 		return ankr_default.ErrPasswordError
 	}
 
-	log.Printf("user userToken %+v", user.Token)
+	if user.Status ==  usermgr.UserStatus_CONFIRMING {
+         return ankr_default.ErrUserNotVariyEmail
+	}
 
-	expired, userToken, err2 := p.token.NewToken(user.ID, false)
+	if user.Status ==  usermgr.UserStatus_DEACTIVATED {
+		return ankr_default.ErrUserDeactive
+	}
 
-	if err2 != nil {
-		log.Println(err2.Error())
-		return err2
+	expired, userToken, err := p.token.NewToken(user.ID, false)
+
+	if err != nil {
+		log.Println(err.Error())
+		return err
 	}
 
 	rsp.AuthenticationResult = &usermgr.AuthenticationResult{}
@@ -317,6 +514,14 @@ func (p *UserHandler) VerifyAccessToken(ctx context.Context, req *common_proto.E
 	if len(accessToken) == 0 {
 		return ankr_default.ErrTokenParseFailed
 	}
+
+	// varify signature
+	if _, err := p.token.Verify(accessToken); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+
 	_, err := VerifyAccessToken(accessToken)
 
 	if err != nil {
@@ -326,19 +531,31 @@ func (p *UserHandler) VerifyAccessToken(ctx context.Context, req *common_proto.E
 
 }
 
+
+
 func (p *UserHandler) Destroy() {
 	p.blacklist.destroy()
 }
 
+// forgetPassword = > confirm password
 func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPasswordRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into ForgetPassword")
-	// generate new authorization token for reset password
+
+	_, err := p.db.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Println("ForgotPassword does not exit " + err.Error())
+		return ankr_default.ErrEmailNoExit
+	}
+
+	// generate new authorization token for reset password   input email as uid
 	_, forgetPasswordCode, err := p.token.NewToken(req.Email, false)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
+
+	log.Printf("ForgetPassword %s for %s \n", forgetPasswordCode , req.Email)
 
 	// some logic to examine and verify user here
 
@@ -362,31 +579,52 @@ func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPas
 	return nil
 }
 
+func getSha256(value string) string{
+	h := sha1.New()
+	h.Write([]byte(value))
+	sha := base64.URLEncoding.EncodeToString(h.Sum(nil))
+	return sha
+}
+
 func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Empty) error {
 	log.Println("Debug ConfirmPassword")
 
-	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.NewPassword) {
-		log.Println(ankr_default.ErrPasswordFormat.Error())
-		return ankr_default.ErrPasswordFormat
-	}
-
-	// verify code if is expired
-	_, err := p.token.Verify(req.ConfirmationCode)
-	if err != nil {
+	if err := user_util.CheckPassword(req.NewPassword); err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	// check email auth
-	email, err := getIdFromToken(req.ConfirmationCode)
-	if err != nil {
+    var email string
+
+	if playload, err := p.token.Verify(req.ConfirmationCode); err != nil {
 		log.Println(err.Error())
 		return err
+	}else{
+		email = playload.Id
+		log.Printf("find email %s  new email %s \n", email, req.Email)
 	}
+
+	//
+	//
+	//// check email auth
+	//email, err := getIdFromToken(req.ConfirmationCode)
+	//if err != nil {
+	//	log.Println(err.Error())
+	//	return err
+	//}
 
 	if strings.ToLower(email) != strings.ToLower(req.Email) || email == "" {
 		log.Println(ankr_default.ErrAuthNotAllowed)
 		return ankr_default.ErrAuthNotAllowed
+	}
+
+	// new password should not same as before
+	if record, err := p.db.GetUserByEmail(strings.ToLower(email)); err != nil {
+		log.Println(err.Error())
+		return err
+	} else if err := bcrypt.CompareHashAndPassword([]byte(record.HashedPassword), []byte(req.NewPassword)); err == nil {
+		log.Println(ankr_default.ErrPasswordSame)
+		return ankr_default.ErrPasswordSame
 	}
 
 	// hash password
@@ -416,16 +654,34 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 	return nil
 }
 
+
 func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePasswordRequest, rsp *common_proto.Empty) error {
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangePassword")
 
-	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.NewPassword) {
-		log.Println(ankr_default.ErrPasswordFormat.Error())
-		return ankr_default.ErrPasswordError
+	user, err := p.db.GetUser(uid)
+	if err != nil {
+		log.Println(err.Error())
+		return err
 	}
 
-	// hash password, TODO: equal return err
+	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.OldPassword)); err != nil {
+		log.Println(ankr_default.ErrPasswordError.Error())
+		return ankr_default.ErrOldPassword
+	}
+
+
+	if err := user_util.CheckPassword(req.NewPassword); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if req.NewPassword == req.OldPassword {
+		log.Println(ankr_default.ErrPasswordSame)
+		return ankr_default.ErrPasswordSame
+	}
+
+	// hash password
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err.Error())
@@ -448,6 +704,7 @@ func (p *UserHandler) ChangePassword(ctx context.Context, req *usermgr.ChangePas
 	return nil
 }
 
+
 func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateAttributesRequest, rsp *usermgr.User) error {
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug UpdateAttributes")
@@ -457,36 +714,107 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 		return err
 	}
 
-	if userRecord, err := p.db.GetUser(uid); err != nil {
-		rsp.Id = userRecord.ID
-		rsp.Email = userRecord.Email
-		rsp.Attributes = &usermgr.UserAttributes{
-			Name:             userRecord.Name,
-			CreationDate:     userRecord.CreationDate,
-			LastModifiedDate: userRecord.LastModifiedDate,
-			PubKey:           userRecord.PubKey,
-		}
-		rsp.Status = userRecord.Status
+	userRecord, err := p.db.GetUser(uid)
+	if err != nil {
+		log.Println(err.Error())
+		return err
 	}
 
+	rsp.Id = userRecord.ID
+	rsp.Email = userRecord.Email
+	rsp.Attributes = &usermgr.UserAttributes{
+		Name:             userRecord.Name,
+		CreationDate:     userRecord.CreationDate,
+		LastModifiedDate: userRecord.LastModifiedDate,
+		PubKey:           userRecord.PubKey,
+	}
+	rsp.Status = userRecord.Status
 	return nil
 }
 
 func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailRequest, rsp *common_proto.Empty) error {
 	uid := ankr_util.GetUserID(ctx)
+	req.NewEmail = strings.ToLower(req.NewEmail)
 	log.Println("Debug ChangeEmail")
 
-	if !user_util.MatchPattern(user_util.OpEmailMatch, req.NewEmail) {
+
+
+	if err := user_util.CheckEmail(req.NewEmail); err != nil {
 		log.Println(ankr_default.ErrEmailFormat)
 		return ankr_default.ErrEmailFormat
+	}
+
+
+	// new password should not same as before
+	if _, err := p.db.GetUserByEmail(strings.ToLower(req.NewEmail)); err != nil {
+       // can not find record, it is ok
+	}else{
+		log.Println("new email have been used")
+		return ankr_default.ErrEmailExit
+	}
+
+
+	if userRecord, err := p.db.GetUser(uid); err != nil {
+		log.Println(err.Error())
+		return err
+	} else if userRecord.Email == req.NewEmail {
+		log.Println(ankr_default.ErrEmailSame)
+		return ankr_default.ErrEmailSame
+	}
+
+
+    // use email as uid
+	_, changeEmailCode, err := p.token.NewToken(req.NewEmail, false)
+	log.Printf("------>comfirm code %s  for email %s\n", changeEmailCode, req.NewEmail)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if err := p.pubEmail.Publish(context.TODO(),
+		&mail.MailEvent{
+			Type: mail.EmailType_CONFIRM_EMAIL,
+			From: ankr_default.NoReplyEmailAddress,
+			To:   []string{req.NewEmail},
+			OpMail: &mail.MailEvent_ChangeEmail{
+				ChangeEmail: &mail.ChangeEmail{
+					UserId:   uid,
+					NewEmail: req.NewEmail,
+					Code:     changeEmailCode,
+				},
+			},
+		}); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+
+func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmailRequest, rsp *common_proto.Empty) error {
+
+	uid := ankr_util.GetUserID(ctx)
+	log.Println("Debug ChangeEmail")
+
+
+	if playload, err := p.token.Verify(req.ConfirmationCode); err != nil {
+		log.Println(err.Error())
+		return err
+	}else{
+		    // id as email previous
+			if playload.Id != req.NewEmail {
+			return ankr_default.ErrEmailNoMatch
+		}
 	}
 
 	attr := []*usermgr.UserAttribute{
 		{
 			Key:   "Email",
-			Value: &usermgr.UserAttribute_StringValue{StringValue: string(req.NewEmail)},
+			Value: &usermgr.UserAttribute_StringValue{StringValue: strings.ToLower(req.NewEmail)},
 		},
 	}
+
 
 	if err := p.db.UpdateUser(uid, attr); err != nil {
 		log.Println(err.Error())

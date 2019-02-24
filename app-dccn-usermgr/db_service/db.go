@@ -64,6 +64,7 @@ func (p *DB) CreateUser(user *pb.User, hashedPassword string) error {
 		ID:               user.Id,
 		Email:            user.Email,
 		Name:             user.Attributes.Name,
+		Status:           user.Status,
 		HashedPassword:   hashedPassword,
 		LastModifiedDate: uint64(time.Now().Unix()),
 		CreationDate:     uint64(time.Now().Unix()),

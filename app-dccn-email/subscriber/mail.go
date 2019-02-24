@@ -54,8 +54,8 @@ func (p *Sender) htmlBody() string {
 		t := emailTemplates["registeration"]
 		data := struct {
 			Code string
-			ID   string
-		}{p.GetConfirmRegistration().Code, p.GetConfirmRegistration().UserId}
+			Email   string
+		}{p.GetConfirmRegistration().Code, p.To[0]}
 		t.Execute(&tpl, data)
 		html = tpl.String()
 		// log.Print(data)
