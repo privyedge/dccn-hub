@@ -802,8 +802,8 @@ func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmai
 		log.Println(err.Error())
 		return err
 	}else{
+		    // id as email previous
 			if playload.Id != req.NewEmail {
-			//log.Println(err.Error())
 			return ankr_default.ErrEmailNoMatch
 		}
 	}
