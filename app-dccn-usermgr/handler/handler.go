@@ -95,7 +95,7 @@ func VerifyAccessToken(refreshToken string) (string, error) {
 	now := time.Now().Unix()
 
 	if now > int64(dat.Exp) {
-		return "", ankr_default.ErrTokenParseFailed
+		return "", ankr_default.ErrTokenNeedRefresh
 	}
 
 	return string(dat.Jti), nil
@@ -743,6 +743,16 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 		log.Println(ankr_default.ErrEmailFormat)
 		return ankr_default.ErrEmailFormat
 	}
+
+
+	// new password should not same as before
+	if _, err := p.db.GetUserByEmail(strings.ToLower(req.NewEmail)); err != nil {
+       // can not find record, it is ok
+	}else{
+		log.Println("new email have been used")
+		return ankr_default.ErrEmailExit
+	}
+
 
 	if userRecord, err := p.db.GetUser(uid); err != nil {
 		log.Println(err.Error())
