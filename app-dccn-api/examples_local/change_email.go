@@ -44,8 +44,8 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "yousong.zhang2@gmail.com"
-    req.Password = "1111112c11"
+	req.Email = "yousong@gmail.com"
+    req.Password = "111111c"
 
 
 
@@ -76,7 +76,7 @@ func main() {
 		defer cancel()
 
 		request := &usermgr.ChangeEmailRequest{}
-		request.NewEmail =  "yousong@ankr.com"
+		request.NewEmail =  "yousong1@gmail.com"
 
 
 

@@ -106,3 +106,5 @@ func (p *Token) VerifyAndRefresh(tokenString string) (string, error) {
 	// Sign token and return
 	return token.SignedString(secret)
 }
+
+

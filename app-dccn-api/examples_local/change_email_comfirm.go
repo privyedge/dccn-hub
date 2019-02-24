@@ -44,8 +44,8 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "yousong.zhang2@gmail.com"
-    req.Password = "1111112c11"
+	req.Email = "yousong@gmail.com"
+	req.Password = "111111c"
 
 
 
@@ -79,8 +79,8 @@ func main() {
 
 
 		request := &usermgr.ConfirmEmailRequest{}
-		request.NewEmail =  "yousong@ankr.com"
-		request.ConfirmationCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTA5ODM1NDIsImp0aSI6IjQyZjQ5Y2FlLTAzYzUtNDgzOS04OWI3LTllMzdjMmZjNTk1ZSIsImlzcyI6ImFua3IubmV0d29yayJ9.IckQvHs-lse3ZKeEXP-Rf6lu3APoPUPKK8GITM9LLRo"
+		request.NewEmail =  "yousong1@gmail.com"
+		request.ConfirmationCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTA5OTI4MDksImp0aSI6ImRmMzczM2I4LTI5YzktNGY0MS1hMTFjLTg0Y2Y3NzBlYzZiMSIsImlzcyI6ImFua3IubmV0d29yayJ9.OaLX0YUTzWJCVRxrZHwFGfANVQG1vH9Vb4P8biAc8hk"
 
 
 		if rsp, err := userClient.ConfirmEmail(tokenContext, request); err != nil {

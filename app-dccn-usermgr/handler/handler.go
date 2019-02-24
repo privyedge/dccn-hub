@@ -44,24 +44,18 @@ func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micr
 func getIdFromToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
 	if len(parts) != 3 {
-		log.Printf("1111111")
 		return "", ankr_default.ErrTokenParseFailed
 	}
-
-	log.Printf("why  ->%s<----", parts[1])
 
 	decoded, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
-		log.Printf("22222 error %s", err.Error())
 		return "", ankr_default.ErrTokenParseFailed
 	}
-	log.Printf("4444")
 	var dat ankr_util.Token
 
 	if err := json.Unmarshal(decoded, &dat); err != nil {
 		return "", ankr_default.ErrTokenParseFailed
 	}
-	log.Printf("33333")
 	return string(dat.Jti), nil
 }
 
@@ -534,12 +528,21 @@ func (p *UserHandler) Destroy() {
 func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPasswordRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into ForgetPassword")
+
+	_, err := p.db.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Println("ForgotPassword does not exit " + err.Error())
+		return ankr_default.ErrEmailNoExit
+	}
+
 	// generate new authorization token for reset password   input email as uid
 	_, forgetPasswordCode, err := p.token.NewToken(req.Email, false)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
+
+	log.Printf("ForgetPassword %s for %s \n", forgetPasswordCode , req.Email)
 
 	// some logic to examine and verify user here
 
@@ -578,19 +581,24 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 		return err
 	}
 
-	// verify code if is expired
-	_, err := p.token.Verify(req.ConfirmationCode)
-	if err != nil {
+    var email string
+
+	if playload, err := p.token.Verify(req.ConfirmationCode); err != nil {
 		log.Println(err.Error())
 		return err
+	}else{
+		email = playload.Id
+		log.Printf("find email %s  new email %s \n", email, req.Email)
 	}
 
-	// check email auth
-	email, err := getIdFromToken(req.ConfirmationCode)
-	if err != nil {
-		log.Println(err.Error())
-		return err
-	}
+	//
+	//
+	//// check email auth
+	//email, err := getIdFromToken(req.ConfirmationCode)
+	//if err != nil {
+	//	log.Println(err.Error())
+	//	return err
+	//}
 
 	if strings.ToLower(email) != strings.ToLower(req.Email) || email == "" {
 		log.Println(ankr_default.ErrAuthNotAllowed)
@@ -762,22 +770,19 @@ func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmai
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangeEmail")
 
-	if _, err := p.token.Verify(req.ConfirmationCode); err != nil {
+
+	if playload, err := p.token.Verify(req.ConfirmationCode); err != nil {
 		log.Println(err.Error())
 		return err
+	}else{
+		if playload.Id != uid {
+			log.Println(err.Error())
+			return ankr_default.ErrAuthNotAllowed
+		}
 	}
 
 
 
-
-
-	old_uid, err := getIdFromToken(req.ConfirmationCode)
-
-
-	if old_uid != uid {
-		log.Println(err.Error())
-		return ankr_default.ErrAuthNotAllowed
-	}
 
 
 
