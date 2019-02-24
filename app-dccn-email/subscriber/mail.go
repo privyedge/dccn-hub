@@ -55,7 +55,7 @@ func (p *Sender) htmlBody() string {
 		data := struct {
 			Code string
 			Email   string
-		}{p.GetConfirmRegistration().Code, p.GetToEmailAddress()}
+		}{p.GetConfirmRegistration().Code, p.To[0]}
 		t.Execute(&tpl, data)
 		html = tpl.String()
 		// log.Print(data)

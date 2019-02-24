@@ -159,6 +159,7 @@ func convertToTaskMessage(task db.TaskRecord) common_proto.Task {
 	message.Name = task.Name
 	message.Type = task.Type
 	message.Status = task.Status
+	message.DataCenterName = task.Datacenter
 	message.Attributes = &common_proto.TaskAttributes{}
 	message.Attributes.Replica = task.Replica
 	message.Attributes.LastModifiedDate = task.Last_modified_date
