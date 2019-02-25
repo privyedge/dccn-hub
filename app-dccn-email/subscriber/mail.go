@@ -60,8 +60,10 @@ func (p *Sender) htmlBody() string {
 		data := struct {
 			Code string
 			Email string
+			NewEmailEncoded string
 			AppDomain string
-		}{url.QueryEscape(p.GetConfirmRegistration().Code), 
+		}{url.QueryEscape(p.GetConfirmRegistration().Code),
+			p.To[0],
 			url.QueryEscape(p.To[0]), 
 			APPDOMAIN}
 		t.Execute(&tpl, data)
@@ -73,8 +75,10 @@ func (p *Sender) htmlBody() string {
 		data := struct {
 			Code string
 			Email string
+			NewEmailEncoded string
 			AppDomain string
-		}{url.QueryEscape(p.GetForgetPassword().Code), 
+		}{url.QueryEscape(p.GetForgetPassword().Code),
+			p.GetForgetPassword().Email,
 			url.QueryEscape(p.GetForgetPassword().Email), 
 			APPDOMAIN}
 		t.Execute(&tpl, data)

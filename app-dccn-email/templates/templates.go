@@ -12,7 +12,7 @@ const RegistrationTemplate = `
 </p>
 <p>
 	If clicking the link above doesn't work, please copy and paste the below URL in a new browser window.<br />
-	https://{{.AppDomain}}/account-verify?code={{.Code}}&email={{.Email}}
+	https://{{.AppDomain}}/account-verify?code={{.Code}}&email={{.NewEmailEncoded}}
 </p>
 <p>
 	Having issues with setting up your account? Contact 
@@ -37,7 +37,7 @@ const ForgotPasswordTemplate = `
 <p>
 	If clicking the link above doesn't work, please copy and paste the below URL in a 
 	new browser window.<br />
-	https://{{.AppDomain}}/reset-verify?code={{.Code}}&email={{.Email}}
+	https://{{.AppDomain}}/reset-verify?code={{.Code}}&email={{.NewEmailEncoded}}
 </p>
 <p>
 	Thanks,<br />
@@ -55,7 +55,7 @@ const ChangeEmailTemplate = `
 	You are receiving this message because you requested a change to the email address on your Ankr account to {{.NewEmail}}.
 </p>
 <p>
-	To confirm this change, please click <a href="https://{{.AppDomain}}/email-verify?code={{.Code}}&new_email={{.NewEmailEncoded}}">here</a>. 
+	To confirm this change, please click <a href="https://{{.AppDomain}}/email-verify?code={{.Code}}&new_email={{.Email}}">here</a>. 
 	Note that this link will expire in 24 hours.
 </p>
 <p>
