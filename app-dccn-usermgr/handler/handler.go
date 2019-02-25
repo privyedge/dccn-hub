@@ -27,12 +27,12 @@ import (
 
 type UserHandler struct {
 	db        dbservice.DBService // db
-	token     token.IToken        // token interface
+	token     token.Token        // token interface
 	pubEmail  micro.Publisher
 	blacklist *Blacklist // used for logout
 }
 
-func New(dbService dbservice.DBService, tokenService token.IToken, pubEmail micro.Publisher) *UserHandler {
+func New(dbService dbservice.DBService, tokenService token.Token, pubEmail micro.Publisher) *UserHandler {
 	return &UserHandler{
 		db:        dbService,
 		token:     tokenService,
@@ -60,46 +60,6 @@ func getIdFromToken(refreshToken string) (string, error) {
 }
 
 
-func getIdFromToken2(refreshToken string) (string, error) {
-	parts := strings.Split(refreshToken, ".")
-
-	decoded, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	var dat ankr_util.Token
-
-	if err := json.Unmarshal(decoded, &dat); err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-
-	return string(dat.Jti), nil
-}
-
-func VerifyAccessToken(refreshToken string) (string, error) {
-	parts := strings.Split(refreshToken, ".")
-
-	decoded, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	var dat ankr_util.Token
-
-	if err := json.Unmarshal(decoded, &dat); err != nil {
-		return "", ankr_default.ErrTokenParseFailed
-	}
-
-	now := time.Now().Unix()
-
-	if now > int64(dat.Exp) {
-		return "", ankr_default.ErrTokenNeedRefresh
-	}
-
-	return string(dat.Jti), nil
-}
 
 func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
 
@@ -446,6 +406,10 @@ func (p *UserHandler) Logout(ctx context.Context, req *usermgr.RefreshToken, out
 
 	user, err := p.db.GetUser(uid)
 
+	if user.Token != req.RefreshToken {
+		return ankr_default.ErrRefreshToken
+	}
+
 	attr := []*usermgr.UserAttribute{
 		{
 			Key:   "Token",
@@ -518,14 +482,7 @@ func (p *UserHandler) VerifyAccessToken(ctx context.Context, req *common_proto.E
 	// varify signature
 	if _, err := p.token.Verify(accessToken); err != nil {
 		log.Println(err.Error())
-		return err
-	}
-
-
-	_, err := VerifyAccessToken(accessToken)
-
-	if err != nil {
-		return err
+		return ankr_default.ErrAccessTokenExpired
 	}
 	return nil
 
@@ -549,7 +506,7 @@ func (p *UserHandler) ForgotPassword(ctx context.Context, req *usermgr.ForgotPas
 	}
 
 	// generate new authorization token for reset password   input email as uid
-	_, forgetPasswordCode, err := p.token.NewToken(req.Email, false)
+	forgetPasswordCode, err := p.token.NewTokenWithoutExpired(req.Email)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -604,14 +561,6 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 		log.Printf("find email %s  new email %s \n", email, req.Email)
 	}
 
-	//
-	//
-	//// check email auth
-	//email, err := getIdFromToken(req.ConfirmationCode)
-	//if err != nil {
-	//	log.Println(err.Error())
-	//	return err
-	//}
 
 	if strings.ToLower(email) != strings.ToLower(req.Email) || email == "" {
 		log.Println(ankr_default.ErrAuthNotAllowed)
@@ -764,7 +713,7 @@ func (p *UserHandler) ChangeEmail(ctx context.Context, req *usermgr.ChangeEmailR
 
 
     // use email as uid
-	_, changeEmailCode, err := p.token.NewToken(req.NewEmail, false)
+    changeEmailCode, err := p.token.NewTokenWithoutExpired(req.NewEmail)
 	log.Printf("------>comfirm code %s  for email %s\n", changeEmailCode, req.NewEmail)
 	if err != nil {
 		log.Println(err.Error())

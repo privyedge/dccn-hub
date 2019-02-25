@@ -41,8 +41,14 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = `12112111@Gmail.com`
-    req.Password = "111111"
+	req.Email = `yousong@ankr.network`
+    req.Password = "zddzys123"
+
+	//
+	//req.User.Email = `yousong@ankr.network`
+	//req.User.Attributes = &usermgr.UserAttributes{}
+	//req.User.Attributes.Name = "ankrtest11"
+	//req.Password = "zddzys123"
 
 
 

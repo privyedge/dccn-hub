@@ -32,8 +32,8 @@ type UserPayload struct {
 }
 
 // New returns Token instance.
-func New() *Token {
-	return &Token{
+func New() Token {
+	return Token{
 		AccessTokenValidTime:  ankr_default.AccessTokenValidTime,
 		RefreshTokenValidTime: ankr_default.RefreshTokenValidTime,
 	}
@@ -66,6 +66,31 @@ func (p *Token) NewToken(uid string, is_refrsh_token bool) (int64, string, error
 	tokenString, err := token.SignedString(secret)
 	return expireTime, tokenString, err
 }
+
+
+// New returns JWT string.
+func (p *Token) NewTokenWithoutExpired(uid string) (string, error) {
+	var expireTime int64
+	expireTime = 0
+
+	// Create the Claims
+	payload := UserPayload{
+		nil,
+		jwt.StandardClaims{
+			ExpiresAt: expireTime,
+			Issuer:    "ankr.network",
+			Id: uid,
+		},
+	}
+
+	// Create token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+
+	// Sign token and return
+	tokenString, err := token.SignedString(secret)
+	return  tokenString, err
+}
+
 
 // Verify a token string into a token object
 func (p *Token) Verify(tokenString string) (*UserPayload, error) {
