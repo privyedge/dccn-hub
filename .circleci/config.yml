@@ -47,13 +47,16 @@ jobs:
             then
               BRANCH_NAME="dev"
               K8S_CLUSTER="stage.hub"
+              APP_DOMAIN="app-stage.ankr.network"
             elif [[ ($BRANCH_NAME == "master") ]]
             then
               BRANCH_NAME="stage"
               K8S_CLUSTER="hub"
+              APP_DOMAIN="app.ankr.network"
             else
               BRANCH_NAME="feat"
               K8S_CLUSTER="dev.hub"
+              APP_DOMAIN="app-dev.ankr.network"
             fi
 
             declare -a component_arr=("dccn-hub-taskmgr" "dccn-hub-api" "dccn-hub-usermgr" "dccn-hub-email")
@@ -72,7 +75,7 @@ jobs:
             docker rm -fv dccn-hub-dep-container
 
             for((i=0; i<arrlen; i++)); do
-              docker build --no-cache -f "dockerfile"/${dockerfile_arr[$i]}.Dockerfile -t ${component_arr[$i]}:$BRANCH_NAME .
+              docker build --build-arg APP_DOMAIN=${APP_DOMAIN} --no-cache -f "dockerfile"/${dockerfile_arr[$i]}.Dockerfile -t ${component_arr[$i]}:$BRANCH_NAME .
               for TAG in $BRANCH_NAME $SHA1_SHORT $BRANCH_NAME$DATE; do
                 docker tag ${component_arr[$i]}:$BRANCH_NAME $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/${component_arr[$i]}:$TAG
                 docker push $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/${component_arr[$i]}:$TAG
@@ -80,7 +83,7 @@ jobs:
             done
             declare -a deployment_arr=("taskmgr" "api" "usermgr" "email")
             declare -a name_arr=("app-dccn-taskmgr" "app-dccn-api" "app-dccn-usermgr" "app-dccn-email")
-            
+
             kops export kubecfg --name ${K8S_CLUSTER}.k8s.ankr.network --state s3://kops.${K8S_CLUSTER}.config
             for ((i=0; i<arrlen; i++)); do
               kubectl set image ${name_arr[$i]}=$AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/${component_arr[$i]}:${BRANCH_NAME}${DATE} --local -f kubernetes/${dockerfile_arr[$i]}.yml -o yaml > kubernetes/${dockerfile_arr[$i]}_patch.yml

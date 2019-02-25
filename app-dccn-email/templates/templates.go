@@ -8,11 +8,11 @@ const RegistrationTemplate = `
 </p>
 <p>
 	Welcome! Thanks for joining Ankr Network. To access Ankr's DCCN service, please activate your account by clicking here: 
-	<a href="https://app.ankr.network/account_verify?code={{.Code}}&email={{.Email}}">Activate Now</a>.
+	<a href="https://{{.AppDomain}}/account_verify?code={{.Code}}&email={{.Email}}">Activate Now</a>.
 </p>
 <p>
 	If clicking the link above doesn't work, please copy and paste the below URL in a new browser window.<br />
-	https://app.ankr.network/account_verify?code={{.Code}}&email={{.Email}}
+	https://{{.AppDomain}}/account_verify?code={{.Code}}&email={{.Email}}
 </p>
 <p>
 	Having issues with setting up your account? Contact 
