@@ -86,7 +86,7 @@ func (p *Sender) htmlBody() string {
 		html = fmt.Sprintf("<h1>CHANGE_PASSWORD %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
 		log.Printf("user: %s, code: %s", id, code)
 	case mail.EmailType_CONFIRM_EMAIL:
-		t := emailTemplates["forgetPassword"]
+		t := emailTemplates["changeEmail"]
 		data := struct {
 			NewEmail string
 			NewEmailEncoded string
