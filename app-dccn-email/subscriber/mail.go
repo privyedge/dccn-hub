@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"strings"
+	"net/url"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -45,6 +46,8 @@ func (p *Sender) textBody() string {
 
 var emailTemplates = map[string]*template.Template{
 	"registeration": template.Must(template.New("registration").Parse(email_templates.RegistrationTemplate)),
+	"forgetPassword": template.Must(template.New("forgetPassword").Parse(email_templates.ForgotPasswordTemplate)),
+	"changeEmail": template.Must(template.New("changeEmail").Parse(email_templates.ChangeEmailTemplate)),
 }
 
 func (p *Sender) htmlBody() string {
@@ -57,27 +60,49 @@ func (p *Sender) htmlBody() string {
 		data := struct {
 			Code string
 			Email string
+			NewEmailEncoded string
 			AppDomain string
-		}{p.GetConfirmRegistration().Code, p.To[0], APPDOMAIN}
+		}{url.QueryEscape(p.GetConfirmRegistration().Code),
+			p.To[0],
+			url.QueryEscape(p.To[0]), 
+			APPDOMAIN}
 		t.Execute(&tpl, data)
 		html = tpl.String()
 		// log.Print(data)
 		// log.Printf("html: %s", html)
 	case mail.EmailType_FORGET_PASSWORD:
-		code := p.GetForgetPassword().Code
-		email := p.GetForgetPassword().Email
-		html = fmt.Sprintf("<h1>FORGET_PASSWORD %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, email)
-		log.Printf("user: %s, code: %s", email, code)
+		t := emailTemplates["forgetPassword"]
+		data := struct {
+			Code string
+			Email string
+			NewEmailEncoded string
+			AppDomain string
+		}{url.QueryEscape(p.GetForgetPassword().Code),
+			p.GetForgetPassword().Email,
+			url.QueryEscape(p.GetForgetPassword().Email), 
+			APPDOMAIN}
+		t.Execute(&tpl, data)
+		html = tpl.String()
+		// log.Printf("user: %s, code: %s", email, code)
 	case mail.EmailType_CHANGE_PASSWORD:
 		id := p.GetChangePassword().UserId
 		code := p.GetChangePassword().Code
 		html = fmt.Sprintf("<h1>CHANGE_PASSWORD %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
 		log.Printf("user: %s, code: %s", id, code)
 	case mail.EmailType_CONFIRM_EMAIL:
-		id := p.GetChangeEmail().UserId
-		code := p.GetChangeEmail().Code
-		html = fmt.Sprintf("<h1>CONFIRM_EMAIL %s(Validate Code)</h1><p>url<a href='https://domain.com/verify/code=%s?email=%s'></a>", code, code, id)
-		log.Printf("user: %s, code: %s", id, code)
+		t := emailTemplates["changeEmail"]
+		data := struct {
+			Code string
+			NewEmail string
+			NewEmailEncoded string
+			AppDomain string
+		}{p.GetChangeEmail().Code,
+			p.GetChangeEmail().NewEmail,
+			url.QueryEscape(p.GetChangeEmail().NewEmail),
+			APPDOMAIN}
+		t.Execute(&tpl, data)
+		html = tpl.String()
+		// log.Printf("user: %s, code: %s", id, code)
 	}
 
 	return html
