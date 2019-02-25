@@ -10,11 +10,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go/service/ses" 
 
 	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
 	email_templates "github.com/Ankr-network/dccn-hub/app-dccn-email/templates"
 )
+
+var APPDOMAIN string
 
 const (
 
@@ -54,8 +56,9 @@ func (p *Sender) htmlBody() string {
 		t := emailTemplates["registeration"]
 		data := struct {
 			Code string
-			Email   string
-		}{p.GetConfirmRegistration().Code, p.To[0]}
+			Email string
+			AppDomain string
+		}{p.GetConfirmRegistration().Code, p.To[0], APPDOMAIN}
 		t.Execute(&tpl, data)
 		html = tpl.String()
 		// log.Print(data)
