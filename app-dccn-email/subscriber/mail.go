@@ -88,11 +88,13 @@ func (p *Sender) htmlBody() string {
 	case mail.EmailType_CONFIRM_EMAIL:
 		t := emailTemplates["changeEmail"]
 		data := struct {
+			Code string
 			NewEmail string
 			NewEmailEncoded string
 			AppDomain string
-		}{p.GetChangeEmail().NewEmail, 
-			url.QueryEscape(p.GetChangeEmail().NewEmail), 
+		}{p.GetChangeEmail().Code,
+			p.GetChangeEmail().NewEmail,
+			url.QueryEscape(p.GetChangeEmail().NewEmail),
 			APPDOMAIN}
 		t.Execute(&tpl, data)
 		html = tpl.String()

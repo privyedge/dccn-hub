@@ -55,12 +55,12 @@ const ChangeEmailTemplate = `
 	You are receiving this message because you requested a change to the email address on your Ankr account to {{.NewEmail}}.
 </p>
 <p>
-	To confirm this change, please click <a href="https://{{.AppDomain}}/email-verify?new_email={{.NewEmailEncoded}}">here</a>. 
+	To confirm this change, please click <a href="https://{{.AppDomain}}/email-verify?code={{.Code}}&new_email={{.NewEmailEncoded}}">here</a>. 
 	Note that this link will expire in 24 hours.
 </p>
 <p>
 	If clicking the link above doesn't work, please copy and paste the below URL in a new browser window.<br />
-	https://{{.AppDomain}}/email-verify?new_email={{.NewEmailEncoded}}</p>
+	https://{{.AppDomain}}/email-verify?code={{.Code}}&new_email={{.NewEmailEncoded}}</p>
 <p>
 	Thanks,<br /> 
 	The Ankr Team
