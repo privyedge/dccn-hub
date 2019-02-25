@@ -55,7 +55,7 @@ const ChangeEmailTemplate = `
 	You are receiving this message because you requested a change to the email address on your Ankr account to {{.NewEmail}}.
 </p>
 <p>
-	To confirm this change, please click <a href="https://{{.AppDomain}}/email-verify?code={{.Code}}&new_email={{.Email}}">here</a>. 
+	To confirm this change, please click <a href="https://{{.AppDomain}}/email-verify?code={{.Code}}&new_email={{.NewEmail}}">here</a>. 
 	Note that this link will expire in 24 hours.
 </p>
 <p>
