@@ -41,7 +41,6 @@ func New(dbService dbservice.DBService, tokenService token.Token, pubEmail micro
 	}
 }
 
-var replacer = strings.NewReplacer("%40", "@")
 
 func getIdFromToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
@@ -137,7 +136,6 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into ConfirmRegistration")
-	req.Email = replacer.Replace(req.Email)
 
 	if err := user_util.CheckEmail(req.Email); err != nil {
 		log.Println(err.Error())
@@ -480,7 +478,6 @@ func getSha256(value string) string{
 
 func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Empty) error {
 	log.Println("Debug ConfirmPassword")
-	req.Email = replacer.Replace(req.Email)
 
 	if err := user_util.CheckPassword(req.NewPassword); err != nil {
 		log.Println(err.Error())
@@ -681,7 +678,6 @@ func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmai
 
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangeEmail")
-	req.NewEmail = replacer.Replace(req.NewEmail)
 
 
 	if playload, err := p.token.Verify(req.ConfirmationCode); err != nil {
