@@ -33,6 +33,8 @@ func New(db dbservice.DBService, feedback micro.Publisher) *DcMgrHandler {
 func (p *DcMgrHandler) ServerStream(
 	ctx context.Context, stream dcmgr.DCStreamer_ServerStreamStream) error {
 
+		log.Printf(">>>>>>>>> context %+v", ctx)
+
 	log.Println("Debug into ServerStream")
 	for {
 		in, err := stream.Recv()
