@@ -41,6 +41,8 @@ func New(dbService dbservice.DBService, tokenService token.Token, pubEmail micro
 	}
 }
 
+var replacer = strings.NewReplacer("%40", "@")
+
 func getIdFromToken(refreshToken string) (string, error) {
 	parts := strings.Split(refreshToken, ".")
 	if len(parts) != 3 {
@@ -132,77 +134,10 @@ func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest
 	return nil
 }
 
-//func (p *UserHandler) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
-//
-//	log.Println("Debug Register")
-//	user := req.User
-//
-//	log.Println("Debug Register")
-//	// verify email and password
-//	if !user_util.MatchPattern(user_util.OpPasswordMatch, req.Password) || !user_util.MatchPattern(user_util.OpEmailMatch, user.Email) {
-//		err := errors.New("email or password invalid")
-//		log.Println(err.Error())
-//		return err
-//	}
-//
-//	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-//	if err != nil {
-//		log.Println(ankr_default.ErrHashPassword)
-//		return ankr_default.ErrHashPassword
-//	}
-//
-//	_, dbErr := p.db.GetUserByEmail(strings.ToLower(user.Email))
-//	if dbErr == nil {
-//		log.Println(ankr_default.ErrEmailExit)
-//		return ankr_default.ErrEmailExit
-//	}
-//
-//	hashPassword := string(hashedPwd)
-//	user.Email = strings.ToLower(user.Email)
-//	user.Id = uuid.New().String()
-//	user.Status = usermgr.UserStatus_CONFIRMING
-//
-//	if user.Attributes.Name == "ankrtest" { // for debug
-//		user.Status = usermgr.UserStatus_CONFIRMED
-//
-//	} else {
-//		_, confirmRegistrationCode, err := p.token.NewToken(user.Id, false)
-//		if err != nil {
-//			log.Println(err.Error())
-//			return err
-//		}
-//
-//		e := &mail.MailEvent{
-//			Type: mail.EmailType_CONFIRM_REGISTRATION,
-//			From: ankr_default.NoReplyEmailAddress,
-//			To:   []string{user.Email},
-//			OpMail: &mail.MailEvent_ConfirmRegistration{
-//				ConfirmRegistration: &mail.ConfirmRegistration{
-//					UserName: user.Attributes.Name,
-//					UserId:   user.Id,
-//					Code:     confirmRegistrationCode,
-//				},
-//			},
-//		}
-//
-//		if err := p.pubEmail.Publish(context.Background(), e); err != nil {
-//			log.Println(err.Error())
-//			return err
-//		}
-//
-//	}
-//
-//	if err := p.db.CreateUser(user, hashPassword); err != nil {
-//		log.Println(err.Error())
-//		return err
-//	}
-//
-//	return nil
-//}
-
 func (p *UserHandler) ConfirmRegistration(ctx context.Context, req *usermgr.ConfirmRegistrationRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into ConfirmRegistration")
+	req.Email = replacer.Replace(req.Email)
 
 	if err := user_util.CheckEmail(req.Email); err != nil {
 		log.Println(err.Error())
@@ -545,6 +480,7 @@ func getSha256(value string) string{
 
 func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmPasswordRequest, rsp *common_proto.Empty) error {
 	log.Println("Debug ConfirmPassword")
+	req.Email = replacer.Replace(req.Email)
 
 	if err := user_util.CheckPassword(req.NewPassword); err != nil {
 		log.Println(err.Error())
@@ -745,6 +681,7 @@ func (p *UserHandler) ConfirmEmail(ctx context.Context, req *usermgr.ConfirmEmai
 
 	uid := ankr_util.GetUserID(ctx)
 	log.Println("Debug ChangeEmail")
+	req.NewEmail = replacer.Replace(req.NewEmail)
 
 
 	if playload, err := p.token.Verify(req.ConfirmationCode); err != nil {
