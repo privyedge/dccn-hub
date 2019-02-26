@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: v1
+    spec:
+      imagePullSecrets:
+      - name: dccn-ecr
+      containers:
+      - image: 815280425737.dkr.ecr.us-west-2.amazonaws.com/app-dccn-usermgr:latest
+        imagePullPolicy: "Always"
+        name: v1
