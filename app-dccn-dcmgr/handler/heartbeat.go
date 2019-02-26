@@ -11,7 +11,7 @@ import (
 
 func (p *DcMgrHandler) updateDataCenter(ctx context.Context, dc *common_proto.DataCenter, stream dcmgr.DCStreamer_ServerStreamStream) error {
 	// first update database
-	//log.Printf("into updateDataCenter  : %v ", dc)
+	log.Printf("into updateDataCenter  : %v ", dc)
 	center , err :=  p.db.GetByName(dc.Name)
 
 

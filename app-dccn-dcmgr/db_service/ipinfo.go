@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc/peer"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -68,6 +69,6 @@ func GetIP(ctx context.Context) string {
 	}
 
 	values :=  strings.Split(pr.Addr.String(), ":")
-	fmt.Print(" >>  IP : " + values[0])
+	log.Print("---->>>  IP : " + values[0])
 	return values[0]
 }
