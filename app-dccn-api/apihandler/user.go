@@ -2,6 +2,7 @@ package apihandler
 
 import (
 	"context"
+	"google.golang.org/grpc/peer"
 	"log"
 
 	"github.com/micro/go-micro/client"
@@ -18,6 +19,9 @@ type ApiUser struct {
 func (p *ApiUser) Register(ctx context.Context, req *usermgr.RegisterRequest, rsp *common_proto.Empty) error {
 
 	log.Println("Debug into Register")
+	pr, _ := peer.FromContext(ctx)
+	log.Printf("-----------> ****  ----> peer %+v \n", pr)
+
 	if out, err := p.api.Register(ctx, req); err != nil {
 		log.Println(err.Error())
 		return err
