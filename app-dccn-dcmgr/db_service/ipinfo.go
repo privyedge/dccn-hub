@@ -61,6 +61,7 @@ func GetLatLng(ip string) (string, string, string)  {
 
 func GetIP(ctx context.Context) string {
 	pr, ok := peer.FromContext(ctx)
+	log.Printf("-----------> ****  ----> peer %+v \n", pr)
 	if !ok {
 		fmt.Print("failed to get peer from ctx " )
 	}
