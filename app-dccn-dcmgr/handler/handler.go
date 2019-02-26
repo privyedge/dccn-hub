@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"github.com/micro/go-micro/metadata"
 	"io"
 	"log"
 
@@ -33,11 +34,16 @@ func New(db dbservice.DBService, feedback micro.Publisher) *DcMgrHandler {
 func (p *DcMgrHandler) ServerStream(
 	ctx context.Context, stream dcmgr.DCStreamer_ServerStreamStream) error {
 
+
 		log.Printf("---->>>>>>>>> context %+v \n", ctx)
 
 	log.Println("Debug into ServerStream")
 	for {
 		in, err := stream.Recv()
+
+		meta, _ := metadata.FromContext(ctx)
+		log.Printf("----->meta  %+v ", meta)
+
 		log.Println("Recv datacenter message")
 		if err == io.EOF {
 			log.Println("datacenter error eof ")
