@@ -266,11 +266,32 @@ func (p *TaskMgrHandler) UpdateTask(ctx context.Context, req *taskmgr.UpdateTask
 func (p *TaskMgrHandler) TaskOverview(ctx context.Context, req *common_proto.Empty, rsp *taskmgr.TaskOverviewResponse) error {
 	log.Printf("TaskOverview in task manager service\n")
 	//rsp = &taskmgr.TaskOverviewResponse{}
-	rsp.ClusterCount = 5
-	rsp.EnvironmentCount = 3
-	rsp.RegionCount = 3
-	rsp.TotalTaskCount = 100
-	rsp.HealthTaskCount = 98
+	userId := getUserID(ctx)
+	tasks, err := p.db.GetAll(userId)
+	failed := 0
+
+	for i := 0; i < len(tasks); i++ {
+		t := tasks[i]
+		if t.Status == common_proto.TaskStatus_START_FAILED || t.Status == common_proto.TaskStatus_CANCEL_FAILED || t.Status == common_proto.TaskStatus_UPDATE_FAILED {
+			failed++
+         }
+	}
+
+
+	rsp.ClusterCount = 0
+	rsp.EnvironmentCount = 0
+	rsp.RegionCount = 0
+	rsp.TotalTaskCount = 1
+	rsp.HealthTaskCount = 1
+
+	if err == nil &&  len(tasks) > 0  {
+		rsp.ClusterCount = int32(len(tasks))
+		rsp.EnvironmentCount = int32(len(tasks))
+		rsp.RegionCount = 3
+		rsp.TotalTaskCount = int32(len(tasks))
+		rsp.HealthTaskCount = int32(len(tasks) - failed)
+
+	}
 
 	return nil
 }
@@ -299,6 +320,22 @@ func (p *TaskMgrHandler) TaskLeaderBoard(ctx context.Context, req *common_proto.
 		detail.Number = 97.98
 		list = append(list, &detail)
 	}
+
+
+	userId := getUserID(ctx)
+	tasks, err := p.db.GetAll(userId)
+	if err == nil && len(tasks) > 0 {
+		offset := len(tasks)
+
+		for i := 0; i < len(list); i++ {
+			if offset == 0 {
+			   break
+			}
+			list[i].Name = tasks[offset - 1].Name
+			offset--
+		}
+	}
+
 
 	rsp.List = list
 
