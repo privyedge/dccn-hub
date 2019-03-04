@@ -43,9 +43,8 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "12112@Gmail.com"
-	req.Password = "11111111"
-
+	req.Email = `yousong.zhang@gmail.com`
+    req.Password = "zddzys123"
 
 
 	//var userId string
@@ -79,6 +78,7 @@ func main() {
 		defer cancel()
 
 		task := common_proto.Task{}
+		//task.DataCenterName = "datacenter_tokyo"
 		task.Name = "task"
 		task.Type = common_proto.TaskType_DEPLOYMENT
 		task.Attributes = &common_proto.TaskAttributes{}

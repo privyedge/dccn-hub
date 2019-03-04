@@ -39,8 +39,8 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "12112@Gmail.com"
-	req.Password = "11111111"
+	req.Email = "yousong1@gmail.com"
+	req.Password = "111111c"
 
 	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
@@ -65,7 +65,7 @@ func main() {
 		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 
-		taskId := "a7e222d5-a0ac-48c1-8eca-ee8e547d169d"
+		taskId := "89eb6c70-bfa0-475d-83e5-9b441b9b390b"
 
 		if _, err := taskClient.CancelTask(tokenContext, &taskmgr.TaskID{TaskId: taskId}); err != nil {
 			log.Fatal(err.Error())

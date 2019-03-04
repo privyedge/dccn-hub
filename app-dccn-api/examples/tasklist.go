@@ -36,8 +36,8 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "12112@Gmail.com"
-	req.Password = "11111111"
+	req.Email = `yousong.zhang@gmail.com`
+	req.Password = "zddzys123"
 
 	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
@@ -77,4 +77,3 @@ func main() {
 
 	}
 }
-

@@ -25,7 +25,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client.dccn.ankr.network:50051"
 
 func main() {
 
@@ -45,8 +45,8 @@ func main() {
 	taskClient := taskmgr.NewTaskMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "12112@Gmail.com"
-	req.Password = "11111111"
+	req.Email = `yousong.zhang@gmail.com`
+	req.Password = "zddzys123"
 
 	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
@@ -83,7 +83,7 @@ func main() {
 		if rsp, err := dcClient.NetworkInfo(tokenContext, &common_proto.Empty{}); err != nil {
 			log.Fatal(err.Error())
 		} else {
-			log.Printf("network info host count %+v ", rsp)
+			log.Printf("network info host count %+v   traffic %d", rsp, rsp.Traffic)
 
 		}
 
