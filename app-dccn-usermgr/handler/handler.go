@@ -308,6 +308,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	rsp.User.Attributes.Name = user.Name
 	rsp.User.Attributes.CreationDate = user.CreationDate
 	rsp.User.Attributes.LastModifiedDate = user.LastModifiedDate
+	rsp.User.Attributes.PubKey = user.PubKey
 
 	rsp.AuthenticationResult.AccessToken = userToken
 	rsp.AuthenticationResult.Expiration = uint64(expired)
