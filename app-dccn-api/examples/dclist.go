@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/Ankr-network/dccn-common/protos/common"
+
 	//"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/grpc"
 
 	//"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
@@ -19,7 +21,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-dev.dccn.ankr.network:50051"
+var addr = "client.dccn.ankr.network:50051"
 
 func main() {
 
@@ -37,13 +39,11 @@ func main() {
 	dcClient := dcmgr.NewDCAPIClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
 
-	user := &usermgr.User{
-		Name:     "user_test1",
-		Nickname: "test1",
-		Email:    `1231@Gmail.com`,
-		Password: "12345678901",
-		Balance:  199,
-	}
+
+
+	req := &usermgr.LoginRequest{}
+	req.Email = `yousong.zhang@gmail.com`
+	req.Password = "zddzys123"
 	//if _, err := userClient.Register(context.Background(), user); err != nil {
 	//	log.Fatal(err.Error())
 	//} else {
@@ -52,11 +52,11 @@ func main() {
 
 	var token string
 	//var userId string
-	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
+	if rsp, err := userClient.Login(context.TODO(), req); err != nil {
 		log.Fatal(err.Error())
 	} else {
-		log.Printf("login Success: %s\n", rsp.Token)
-		token = rsp.Token
+		log.Printf("login Success: %s\n", rsp.AuthenticationResult.AccessToken)
+		token = rsp.AuthenticationResult.AccessToken
 	//	userId = rsp.UserId
 	}
 
@@ -76,12 +76,12 @@ func main() {
 	//}
 
 	// var userTasks []*common_proto.Task
-	if rsp, err := dcClient.DataCenterList(tokenContext, &dcmgr.DataCenterListRequest{}); err != nil {
+	if rsp, err := dcClient.DataCenterList(tokenContext, &common_proto.Empty{}); err != nil {
 		log.Fatal(err.Error())
 	} else {
 		for i := 0; i < len(rsp.DcList); i++ {
 			dc := rsp.DcList[i]
-			log.Printf("DataCenterList metrics %s name %s  status %s \n", dc.Name, dc.Metrics, dc.Status)
+			log.Printf("DataCenterList metrics %s name %s  status %s \n", dc.Name, dc.Name, dc.Status)
 
 		}
 

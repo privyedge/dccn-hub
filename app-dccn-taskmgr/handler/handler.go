@@ -346,17 +346,24 @@ func (p *TaskMgrHandler) TaskLeaderBoard(ctx context.Context, req *common_proto.
 }
 
 func (p *TaskMgrHandler) PurgeTask(ctx context.Context, req *taskmgr.TaskID, rsp *common_proto.Empty) error {
-	error := p.CancelTask(ctx, req, rsp)
-
-	if error == ankr_default.ErrCanceledTwice {
-		return ankr_default.ErrPurgedTwice
+	userId :=getUserID(ctx)
+	log.Println("Debug into PurgelTask")
+	if err := checkId(userId, req.TaskId); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	_, err := p.checkOwner(userId, req.TaskId)
+	if err != nil {
+		log.Println(err.Error())
+		return err   // return not own
 	}
 
-	if error == nil {
-		log.Printf(" PurgeTask  %s \n", req.TaskId)
-		p.db.Update(req.TaskId, bson.M{"$set": bson.M{"hidden": true}})
-	}
-	return error
+	p.CancelTask(ctx, req, rsp)
+
+	log.Printf(" PurgeTask  %s \n", req.TaskId)
+	p.db.Update(req.TaskId, bson.M{"$set": bson.M{"hidden": true}})
+
+	return nil
 }
 
 func (p *TaskMgrHandler) checkOwner(userId, taskId string) (*common_proto.Task, error) {

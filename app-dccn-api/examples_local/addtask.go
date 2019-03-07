@@ -43,8 +43,8 @@ func main() {
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
-	req.Email = "12112@Gmail.com"
-	req.Password = "11111111"
+	req.Email = "yousong1@gmail.com"
+	req.Password = "111111c"
 
 
 

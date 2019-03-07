@@ -36,13 +36,9 @@ func main() {
 	taskClient := taskmgr.NewTaskMgrClient(conn)
 	userClient := usermgr.NewUserMgrClient(conn)
 
-	user := &usermgr.User{
-		Name:     "user_test1",
-		Nickname: "test1",
-		Email:    `1231@Gmail.com`,
-		Password: "12345678901",
-		Balance:  199,
-	}
+	req := &usermgr.LoginRequest{}
+	req.Email = `yousong.zhang@gmail.com`
+	req.Password = "zddzys123"
 	//if _, err := userClient.Register(context.Background(), user); err != nil {
 	//	log.Fatal(err.Error())
 	//} else {
@@ -50,13 +46,13 @@ func main() {
 	//}
 
 	var token string
-	var userId string
-	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: user.Email, Password: user.Password}); err != nil {
+	//var userId string
+	if rsp, err := userClient.Login(context.TODO(), req); err != nil {
 		log.Fatal(err.Error())
 	} else {
-		log.Printf("login Success: %s\n", rsp.Token)
-		token = rsp.Token
-		userId = rsp.UserId
+		log.Printf("login Success: %s\n", rsp.AuthenticationResult.AccessToken)
+		token = rsp.AuthenticationResult.AccessToken
+		//userId = rsp.UserId
 	}
 
 	md := metadata.New(map[string]string{
@@ -69,11 +65,11 @@ func main() {
 
 	//userTasks := make([]*common_proto.Task, 0)
 
-	if rsp, err := taskClient.CancelTask(tokenContext, &taskmgr.Request{UserId: userId, TaskId: "ade95c45-f92f-4b8f-a2fd-103b039bea68"}); err != nil {
+	if _, err := taskClient.CancelTask(tokenContext, &taskmgr.TaskID{TaskId:"34400bfc-ad5e-4931-95af-80eec4be08ed"}); err != nil {
 		log.Fatal(err.Error())
 	} else {
 
-		log.Printf(" result %s  error:  %s", rsp.Status,  rsp.Details);
+		log.Printf(" CancelTask  successully  ");
 
 		}
 
