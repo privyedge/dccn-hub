@@ -90,6 +90,17 @@ jobs:
               kubectl apply -f kubernetes/${dockerfile_arr[$i]}_patch.yml
               if ! kubectl rollout status deploy/${deployment_arr[$i]} --watch=true --timeout=60s; then
                 echo "Deploy failed, roll back to previous version"
-                kubectl rollout undo deploy/${deployment_arr[$i]} 
+                kubectl rollout undo deploy/${deployment_arr[$i]}
               fi
             done
+
+            echo "Deploying tendermint"
+            if [[ "$BRANCH_NAME" == "feat" ]]; then
+              cp kubernetes/tendermint.yml kubernetes/tendermint_patch.yml
+            else
+              kubectl set image --local -o yaml tendermint=$AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/dccn-tendermint:hub-${BRANCH_NAME} \
+                -f kubernetes/tendermint.yml > kubernetes/tendermint_patch.yml
+            fi
+            kubectl apply -f kubernetes/tendermint_patch.yml
+            echo "Rollout not support multi resource now, ignore"
+            kubectl apply -f kubernetes/tendermint-svc.yml

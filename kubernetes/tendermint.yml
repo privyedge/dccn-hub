@@ -1,36 +1,7 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: dccn-tendermint
-  labels:
-    app: dccn-tendermint
-spec:
-  selector:
-    app: dccn-tendermint
-  type: LoadBalancer
-  ports:
-  - name: p2p-1
-    port: 20016
-    targetPort: 26656
-  - name: p2p-2
-    port: 20026
-    targetPort: 26656
-  - name: p2p-3
-    port: 20036
-    targetPort: 26656
-  - name: p2p-4
-    port: 20046
-    targetPort: 26656
-  - name: rpc
-    port: 26657
-    targetPort: 26657
-
-
----
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dccn-tendermint-1
+  name: tendermint-1
 spec:
   replicas: 1
   template:
@@ -57,7 +28,7 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dccn-tendermint-2
+  name: tendermint-2
 spec:
   replicas: 1
   template:
@@ -84,7 +55,7 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dccn-tendermint-3
+  name: tendermint-3
 spec:
   replicas: 1
   template:
@@ -111,7 +82,7 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: dccn-tendermint-4
+  name: tendermint-4
 spec:
   replicas: 1
   template:
