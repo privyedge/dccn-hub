@@ -313,7 +313,7 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	attr2 := []*usermgr.UserAttribute{
 		{
 			Key:   "AvatarBackgroundColor",
-			Value: &usermgr.UserAttribute_IntValue{IntValue: 10},
+			Value: &usermgr.UserAttribute_IntValue{IntValue: user.AvatarBackgroundColor},
 		},
 	}
 
