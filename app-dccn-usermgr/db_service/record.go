@@ -19,6 +19,7 @@ type UserRecord struct {
 	LastModifiedDate uint64             `bson:"last_modified_date"`
 	CreationDate     uint64             `bson:"creation_date"`
 	PubKey           string             `bson:"pub_key"`
+	AvatarBackgroundColor int        `bson:"avatar_background_color"`
 	EmailChangeConfirmCode string
 }
 
@@ -32,6 +33,7 @@ var feileds = map[string]string{
 	"LastModifiedDate": "last_modified_date",
 	"CreationDate":     "creation_date",
 	"PubKey":           "pub_key",
+	"AvatarBackgroundColor": "avatar_background_color",
 }
 
 func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
@@ -57,6 +59,8 @@ func getUpdate(fields []*usermgr.UserAttribute) (bson.M, error) {
 			update[feileds[attr.Key]] = attr.GetIntValue()
 		case "PubKey":
 			update[feileds[attr.Key]] = attr.GetStringValue()
+		case "AvatarBackgroundColor":
+			update[feileds[attr.Key]] = attr.GetIntValue()
 		}
 	}
 

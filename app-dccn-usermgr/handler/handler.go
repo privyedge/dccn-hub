@@ -310,6 +310,16 @@ func (p *UserHandler) Login(ctx context.Context, req *usermgr.LoginRequest, rsp 
 	rsp.User.Attributes.LastModifiedDate = user.LastModifiedDate
 	rsp.User.Attributes.PubKey = user.PubKey
 
+	attr2 := []*usermgr.UserAttribute{
+		{
+			Key:   "AvatarBackgroundColor",
+			Value: &usermgr.UserAttribute_IntValue{IntValue: int64(user.AvatarBackgroundColor)},
+		},
+	}
+
+
+	rsp.User.Attributes.ExtraFields = attr2
+
 	rsp.AuthenticationResult.AccessToken = userToken
 	rsp.AuthenticationResult.Expiration = uint64(expired)
 	rsp.AuthenticationResult.IssuedAt = uint64(time.Now().Unix())
@@ -508,6 +518,22 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 	} else if err := bcrypt.CompareHashAndPassword([]byte(record.HashedPassword), []byte(req.NewPassword)); err == nil {
 		log.Println(ankr_default.ErrPasswordSame)
 		return ankr_default.ErrPasswordSame
+	}else { // check user status
+		if record.Status == usermgr.UserStatus_CONFIRMING {
+			// update status to UserStatus_CONFIRMED
+			attr := []*usermgr.UserAttribute{
+				{
+					Key: "Status", Value: &usermgr.UserAttribute_IntValue{
+					IntValue: int64(usermgr.UserStatus_CONFIRMED),
+				},
+				},
+			}
+			// update password. if not exist, db return not found
+			if err := p.db.UpdateUserByEmail(req.Email, attr); err != nil {
+				log.Println(err.Error())
+				return err
+			}
+		}
 	}
 
 	// hash password
@@ -524,6 +550,7 @@ func (p *UserHandler) ConfirmPassword(ctx context.Context, req *usermgr.ConfirmP
 			Value: &usermgr.UserAttribute_StringValue{StringValue: string(hashedPwd)},
 		},
 	}
+
 
 	if err := p.db.UpdateUserByEmail(strings.ToLower(req.Email), attr); err != nil {
 		log.Println(err.Error())
@@ -611,6 +638,20 @@ func (p *UserHandler) UpdateAttributes(ctx context.Context, req *usermgr.UpdateA
 		LastModifiedDate: userRecord.LastModifiedDate,
 		PubKey:           userRecord.PubKey,
 	}
+
+
+	attr2 := []*usermgr.UserAttribute{
+		{
+			Key:   "AvatarBackgroundColor",
+			Value: &usermgr.UserAttribute_IntValue{IntValue: int64(userRecord.AvatarBackgroundColor)},
+		},
+	}
+
+
+	rsp.Attributes.ExtraFields = attr2
+
+
+
 	rsp.Status = userRecord.Status
 	return nil
 }

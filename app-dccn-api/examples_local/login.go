@@ -57,10 +57,12 @@ func main() {
 		//userId = rsp.UserId
 		refresh_token := rsp.AuthenticationResult.RefreshToken
 		access_token := rsp.AuthenticationResult.AccessToken
+		user := rsp.User
+		extraFileds := user.Attributes.ExtraFields
 
 
 
-		log.Printf("get access_token after login %s  refresh_token %s \n", access_token, refresh_token)
+		log.Printf("get access_token after login %s  refresh_token %s   %+v \n", access_token, refresh_token, extraFileds)
 
 
 	}
