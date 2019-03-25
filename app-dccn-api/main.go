@@ -4,23 +4,21 @@ import (
 	"context"
 	"log"
 
-	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	"github.com/Ankr-network/dccn-common/protos/common"
 	"github.com/micro/go-micro/metadata"
 
-	grpc "github.com/micro/go-grpc"
-	micro "github.com/micro/go-micro"
+	"github.com/micro/go-grpc"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/server"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
-	dcmgr "github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
-	mail "github.com/Ankr-network/dccn-common/protos/email/v1/micro"
-	taskmgr "github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos"
+	"github.com/Ankr-network/dccn-common/protos/dcmgr/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos/email/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos/taskmgr/v1/micro"
 	"github.com/Ankr-network/dccn-hub/app-dccn-api/apihandler"
 
-	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
-	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/subscriber"
-
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/db_service"
 
 	"github.com/Ankr-network/dccn-hub/app-dccn-dcmgr/handler"
 	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/config"
@@ -101,23 +99,23 @@ func startHandler() {
 	}
 	// Dc Manager register handler
 	// New Publisher to deploy new task action.
-	taskFeedback := micro.NewPublisher(ankr_default.MQFeedbackTask, srv.Client())
+	//taskFeedback := micro.NewPublisher(ankr_default.MQFeedbackTask, srv.Client())
 
-	dcHandler := handler.New(db, taskFeedback)
+	//dcHandler := handler.New(db, taskFeedback)
 
 	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
-	opt := srv.Server().Options()
-	opt.Broker.Connect()
-	if err := micro.RegisterSubscriber(ankr_default.MQDeployTask, srv.Server(), subscriber.New(dcHandler.DcStreamCaches)); err != nil {
-		log.Fatal(err.Error())
-	}
+	//opt := srv.Server().Options()
+	//opt.Broker.Connect()
+	//if err := micro.RegisterSubscriber(ankr_default.MQDeployTask, srv.Server(), subscriber.New(dcHandler.DcStreamCaches)); err != nil {
+	//	log.Fatal(err.Error())
+	//}
 
 	// Register Dc Manager Handler
-	if err := dcmgr.RegisterDCStreamerHandler(srv.Server(), dcHandler); err != nil {
-		log.Fatal(err.Error())
-	}
+	//if err := dcmgr.RegisterDCStreamerHandler(srv.Server(), dcHandler); err != nil {
+	//	log.Fatal(err.Error())
+	//}
 
-	defer dcHandler.Cleanup()
+	//defer dcHandler.Cleanup()
 
 	// Register Email Handler
 	if err := mail.RegisterMailHandler(srv.Server(), apihandler.NewApiEmail(srv.Client())); err != nil {

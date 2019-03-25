@@ -410,12 +410,15 @@ func (p *UserHandler) RefreshSession(ctx context.Context, req *usermgr.RefreshTo
 }
 
 func (p *UserHandler) VerifyAccessToken(ctx context.Context, req *common_proto.Empty, rsp *common_proto.Empty) error {
+	log.Println("VerifyAccessToken")
 	meta, ok := metadata.FromContext(ctx)
 	// Note this is now uppercase (not entirely sure why this is...)
 	var accessToken string
 	if ok {
 		accessToken = meta["token"]
 	}
+
+	log.Printf("VerifyAccessToken %+v", meta)
 
 	log.Printf("find token %s \n", accessToken)
 

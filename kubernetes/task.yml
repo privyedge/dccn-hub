@@ -40,5 +40,7 @@ spec:
             value: consul
           - name: MICRO_REGISTRY_ADDRESS
             value: consul:8500
+          - name: MICRO_SERVER_ADDRESS
+            value: :50051
           - name: MICRO_SERVER_VERSION
             value: v1.0
