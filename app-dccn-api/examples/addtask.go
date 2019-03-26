@@ -83,6 +83,8 @@ func main() {
 		task.Type = common_proto.TaskType_DEPLOYMENT
 		task.Attributes = &common_proto.TaskAttributes{}
 		task.Attributes.Replica = 1
+		task.ChartName = "deploymentzys"
+		task.ChartVer = "0.0.1"
 		t := common_proto.Task_TypeDeployment{TypeDeployment: &common_proto.TaskTypeDeployment{Image:"nginx:1.12"}}
 		task.TypeData = &t
 
