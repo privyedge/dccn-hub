@@ -17,7 +17,11 @@ import (
 //	common_proto "github.com/Ankr-network/dccn-common/protos/common"
 //	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
-var addr = "localhost:50051"
+var addr = "localhost:50052"
+var addr2 = "localhost:50053"
+
+var addr3 = "localhost:50051"
+
 //var addr = "client-dev.dccn.ankr.network:50051"
 
 //var addr = "afcac29ea274711e99cb106bbae7419f-1982485008.us-west-1.elb.amazonaws.com:50051"
@@ -29,7 +33,8 @@ var addr = "localhost:50051"
 func main() {
 
 	log.SetFlags(log.LstdFlags | log.Llongfile)
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	conn, err := grpc.Dial(addr3, grpc.WithInsecure())
+	conn2, _ := grpc.Dial(addr3, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -39,7 +44,7 @@ func main() {
 		}
 	}(conn)
 
-	taskClient := taskmgr.NewTaskMgrClient(conn)
+	taskClient := taskmgr.NewTaskMgrClient(conn2)
 	userClient := usermgr.NewUserMgrClient(conn)
 
 	req := &usermgr.LoginRequest{}
@@ -72,6 +77,10 @@ func main() {
 			"token": access_token,
 		})
 
+
+
+
+
 		log.Printf("get access_token after login %s \n", access_token)
 		ctx := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -85,6 +94,20 @@ func main() {
 		task.Attributes.Replica = 1
 		t := common_proto.Task_TypeDeployment{TypeDeployment: &common_proto.TaskTypeDeployment{Image:"nginx:1.12"}}
 		task.TypeData = &t
+
+{
+	if _, err := userClient.VerifyAccessToken(tokenContext, &common_proto.Empty{}); err != nil {
+
+		//log.Println("detail create %+v " + rsp)
+		log.Fatal(err)
+		log.Printf("VerifyAccessToken : failed   ")
+	} else {
+		log.Printf("VerifyAccessToken : ok   ")
+	}
+
+
+}
+
 
 		if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{Task: &task}); err != nil {
 
