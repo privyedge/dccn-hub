@@ -76,13 +76,19 @@ func main() {
 
 
 
-		task :=  common_proto.Task{}
+		task := common_proto.Task{}
+		//task.DataCenterName = "datacenter_tokyo"
+		task.Name = "task"
+		task.Type = common_proto.TaskType_DEPLOYMENT
 		task.Attributes = &common_proto.TaskAttributes{}
-		task.Attributes.Replica = 3
+		task.Attributes.Replica = 1
+		task.ChartName = "deploymentzys"
+		task.ChartVer = "0.0.1"
+		task.Uid = "f6045dc7-d46a-40c1-b637-d4c75b6213fa"
+		t := common_proto.Task_TypeDeployment{TypeDeployment: &common_proto.TaskTypeDeployment{Image:"nginx:1.12"}}
+		task.TypeData = &t
 
-		task.Id = "ea6be29e-f1cd-42ba-948f-a4414af3b076"
-		task.Type =  common_proto.TaskType_CRONJOB
-		task.TypeData = &common_proto.Task_TypeCronJob{TypeCronJob: &common_proto.TaskTypeCronJob{Image:"nginx:1.13", Schedule:"* * * * *"}}
+		task.Id = "570d72bd-32bc-41dc-9540-bb05cf1fae28"
 
 
 
