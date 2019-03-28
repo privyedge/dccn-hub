@@ -21,7 +21,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client.dccn.ankr.network:50051"
+var addr = "client-stage.dccn.ankr.network:50051"
 
 func main() {
 

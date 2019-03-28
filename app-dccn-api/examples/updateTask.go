@@ -5,6 +5,8 @@ import (
 	"github.com/Ankr-network/dccn-common/protos"
 	"github.com/Ankr-network/dccn-common/protos/common"
 
+	//"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+
 	"log"
 	"time"
 
@@ -14,21 +16,16 @@ import (
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
-	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
-	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//common_proto "github.com/Ankr-network/dccn-common/protos/common"
+//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
+
 //var addr = "localhost:50051"
 var addr = "client-dev.dccn.ankr.network:50051"
 
-//var addr = "afcac29ea274711e99cb106bbae7419f-1982485008.us-west-1.elb.amazonaws.com:50051"
-
-//func parseError(err string) string{
-//
-//}
-
 func main() {
 
-	log.SetFlags(log.LstdFlags | log.Llongfile)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err.Error())
@@ -44,15 +41,13 @@ func main() {
 
 	req := &usermgr.LoginRequest{}
 	req.Email = `yousong.zhang@gmail.com`
-  req.Password = "zddzys123"
-
+	req.Password = "zddzys123"
 
 	//var userId string
 	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
 		if err == ankr_default.ErrPasswordError {
 			log.Printf("password error  %s", err.Error())
 		}
-
 
 		a := err.Error()
 
@@ -77,44 +72,28 @@ func main() {
 		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 
-		task := common_proto.Task{}
-		//task.DataCenterName = "datacenter_tokyo"
-		task.Name = "task"
-		task.Type = common_proto.TaskType_DEPLOYMENT
+
+
+
+
+		task :=  common_proto.Task{}
 		task.Attributes = &common_proto.TaskAttributes{}
-		task.Attributes.Replica = 1
-		task.ChartName = "deploymentzys"
-		task.ChartVer = "0.0.1"
-		task.Uid = "f6045dc7-d46a-40c1-b637-d4c75b6213fa"
-		t := common_proto.Task_TypeDeployment{TypeDeployment: &common_proto.TaskTypeDeployment{Image:"nginx:1.12"}}
-		task.TypeData = &t
+		task.Attributes.Replica = 3
 
-		if rsp, err := taskClient.CreateTask(tokenContext, &taskmgr.CreateTaskRequest{Task: &task}); err != nil {
+		task.Id = "ea6be29e-f1cd-42ba-948f-a4414af3b076"
+		task.Type =  common_proto.TaskType_CRONJOB
+		task.TypeData = &common_proto.Task_TypeCronJob{TypeCronJob: &common_proto.TaskTypeCronJob{Image:"nginx:1.13", Schedule:"* * * * *"}}
 
-			//log.Println("detail create %+v " + rsp)
-			log.Fatal(err)
+
+
+
+		if _, err := taskClient.UpdateTask(tokenContext, &taskmgr.UpdateTaskRequest{Task: &task}); err != nil {
+			log.Fatal(err.Error())
 		} else {
-			log.Println("create task successfully : taskid   " + rsp.TaskId)
+
+			log.Printf(" UpdateTask success\n")
+
 		}
 
 	}
-
-	//// var userTasks []*common_proto.Task
-	//userTasks := make([]*common_proto.Task, 0)
-	//if rsp, err := taskClient.TaskList(tokenContext, &taskmgr.ID{UserId: userId}); err != nil {
-	//	log.Fatal(err.Error())
-	//} else {
-	//	userTasks = append(userTasks, rsp.Tasks...)
-	//	if len(userTasks) == 0 {
-	//		log.Fatalf("no tasks belongs to %s", userId)
-	//	} else {
-	//		log.Println(len(userTasks), "tasks belongs to ", user.Email)
-	//		for i := 0; i < len(userTasks); i++ {
-	//			log.Println(userTasks[i])
-	//		}
-	//
-	//	}
-	//}
-	//
-	//log.Println("END")
 }

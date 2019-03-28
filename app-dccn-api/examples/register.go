@@ -19,7 +19,7 @@ import (
 )
 
 //var addr = "localhost:50051"
-var addr = "client-stage.dccn.ankr.network:50051"
+var addr = "client-dev.dccn.ankr.network:50051"
 
 func main() {
 
@@ -42,8 +42,11 @@ func main() {
 	req.User = &usermgr.User{}
 	req.User.Email = `yousong.zhang@gmail.com`
 	req.User.Attributes = &usermgr.UserAttributes{}
-	req.User.Attributes.Name = "ankrtest11"
+	req.User.Attributes.Name = "ankrtest"
 	req.Password = "zddzys123"
+
+//	req.Email = `yousong.zhang@gmail.com`
+	//req.Password = "zddzys123"
 
 	if _, err := userClient.Register(context.Background(), &req); err != nil {
 		//	log.Fatal(err.Error())
