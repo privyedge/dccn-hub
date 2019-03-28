@@ -1,8 +1,9 @@
+
 package main
 
 import (
 	"context"
-	//"github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//"github.com/Ankr-network/dccn-common/protos/common"
 
 	"log"
 	"time"
@@ -13,16 +14,17 @@ import (
 
 	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
-	//common_proto "github.com/Ankr-network/dccn-common/protos/common"
-//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
+	//	common_proto "github.com/Ankr-network/dccn-common/protos/common"
+	//	apiCommon "github.com/Ankr-network/dccn-hub/app-dccn-api/examples/common"
 )
-
 //var addr = "localhost:50051"
 var addr = "client-dev.dccn.ankr.network:50051"
 
+//var addr = "afcac29ea274711e99cb106bbae7419f-1982485008.us-west-1.elb.amazonaws.com:50051"
+
 func main() {
 
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Llongfile)
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err.Error())
@@ -39,40 +41,45 @@ func main() {
 	req := &usermgr.LoginRequest{}
 	req.Email = `yousong.zhang@gmail.com`
 	req.Password = "zddzys123"
-	//if _, err := userClient.Register(context.Background(), user); err != nil {
-	//	log.Fatal(err.Error())
-	//} else {
-	//	log.Println("Register Ok")
-	//}
 
-	var token string
+
 	//var userId string
-	if rsp, err := userClient.Login(context.TODO(), req); err != nil {
+	if rsp, err := userClient.Login(context.TODO(), &usermgr.LoginRequest{Email: req.Email, Password: req.Password}); err != nil {
 		log.Fatal(err.Error())
 	} else {
-		log.Printf("login Success: %s\n", rsp.AuthenticationResult.AccessToken)
-		token = rsp.AuthenticationResult.AccessToken
+		log.Printf("response %+v \n", rsp)
+		//log.Printf("login Success: id : %s name : %s , email %s  refresh_token : %s  access_token %s \n", rsp.User.Id, rsp.User.Attributes.Name, rsp.User.Email ,rsp.AuthenticationResult.RefreshToken, rsp.AuthenticationResult.AccessToken)
+		//token = rsp.Token
 		//userId = rsp.UserId
-	}
+		refresh_token := rsp.AuthenticationResult.RefreshToken
+		access_token := rsp.AuthenticationResult.AccessToken
 
-	md := metadata.New(map[string]string{
-		"token": token,
-	})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+		log.Printf("refresh_token  %s  access_token %s", refresh_token, access_token)
 
-	tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
+		md := metadata.New(map[string]string{
+			"token": access_token,
+		})
 
-	//userTasks := make([]*common_proto.Task, 0)
+		log.Printf("get access_token after login %s \n", access_token)
+		ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	if _, err := taskClient.CancelTask(tokenContext, &taskmgr.TaskID{TaskId:"34400bfc-ad5e-4931-95af-80eec4be08ed"}); err != nil {
-		log.Fatal(err.Error())
-	} else {
+		tokenContext, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
 
-		log.Printf(" CancelTask  successully  ");
+		taskId := "ea6be29e-f1cd-42ba-948f-a4414af3b076"
 
+		if _, err := taskClient.CancelTask(tokenContext, &taskmgr.TaskID{TaskId: taskId}); err != nil {
+			log.Fatal(err.Error())
+		} else {
+
+			log.Printf(" result success");
 		}
 
-
-
+	}
 }
+
+
+
+
+
+

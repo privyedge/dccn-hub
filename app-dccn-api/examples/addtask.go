@@ -44,7 +44,7 @@ func main() {
 
 	req := &usermgr.LoginRequest{}
 	req.Email = `yousong.zhang@gmail.com`
-  req.Password = "zddzys123"
+    req.Password = "zddzys123"
 
 
 	//var userId string
