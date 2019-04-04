@@ -9,13 +9,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/metadata"
+	"github.com/Ankr-network/dccn-usermgr/app-dccn-usermgr/micro"
+
+	//"github.com/micro/go-micro"
+	//"github.com/micro/go-micro/metadata"
 
 	"github.com/Ankr-network/dccn-common/protos"
 	"github.com/Ankr-network/dccn-common/protos/common"
-	"github.com/Ankr-network/dccn-common/protos/email/v1/micro"
-	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	"github.com/Ankr-network/dccn-common/protos/email/v1/grpc"
+	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 	ankr_util "github.com/Ankr-network/dccn-common/util"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -28,11 +30,11 @@ import (
 type UserHandler struct {
 	db        dbservice.DBService // db
 	token     token.Token        // token interface
-	pubEmail  micro.Publisher
+	pubEmail  micro2.Publisher
 	blacklist *Blacklist // used for logout
 }
 
-func New(dbService dbservice.DBService, tokenService token.Token, pubEmail micro.Publisher) *UserHandler {
+func New(dbService dbservice.DBService, tokenService token.Token, pubEmail micro2.Publisher) *UserHandler {
 	return &UserHandler{
 		db:        dbService,
 		token:     tokenService,

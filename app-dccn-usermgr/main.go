@@ -1,23 +1,24 @@
 package main
 
 import (
+	"github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
+	//"github.com/Ankr-network/dccn-common/protos/dcmgr/v1/grpc"
+	"github.com/Ankr-network/dccn-usermgr/app-dccn-usermgr/handler"
+	"github.com/Ankr-network/dccn-usermgr/app-dccn-usermgr/subscriber"
+	//"github.com/micro/go-micro"
 	"log"
 
-	micro "github.com/micro/go-micro"
+	//"github.com/micro/go-micro"
 
-	ankr_default "github.com/Ankr-network/dccn-common/protos"
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
-	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/config"
-	dbservice "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/db_service"
-	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/handler"
-	"github.com/Ankr-network/dccn-hub/app-dccn-usermgr/token"
-
-	grpc "github.com/micro/go-grpc"
+	"github.com/Ankr-network/dccn-common/protos"
+	//"github.com/Ankr-network/dccn-dcmgr/app-dccn-dcmgr/config"
+	"github.com/Ankr-network/dccn-usermgr/app-dccn-usermgr/db_service"
+	"github.com/Ankr-network/dccn-usermgr/app-dccn-usermgr/micro"
+	//	"github.com/micro/go-grpc"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 )
 
 var (
-	conf config.Config
 	db   dbservice.DBService
 	err  error
 )
@@ -25,52 +26,47 @@ var (
 func main() {
 	Init()
 
-	if db, err = dbservice.New(conf.DB); err != nil {
+	if db, err = dbservice.New(); err != nil {
 		log.Fatal(err.Error())
 	}
 	defer db.Close()
 
-	startHandler(db)
+	startHandler()
 }
 
 // Init starts handler to listen.
 func Init() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
-	if conf, err = config.Load(); err != nil {
-		log.Fatal(err.Error())
-	}
-	log.Printf("Load config %+v\n", conf)
+	config := micro2.LoadConfigFromEnv()
+
+	config.Show()
 }
 
-func startHandler(db dbservice.DBService) {
-	// New Service
-	srv := grpc.NewService(
-		micro.Name(ankr_default.UserMgrRegistryServerName),
-	)
+func startHandler() {
 
-	// Initialise service
-	srv.Init()
+	//New Publisher to deploy new task action.
+	taskFeedback := micro2.NewPublisher(ankr_default.MQFeedbackTask )
+	dcFacadeDeploy := micro2.NewPublisher("userMgrTaskDeploy")
 
-	// New Publisher to deploy new task action.
-	pubEmail := micro.NewPublisher(ankr_default.MQMail, srv.Client())
+	dcHandler := handler.New(db, taskFeedback)
 
-	// Register Function as TaskStatusFeedback to update task by data center manager's feedback.
-	opt := srv.Server().Options()
-	if err := opt.Broker.Connect(); err != nil {
+
+	if err := micro2.RegisterSubscriber(ankr_default.MQDeployTask,  subscriber.New(dcHandler.DcStreamCaches, dcFacadeDeploy)); err != nil {
 		log.Fatal(err.Error())
 	}
 
-	userHandler := handler.New(db, token.New(), pubEmail)
-	defer userHandler.Destroy()
-
-	// Register Handler
-	if err := usermgr.RegisterUserMgrHandler(srv.Server(), userHandler); err != nil {
+	//from
+	if err := micro2.RegisterSubscriber("FromDCFacadeToDCMgr", subscriber.NewEventFromDCFacade(dcHandler.DcStreamCaches, dcHandler)); err != nil {
 		log.Fatal(err.Error())
 	}
 
-	// Run srv
-	if err := srv.Run(); err != nil {
-		log.Println(err.Error())
-	}
+	service := micro2.NewService()
+
+
+	dcClient := handler.NewAPIHandler(db)
+	usermgr.RegisterUserMgrServer(service.GetServer(), dcClient)
+	service.Start()
+
+
 }

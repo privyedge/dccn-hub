@@ -3,7 +3,7 @@ package dbservice
 import (
 	"gopkg.in/mgo.v2/bson"
 
-	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/micro"
+	usermgr "github.com/Ankr-network/dccn-common/protos/usermgr/v1/grpc"
 
 	ankr_default "github.com/Ankr-network/dccn-common/protos"
 	user_util "github.com/Ankr-network/dccn-hub/app-dccn-usermgr/util"
